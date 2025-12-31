@@ -1,0 +1,34 @@
+{
+  "header": {
+    "title": "Video",
+    "titleHighlight": "Analytics",
+    "subtitle": "AI-Powered Insights",
+    "proFeatures": "Pro Features",
+    "github": "GitHub"
+  },
+  "footer": {
+    "builtBy": "Built by",
+    "authorName": "Ibad Siddiqui",
+    "appName": "Video Analytics Platform"
+  },
+  "buttons": {
+    "analyze": "Analyze",
+    "analyzing": "Analyzing...",
+    "backToHome": "Back to Home",
+    "visitConsole": "Visit Console",
+    "goToApiLibrary": "Go to API Library",
+    "goToCredentials": "Go to Credentials"
+  },
+  "platforms": {
+    "youtube": "YouTube",
+    "instagram": "Instagram"
+  },
+  "errors": {
+    "analysisFailed": "Analysis Failed",
+    "invalidUrl": "Please enter a valid URL",
+    "genericError": "Failed to analyze video"
+  },
+  "success": {
+    "analysisComplete": "Analysis complete!"
+  }
+}

@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     siteName: 'Video Analytics Platform',
     images: [
       {
-        url: '/og-image.png',
+        url: '/images/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Video Analytics Platform - Comprehensive Video Analytics',
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     title: 'Video Analytics Platform - YouTube & Instagram Analytics',
     description: 'Analyze any YouTube or Instagram video instantly. Get metrics, sentiment analysis, and engagement data for free.',
     creator: '@ibadsiddiqui',
-    images: ['/og-image.png'],
+    images: ['/images/og-image.png'],
   },
   robots: {
     index: true,
@@ -101,9 +101,9 @@ export default function RootLayout({ children }: RootLayoutProps): React.JSX.Ele
         <link rel="manifest" href="/manifest.json" />
 
         {/* Favicons */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/images/favicon.ico" sizes="any" />
+        <link rel="icon" href="/images/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
 
         {/* Structured Data */}
         <script

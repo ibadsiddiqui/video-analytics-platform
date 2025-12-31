@@ -1,0 +1,129 @@
+{
+  "title": "How to Get a YouTube API Key",
+  "description": "Follow these step-by-step instructions to get your own YouTube Data API v3 key from Google Cloud Platform.",
+  "backToVideo": "Back to Video Analytics",
+  "importantNotice": {
+    "title": "Important Information",
+    "items": [
+      "The YouTube Data API has a quota limit of 10,000 units per day (free tier)",
+      "Each video analysis uses approximately 10-15 quota units",
+      "Keep your API key secure and never share it publicly",
+      "You can monitor your quota usage in the Google Cloud Console"
+    ]
+  },
+  "securityBestPractices": {
+    "title": "Security Best Practices",
+    "items": [
+      "Always restrict your API key to only the YouTube Data API v3",
+      "Add HTTP referrer restrictions if using in a web application",
+      "Regularly rotate your API keys for better security",
+      "Monitor API usage to detect any unauthorized access",
+      "Never commit API keys to version control (Git)"
+    ]
+  },
+  "steps": [
+    {
+      "title": "Go to Google Cloud Console",
+      "description": "Visit the Google Cloud Console to create a new project or select an existing one.",
+      "action": "Visit Console",
+      "substeps": [
+        "Sign in with your Google account",
+        "If you don't have a Google Cloud account, you'll need to create one (free tier available)"
+      ]
+    },
+    {
+      "title": "Create a New Project",
+      "description": "Create a dedicated project for your YouTube API usage.",
+      "substeps": [
+        "Click on the project dropdown at the top of the page",
+        "Click \"NEW PROJECT\" button",
+        "Enter a project name (e.g., \"Video Analytics\")",
+        "Click \"CREATE\"",
+        "Wait for the project to be created (usually takes a few seconds)"
+      ]
+    },
+    {
+      "title": "Enable YouTube Data API v3",
+      "description": "Enable the YouTube Data API v3 for your project.",
+      "action": "Go to API Library",
+      "substeps": [
+        "Make sure your new project is selected in the project dropdown",
+        "In the API Library, search for \"YouTube Data API v3\"",
+        "Click on \"YouTube Data API v3\" from the search results",
+        "Click the \"ENABLE\" button",
+        "Wait for the API to be enabled"
+      ]
+    },
+    {
+      "title": "Create API Credentials",
+      "description": "Create an API key to authenticate your requests.",
+      "action": "Go to Credentials",
+      "substeps": [
+        "Click \"CREATE CREDENTIALS\" at the top",
+        "Select \"API key\" from the dropdown",
+        "Your API key will be created and displayed",
+        "Click \"Copy\" to copy the API key",
+        "IMPORTANT: Keep this key secure and never share it publicly"
+      ]
+    },
+    {
+      "title": "Restrict Your API Key (Recommended)",
+      "description": "Add restrictions to your API key for better security.",
+      "substeps": [
+        "In the API key dialog, click \"EDIT API KEY\" or find your key in the credentials list",
+        "Under \"API restrictions\", select \"Restrict key\"",
+        "Check only \"YouTube Data API v3\"",
+        "Under \"Application restrictions\", you can optionally add:",
+        "  - HTTP referrers (for website usage)",
+        "  - IP addresses (for server usage)",
+        "Click \"SAVE\" to apply the restrictions"
+      ]
+    },
+    {
+      "title": "Use Your API Key",
+      "description": "Paste your API key in the Video Analytics Platform.",
+      "substeps": [
+        "Go back to the Video Analytics Platform home page",
+        "Click \"Use your own YouTube API key (optional)\"",
+        "Paste your API key in the input field",
+        "Your key will be saved in your browser for future use",
+        "You're all set! Start analyzing videos with your own quota."
+      ]
+    }
+  ],
+  "quotaInformation": {
+    "title": "Understanding YouTube API Quota",
+    "description": "The YouTube Data API v3 uses a quota system to limit API usage. Each request consumes a certain number of quota units:",
+    "breakdown": {
+      "videoDetails": "Video details: ~3 units per request",
+      "channelDetails": "Channel details: ~3 units per request",
+      "comments": "Comments: ~1 unit per request",
+      "totalPerAnalysis": "Total per analysis: ~10-15 units (depending on features used)"
+    },
+    "freeTier": "With the free tier quota of 10,000 units per day, you can analyze approximately",
+    "videosPerDay": "600-1000 videos per day",
+    "monitorUsage": "You can monitor your quota usage in the",
+    "quotasPage": "Google Cloud Console Quotas page"
+  },
+  "troubleshooting": {
+    "title": "Common Issues & Troubleshooting",
+    "issues": [
+      {
+        "title": "\"API has not been used in project before or it is disabled\"",
+        "solution": "Make sure you've enabled the YouTube Data API v3 in your Google Cloud project (Step 3). Wait a few minutes after enabling for the changes to propagate."
+      },
+      {
+        "title": "\"The request cannot be completed because you have exceeded your quota\"",
+        "solution": "You've reached your daily quota limit. You can either wait until the quota resets (midnight Pacific Time) or request a quota increase in the Google Cloud Console."
+      },
+      {
+        "title": "\"API key not valid. Please pass a valid API key\"",
+        "solution": "Double-check that you've copied the entire API key correctly. Make sure there are no extra spaces or characters."
+      },
+      {
+        "title": "\"Requests to this API method are blocked\"",
+        "solution": "Your API key restrictions might be too restrictive. Check your API key restrictions in the credentials page and ensure YouTube Data API v3 is allowed."
+      }
+    ]
+  }
+}

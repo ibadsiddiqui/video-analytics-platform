@@ -1,0 +1,17 @@
+{
+  "title": "Analyze Any Video",
+  "titleHighlight": "Instantly",
+  "description": "Paste a YouTube or Instagram video URL to get comprehensive analytics including views, engagement, sentiment analysis, and audience insights.",
+  "placeholder": "Paste YouTube or Instagram URL here...",
+  "apiKey": {
+    "label": "Use your own YouTube API key",
+    "optional": "(optional)",
+    "placeholder": "Enter your YouTube API key",
+    "saved": "API key saved in browser",
+    "howToGet": "How to get API key?",
+    "toggle": {
+      "show": "Show API Key Settings",
+      "hide": "Hide API Key Settings"
+    }
+  }
+}

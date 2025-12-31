@@ -1,0 +1,23 @@
+{
+  "emptyState": {
+    "title": "Ready to Analyze Your Videos",
+    "description": "Paste a YouTube or Instagram video URL above to get started with comprehensive analytics and AI-powered insights.",
+    "tryAnalyzing": "Try analyzing any video from these platforms",
+    "exampleYoutube": "youtube.com/watch?v=...",
+    "exampleInstagram": "instagram.com/reel/..."
+  },
+  "features": {
+    "viewAnalytics": {
+      "title": "View Analytics",
+      "description": "Track views, likes, comments, and engagement metrics"
+    },
+    "sentimentAnalysis": {
+      "title": "Sentiment Analysis",
+      "description": "AI-powered analysis of comment sentiment"
+    },
+    "audienceInsights": {
+      "title": "Audience Insights",
+      "description": "Demographics and engagement patterns"
+    }
+  }
+}
