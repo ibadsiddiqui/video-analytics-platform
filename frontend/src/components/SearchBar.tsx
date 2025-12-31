@@ -1,18 +1,44 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Youtube, Instagram, Loader2, Link2 } from 'lucide-react';
+import { Search, Youtube, Instagram, Loader2, Link2, Key, ChevronDown, ChevronUp } from 'lucide-react';
+import Link from 'next/link';
 
-function SearchBar({ url, setUrl, onAnalyze, loading }) {
-  const [focused, setFocused] = useState(false);
+interface SearchBarProps {
+  url: string;
+  setUrl: (url: string) => void;
+  onAnalyze: (url: string) => void;
+  loading: boolean;
+  apiKey: string;
+  setApiKey: (key: string) => void;
+}
 
-  const handleSubmit = (e) => {
+function SearchBar({ url, setUrl, onAnalyze, loading, apiKey, setApiKey }: SearchBarProps): React.JSX.Element {
+  const [focused, setFocused] = useState<boolean>(false);
+  const [showApiKey, setShowApiKey] = useState<boolean>(false);
+
+  // Load API key from localStorage on mount
+  useEffect(() => {
+    const savedApiKey = localStorage.getItem('youtube_api_key');
+    if (savedApiKey && setApiKey) {
+      setApiKey(savedApiKey);
+    }
+  }, [setApiKey]);
+
+  // Save API key to localStorage whenever it changes
+  useEffect(() => {
+    if (apiKey) {
+      localStorage.setItem('youtube_api_key', apiKey);
+    }
+  }, [apiKey]);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     onAnalyze(url);
   };
 
-  const detectPlatform = (inputUrl) => {
+  const detectPlatform = (inputUrl: string): 'youtube' | 'instagram' | null => {
     if (inputUrl.includes('youtube.com') || inputUrl.includes('youtu.be')) {
       return 'youtube';
     }
@@ -117,6 +143,58 @@ function SearchBar({ url, setUrl, onAnalyze, loading }) {
             Instagram
           </span>
         </div>
+
+        {/* Optional YouTube API Key */}
+        <motion.div
+          className="mt-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
+          <button
+            type="button"
+            onClick={() => setShowApiKey(!showApiKey)}
+            className="flex items-center gap-2 text-sm text-slate-600 hover:text-primary-600 transition-colors mx-auto"
+          >
+            <Key className="w-4 h-4" />
+            <span>Use your own YouTube API key (optional)</span>
+            {showApiKey ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
+          </button>
+
+          {showApiKey && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200"
+            >
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                YouTube Data API v3 Key
+              </label>
+              <input
+                type="text"
+                value={apiKey || ''}
+                onChange={(e) => setApiKey && setApiKey(e.target.value)}
+                placeholder="AIzaSy..."
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+              />
+              <p className="mt-2 text-xs text-slate-500">
+                Don't have an API key?{' '}
+                <Link
+                  href="/guide/youtube-api-key"
+                  className="text-primary-600 hover:text-primary-700 underline font-medium"
+                >
+                  Follow our step-by-step guide
+                </Link>
+                {' '}to get one from Google Cloud Platform. Your key is stored locally and used instead of the shared API key.
+              </p>
+            </motion.div>
+          )}
+        </motion.div>
       </motion.form>
     </div>
   );

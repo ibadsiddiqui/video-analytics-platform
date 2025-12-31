@@ -16,23 +16,24 @@ import LoadingState from '../components/LoadingState';
 import EmptyState from '../components/EmptyState';
 import { useAnalytics } from '../hooks/useAnalytics';
 
-export default function Home() {
-  const [url, setUrl] = useState('');
+export default function Home(): React.JSX.Element {
+  const [url, setUrl] = useState<string>('');
+  const [apiKey, setApiKey] = useState<string>('');
   const { data, loading, error, analyze } = useAnalytics();
 
-  const handleAnalyze = useCallback(async (videoUrl) => {
+  const handleAnalyze = useCallback(async (videoUrl: string): Promise<void> => {
     if (!videoUrl.trim()) {
       toast.error('Please enter a valid URL');
       return;
     }
 
     try {
-      await analyze(videoUrl);
+      await analyze(videoUrl, { apiKey: apiKey || undefined });
       toast.success('Analysis complete!');
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.message || 'Failed to analyze video');
     }
-  }, [analyze]);
+  }, [analyze, apiKey]);
 
   return (
     <div className="min-h-screen bg-mesh">
@@ -77,6 +78,8 @@ export default function Home() {
               setUrl={setUrl}
               onAnalyze={handleAnalyze}
               loading={loading}
+              apiKey={apiKey}
+              setApiKey={setApiKey}
             />
           </motion.div>
 

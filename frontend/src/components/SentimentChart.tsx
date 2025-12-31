@@ -18,7 +18,12 @@ const COLORS = {
   negative: '#ef4444',
 };
 
-function CustomTooltip({ active, payload }) {
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; payload: { fill: string } }>;
+}
+
+function CustomTooltip({ active, payload }: CustomTooltipProps) {
   if (active && payload && payload.length) {
     const data = payload[0];
     return (
@@ -33,7 +38,15 @@ function CustomTooltip({ active, payload }) {
   return null;
 }
 
-function SentimentChart({ sentiment }) {
+interface SentimentChartProps {
+  sentiment: {
+    overall: { score: number; sentiment: string };
+    distribution: { positive: number; neutral: number; negative: number };
+    totalAnalyzed: number;
+  } | null;
+}
+
+function SentimentChart({ sentiment }: SentimentChartProps) {
   if (!sentiment || !sentiment.distribution) {
     return (
       <motion.div

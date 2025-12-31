@@ -16,7 +16,13 @@ import { TrendingUp, Calendar } from 'lucide-react';
 
 const COLORS = ['#818cf8', '#a78bfa', '#c084fc', '#e879f9', '#f472b6', '#fb7185', '#fb923c'];
 
-function CustomTooltip({ active, payload, label }) {
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ value: number }>;
+  label?: string;
+}
+
+function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/95 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-slate-100">
@@ -30,7 +36,14 @@ function CustomTooltip({ active, payload, label }) {
   return null;
 }
 
-function EngagementChart({ data }) {
+interface EngagementChartProps {
+  data: {
+    byDay: Array<{ day: string; engagement: number; views: number }>;
+    peakDay: { day: string; engagement: number; views: number } | null;
+  };
+}
+
+function EngagementChart({ data }: EngagementChartProps) {
   if (!data || !data.byDay) {
     return null;
   }
