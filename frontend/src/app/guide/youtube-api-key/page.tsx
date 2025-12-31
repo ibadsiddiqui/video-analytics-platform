@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ExternalLink, CheckCircle, AlertCircle, Key, Shield } from 'lucide-react';
 import Link from 'next/link';
-import Header from '../../../components/Header';
+import Header from '@/components/Header';
 
 interface Step {
   title: string;

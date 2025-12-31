@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import '../styles/index.css';
+import '@/styles/index.css';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://video-analytics-platform.vercel.app';
 

@@ -3,18 +3,18 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster, toast } from 'react-hot-toast';
-import Header from '../components/Header';
-import SearchBar from '../components/SearchBar';
-import MetricsGrid from '../components/MetricsGrid';
-import EngagementChart from '../components/EngagementChart';
-import SentimentChart from '../components/SentimentChart';
-import DemographicsChart from '../components/DemographicsChart';
-import KeywordsCloud from '../components/KeywordsCloud';
-import TopComments from '../components/TopComments';
-import VideoPreview from '../components/VideoPreview';
-import LoadingState from '../components/LoadingState';
-import EmptyState from '../components/EmptyState';
-import { useAnalytics } from '../hooks/useAnalytics';
+import Header from '@/components/Header';
+import SearchBar from '@/components/SearchBar';
+import MetricsGrid from '@/components/MetricsGrid';
+import EngagementChart from '@/components/EngagementChart';
+import SentimentChart from '@/components/SentimentChart';
+import DemographicsChart from '@/components/DemographicsChart';
+import KeywordsCloud from '@/components/KeywordsCloud';
+import TopComments from '@/components/TopComments';
+import VideoPreview from '@/components/VideoPreview';
+import LoadingState from '@/components/LoadingState';
+import EmptyState from '@/components/EmptyState';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 export default function Home(): React.JSX.Element {
   const [url, setUrl] = useState<string>('');
