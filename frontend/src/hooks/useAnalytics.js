@@ -1,6 +1,8 @@
+'use client';
+
 import { useState, useCallback } from 'react';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 export function useAnalytics() {
   const [data, setData] = useState(null);

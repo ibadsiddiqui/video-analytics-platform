@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Youtube, Instagram, BarChart3, Sparkles, TrendingUp, MessageSquare } from 'lucide-react';

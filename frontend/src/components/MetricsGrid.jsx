@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Eye, Heart, MessageCircle, Share2, TrendingUp } from 'lucide-react';

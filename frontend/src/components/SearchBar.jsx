@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Youtube, Instagram, Loader2, Link2 } from 'lucide-react';
