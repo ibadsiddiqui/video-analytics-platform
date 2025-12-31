@@ -16,6 +16,7 @@ export interface AnalyzeVideoOptions {
   skipCache?: boolean;
   includeSentiment?: boolean;
   includeKeywords?: boolean;
+  apiKey?: string;
 }
 
 export interface AnalyticsResult {
@@ -113,7 +114,7 @@ export class AnalyzeVideoUseCase {
    * Main execution method
    */
   async execute(url: string, options: AnalyzeVideoOptions = {}): Promise<AnalyticsResult> {
-    const { skipCache = false, includeSentiment = true, includeKeywords = true } = options;
+    const { skipCache = false, includeSentiment = true, includeKeywords = true, apiKey } = options;
 
     // Validate URL
     if (!url || typeof url !== 'string') {
@@ -141,7 +142,7 @@ export class AnalyzeVideoUseCase {
       throw new Error(`Service not available for platform: ${platform}`);
     }
 
-    const videoData = await service.getVideoAnalytics(url);
+    const videoData = await service.getVideoAnalytics(url, apiKey);
 
     // Perform sentiment analysis on comments
     let sentimentAnalysis: SentimentAnalysis | null = null;

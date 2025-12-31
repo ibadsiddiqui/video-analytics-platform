@@ -3,7 +3,7 @@
  * Request body for video analysis endpoint
  */
 
-import { IsUrl, IsOptional, IsBoolean } from 'class-validator';
+import { IsUrl, IsOptional, IsBoolean, IsString } from 'class-validator';
 
 export class AnalyzeVideoRequest {
   @IsUrl({}, { message: 'Invalid URL format' })
@@ -20,4 +20,8 @@ export class AnalyzeVideoRequest {
   @IsOptional()
   @IsBoolean({ message: 'includeKeywords must be a boolean' })
   includeKeywords?: boolean;
+
+  @IsOptional()
+  @IsString({ message: 'apiKey must be a string' })
+  apiKey?: string;
 }

@@ -88,7 +88,8 @@ export class InstagramService implements IVideoService {
   /**
    * Fetch post/reel analytics from Instagram
    */
-  async getVideoAnalytics(url: string): Promise<VideoAnalyticsData> {
+  async getVideoAnalytics(url: string, _apiKey?: string): Promise<VideoAnalyticsData> {
+    // Note: _apiKey parameter is not used for Instagram (for interface compatibility)
     const shortcode = this.extractVideoId(url);
     if (!shortcode) {
       throw new InvalidUrlException('Invalid Instagram URL');

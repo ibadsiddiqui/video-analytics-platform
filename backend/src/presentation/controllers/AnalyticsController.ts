@@ -51,6 +51,7 @@ export class AnalyticsController {
       skipCache: request.skipCache,
       includeSentiment: request.includeSentiment,
       includeKeywords: request.includeKeywords,
+      apiKey: request.apiKey,
     });
 
     return {

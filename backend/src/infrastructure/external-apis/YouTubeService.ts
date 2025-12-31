@@ -74,8 +74,17 @@ export class YouTubeService implements IVideoService {
   /**
    * Fetch video analytics from YouTube API
    */
-  async getVideoAnalytics(url: string): Promise<VideoAnalyticsData> {
-    if (!this.enabled || !this.youtube) {
+  async getVideoAnalytics(url: string, apiKey?: string): Promise<VideoAnalyticsData> {
+    // Use provided API key or default
+    let youtubeClient = this.youtube;
+
+    if (apiKey) {
+      // Create temporary client with provided API key
+      youtubeClient = google.youtube({
+        version: 'v3',
+        auth: apiKey,
+      });
+    } else if (!this.enabled || !this.youtube) {
       throw new ServiceNotConfiguredException('YouTube', 'YOUTUBE_API_KEY');
     }
 
@@ -86,7 +95,7 @@ export class YouTubeService implements IVideoService {
 
     try {
       // Fetch video details
-      const videoResponse = await this.youtube.videos.list({
+      const videoResponse = await youtubeClient!.videos.list({
         part: ['snippet', 'statistics', 'contentDetails'],
         id: [videoId],
       });
@@ -108,7 +117,7 @@ export class YouTubeService implements IVideoService {
       const duration = this.parseDuration(contentDetails.duration || '');
 
       // Fetch channel details
-      const channelResponse = await this.youtube.channels.list({
+      const channelResponse = await youtubeClient!.channels.list({
         part: ['snippet', 'statistics'],
         id: [snippet.channelId!],
       });
@@ -116,7 +125,7 @@ export class YouTubeService implements IVideoService {
       const channel = channelResponse.data.items?.[0];
 
       // Fetch top comments for sentiment analysis
-      const comments = await this.fetchComments(videoId);
+      const comments = await this.fetchComments(videoId, 100, youtubeClient!);
 
       // Calculate engagement metrics
       const viewCount = parseInt(statistics.viewCount || '0');
@@ -176,11 +185,15 @@ export class YouTubeService implements IVideoService {
   /**
    * Fetch comments from a video
    */
-  private async fetchComments(videoId: string, maxResults: number = 100): Promise<VideoComment[]> {
-    if (!this.youtube) return [];
+  private async fetchComments(
+    videoId: string,
+    maxResults: number = 100,
+    youtubeClient: youtube_v3.Youtube
+  ): Promise<VideoComment[]> {
+    if (!youtubeClient) return [];
 
     try {
-      const commentsResponse = await this.youtube.commentThreads.list({
+      const commentsResponse = await youtubeClient.commentThreads.list({
         part: ['snippet'],
         videoId: videoId,
         maxResults: maxResults,

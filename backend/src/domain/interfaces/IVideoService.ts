@@ -59,9 +59,10 @@ export interface IVideoService {
   /**
    * Fetch video analytics from platform API
    * @param url - Video URL
+   * @param apiKey - Optional API key to use instead of default
    * @returns Video analytics data
    */
-  getVideoAnalytics(url: string): Promise<VideoAnalyticsData>;
+  getVideoAnalytics(url: string, apiKey?: string): Promise<VideoAnalyticsData>;
 
   /**
    * Check if service is enabled/configured
