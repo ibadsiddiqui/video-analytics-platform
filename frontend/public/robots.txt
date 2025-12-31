@@ -1,0 +1,26 @@
+# robots.txt for Video Analytics Platform
+
+# Allow all bots to crawl the site
+User-agent: *
+Allow: /
+
+# Disallow admin or private routes (if any)
+# Disallow: /admin/
+# Disallow: /api/
+
+# Sitemap location
+Sitemap: https://video-analytics-platform.vercel.app/sitemap.xml
+
+# Crawl-delay for specific bots (optional)
+# User-agent: Googlebot
+# Crawl-delay: 0
+
+# Block bad bots (optional)
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
