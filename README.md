@@ -1,6 +1,6 @@
 # 📊 Video Analytics Platform
 
-A production-ready, full-stack application that pulls comprehensive analytics for YouTube and Instagram videos. Built with React, Node.js, PostgreSQL, and Redis (Upstash).
+A production-ready, full-stack application that pulls comprehensive analytics for YouTube and Instagram videos. Built with Next.js, Node.js, PostgreSQL, and Redis (Upstash).
 
 ![Video Analytics Platform](https://via.placeholder.com/1200x600/4F46E5/FFFFFF?text=Video+Analytics+Platform)
 
@@ -27,7 +27,7 @@ A production-ready, full-stack application that pulls comprehensive analytics fo
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | React 18, Vite, Tailwind CSS, Framer Motion, Recharts |
+| Frontend | Next.js 15, React 19, Tailwind CSS, Framer Motion, Recharts |
 | Backend | Node.js, Express, Prisma ORM |
 | Database | PostgreSQL (Vercel Postgres / Neon / Supabase) |
 | Cache | Redis (Upstash) |
@@ -57,6 +57,9 @@ video-analytics-platform/
 │
 ├── frontend/
 │   ├── src/
+│   │   ├── app/             # Next.js 15 App Router
+│   │   │   ├── layout.jsx   # Root layout
+│   │   │   └── page.jsx     # Home page
 │   │   ├── components/      # React components
 │   │   │   ├── SearchBar.jsx
 │   │   │   ├── MetricsGrid.jsx
@@ -68,7 +71,7 @@ video-analytics-platform/
 │   │   ├── hooks/           # Custom React hooks
 │   │   └── styles/          # Tailwind CSS styles
 │   ├── package.json
-│   ├── vite.config.js
+│   ├── next.config.js
 │   └── tailwind.config.js
 │
 └── README.md
@@ -142,7 +145,7 @@ npx prisma db push
 cd backend
 npm run dev
 
-# Terminal 2 - Frontend
+# Terminal 2 - Frontend (Next.js)
 cd frontend
 npm run dev
 ```
@@ -240,7 +243,7 @@ git push -u origin main
 | `YOUTUBE_API_KEY` | ✅ | - |
 | `RAPIDAPI_KEY` | ✅ (optional) | - |
 | `FRONTEND_URL` | ✅ | - |
-| `VITE_API_URL` | - | ✅ |
+| `NEXT_PUBLIC_API_URL` | - | ✅ |
 
 ## 🔑 Getting API Keys
 
