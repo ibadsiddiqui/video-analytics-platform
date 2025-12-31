@@ -29,6 +29,27 @@ function TopComments({ comments }) {
     }
   };
 
+  // Calculate overall sentiment
+  const sentimentCounts = comments.reduce((acc, comment) => {
+    acc[comment.sentiment] = (acc[comment.sentiment] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const dominantSentiment = Object.entries(sentimentCounts).sort((a, b) => (b[1] as number) - (a[1] as number))[0]?.[0] || 'NEUTRAL';
+
+  const getSentimentLabel = (sentiment) => {
+    switch (sentiment) {
+      case 'POSITIVE':
+        return { text: 'Positive', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' };
+      case 'NEGATIVE':
+        return { text: 'Negative', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' };
+      default:
+        return { text: 'Neutral', color: 'text-primary-600', bg: 'bg-primary-50', border: 'border-primary-200' };
+    }
+  };
+
+  const sentimentLabel = getSentimentLabel(dominantSentiment);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -37,13 +58,23 @@ function TopComments({ comments }) {
       className="bg-white rounded-2xl p-6 shadow-card border border-slate-100"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2.5 rounded-xl bg-cyan-50">
-          <MessageSquare className="w-5 h-5 text-cyan-600" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-cyan-50">
+            <MessageSquare className="w-5 h-5 text-cyan-600" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-slate-900">Top Comments</h3>
+            <p className="text-sm text-slate-500">Most relevant comments with sentiment</p>
+          </div>
         </div>
-        <div>
-          <h3 className="font-semibold text-slate-900">Top Comments</h3>
-          <p className="text-sm text-slate-500">Most relevant comments with sentiment</p>
+
+        {/* Overall Sentiment Label */}
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${sentimentLabel.bg} ${sentimentLabel.border}`}>
+          {getSentimentIcon(dominantSentiment)}
+          <span className={`text-sm font-medium ${sentimentLabel.color}`}>
+            {sentimentLabel.text} Center
+          </span>
         </div>
       </div>
 
