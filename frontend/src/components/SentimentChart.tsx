@@ -165,14 +165,6 @@ function SentimentChart({ sentiment }: SentimentChartProps) {
           ))}
         </div>
       </div>
-
-      {/* Center label */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ left: '12%', top: '42%' }}>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-slate-900">{distribution.positive}%</div>
-          <div className="text-xs text-slate-500">Positive</div>
-        </div>
-      </div>
     </motion.div>
   );
 }
