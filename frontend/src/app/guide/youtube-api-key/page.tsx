@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ExternalLink, CheckCircle, AlertCircle, Key, Shield } from 'lucide-react';
 import Link from 'next/link';
+import Header from '../../../components/Header';
 
 interface Step {
   title: string;
@@ -96,9 +97,12 @@ export default function YouTubeApiKeyGuide(): React.JSX.Element {
         <div className="absolute top-1/3 -left-20 w-60 h-60 bg-accent-purple/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <motion.div
+      <div className="relative z-10">
+        <Header />
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Page Header */}
+          <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -323,6 +327,7 @@ export default function YouTubeApiKeyGuide(): React.JSX.Element {
             Back to Video Analytics
           </Link>
         </motion.div>
+        </div>
       </div>
     </div>
   );
