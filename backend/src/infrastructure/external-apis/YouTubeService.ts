@@ -194,7 +194,7 @@ export class YouTubeService implements IVideoService {
         return {
           id: item.id || '',
           authorName: comment.authorDisplayName || 'Unknown',
-          content: comment.textDisplay || '',
+          content: this.decodeHtmlEntities(comment.textDisplay || ''),
           likeCount: comment.likeCount || 0,
           publishedAt: comment.publishedAt || undefined,
         };
@@ -203,6 +203,32 @@ export class YouTubeService implements IVideoService {
       console.warn('Comments disabled or unavailable:', error instanceof Error ? error.message : 'Unknown error');
       return [];
     }
+  }
+
+  /**
+   * Decode HTML entities and clean comment text
+   */
+  private decodeHtmlEntities(text: string): string {
+    if (!text) return '';
+
+    // Decode HTML entities
+    let decoded = text
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&#x27;/g, "'")
+      .replace(/&#x2F;/g, '/')
+      .replace(/&nbsp;/g, ' ');
+
+    // Remove HTML tags (like <a>, <br>, etc.)
+    decoded = decoded.replace(/<[^>]*>/g, '');
+
+    // Clean up extra whitespace
+    decoded = decoded.replace(/\s+/g, ' ').trim();
+
+    return decoded;
   }
 
   /**
