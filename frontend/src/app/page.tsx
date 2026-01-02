@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster, toast } from 'react-hot-toast';
+import { useUser } from '@clerk/nextjs';
 import Header from '@/components/Header';
 import SearchBar from '@/components/SearchBar';
 import MetricsGrid from '@/components/MetricsGrid';
@@ -14,12 +15,18 @@ import TopComments from '@/components/TopComments';
 import VideoPreview from '@/components/VideoPreview';
 import LoadingState from '@/components/LoadingState';
 import EmptyState from '@/components/EmptyState';
+import UpgradePrompt from '@/components/UpgradePrompt';
+import RateLimitDisplay from '@/components/RateLimitDisplay';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAnonymousTracking } from '@/hooks/useAnonymousTracking';
 
 export default function Home(): React.JSX.Element {
   const [url, setUrl] = useState<string>('');
   const [apiKey, setApiKey] = useState<string>('');
-  const { data, loading, error, analyze } = useAnalytics();
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState<boolean>(false);
+  const { user } = useUser();
+  const { data, loading, error, analyze, isCached } = useAnalytics();
+  const { requestsRemaining, requestsLimit, resetAt, incrementRequest, isLimitReached } = useAnonymousTracking();
 
   const handleAnalyze = useCallback(async (videoUrl: string): Promise<void> => {
     if (!videoUrl.trim()) {
@@ -27,13 +34,36 @@ export default function Home(): React.JSX.Element {
       return;
     }
 
+    // Check if anonymous user has reached limit
+    if (!user && isLimitReached) {
+      setShowUpgradePrompt(true);
+      toast.error('Daily request limit reached. Please sign up for unlimited access.');
+      return;
+    }
+
     try {
-      await analyze(videoUrl, { apiKey: apiKey || undefined });
-      toast.success('Analysis complete!');
+      const result = await analyze(videoUrl, { apiKey: apiKey || undefined });
+
+      // Only increment rate limit for new requests (not cached results)
+      // Only count for anonymous users
+      if (!isCached && !user) {
+        incrementRequest();
+      }
+
+      // Show appropriate toast based on whether data was cached
+      if (isCached) {
+        toast.success('Showing cached results for this video');
+      } else {
+        toast.success('Analysis complete!');
+      }
     } catch (err: any) {
       toast.error(err.message || 'Failed to analyze video');
+      // Show upgrade prompt for rate limit errors
+      if (err.message?.includes('Daily request limit reached')) {
+        setShowUpgradePrompt(true);
+      }
     }
-  }, [analyze, apiKey]);
+  }, [analyze, apiKey, user, isLimitReached, incrementRequest, isCached]);
 
   return (
     <div className="min-h-screen bg-mesh">
@@ -66,6 +96,23 @@ export default function Home(): React.JSX.Element {
         <Header />
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Rate limit display for anonymous users */}
+          {!user && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
+            >
+              <RateLimitDisplay
+                requestsRemaining={requestsRemaining}
+                requestsLimit={requestsLimit}
+                isLimitReached={isLimitReached}
+                resetAt={resetAt}
+                isAuthenticated={!!user}
+              />
+            </motion.div>
+          )}
+
           {/* Search Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -145,6 +192,14 @@ export default function Home(): React.JSX.Element {
           <p>Built by <span className="font-semibold text-primary-600">Ibad Siddiqui</span> • Video Analytics Platform</p>
         </footer>
       </div>
+
+      {/* Upgrade prompt modal */}
+      <UpgradePrompt
+        isOpen={showUpgradePrompt}
+        onClose={() => setShowUpgradePrompt(false)}
+        requestsLimit={requestsLimit}
+        resetAt={resetAt}
+      />
     </div>
   );
 }
