@@ -9,8 +9,8 @@ import { routingControllersToSpec } from 'routing-controllers-openapi';
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
 import { Container } from './shared/Container';
 import { ConfigService } from '@shared/config';
-import { HealthController, AnalyticsController } from '@presentation/controllers';
-import { ErrorHandler } from '@presentation/middleware';
+import { HealthController, AnalyticsController, AuthController } from '@presentation/controllers';
+import { ErrorHandler, withAuth, anonymousRateLimit } from '@presentation/middleware';
 
 /**
  * Main Application Class
@@ -48,7 +48,7 @@ export class App {
       })
     );
 
-    // CORS
+    // CORS - Allow Clerk webhooks and frontend requests
     this.app.use(
       cors({
         origin: (origin, callback) => {
@@ -60,6 +60,9 @@ export class App {
             'http://localhost:3000',
             'http://localhost:5173',
             /\.vercel\.app$/,
+            // Clerk webhook domains
+            /\.clerk\.com$/,
+            /\.clerk\.accounts\.dev$/,
           ];
 
           const allowed = allowedOrigins.some((allowed) => {
@@ -74,12 +77,33 @@ export class App {
           }
         },
         credentials: true,
-        methods: ['GET', 'POST', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: [
+          'Content-Type',
+          'Authorization',
+          // Svix headers for Clerk webhook signature verification
+          'svix-id',
+          'svix-timestamp',
+          'svix-signature',
+          // Browser fingerprint for anonymous rate limiting
+          'X-Fingerprint',
+        ],
       })
     );
 
-    // Parse JSON bodies
+    // Special handling for webhook routes - they need raw body for signature verification
+    // MUST be before express.json() middleware
+    this.app.use(
+      '/api/auth/webhook',
+      express.raw({ type: 'application/json' }),
+      (req, _res, next) => {
+        // Store raw body for Svix signature verification
+        (req as any).rawBody = req.body;
+        next();
+      }
+    );
+
+    // Parse JSON bodies (for non-webhook routes)
     this.app.use(express.json({ limit: '1mb' }));
 
     // Parse URL-encoded bodies
@@ -96,6 +120,15 @@ export class App {
 
       next();
     });
+
+    // Add optional authentication to all routes (doesn't require auth, just adds user info if available)
+    this.app.use(withAuth);
+
+    // Apply anonymous rate limiting to analytics endpoints
+    // This middleware runs AFTER withAuth so authenticated users bypass it
+    // Anonymous users are limited to 5 requests per day
+    this.app.use('/api/analyze', anonymousRateLimit);
+    this.app.use('/api/compare', anonymousRateLimit);
   }
 
   /**
@@ -104,7 +137,7 @@ export class App {
   private setupRoutingControllers(): void {
     useExpressServer(this.app, {
       routePrefix: '/api', // Add /api prefix to all routes
-      controllers: [HealthController, AnalyticsController],
+      controllers: [HealthController, AnalyticsController, AuthController],
       middlewares: [ErrorHandler],
       defaultErrorHandler: false, // Use our custom error handler
       validation: true, // Enable class-validator validation
@@ -125,6 +158,10 @@ export class App {
           compare: 'POST /api/compare',
           history: 'GET /api/history/:videoId?days=7',
           detectPlatform: 'POST /api/detect-platform | GET /api/detect-platform?url=...',
+          auth: {
+            webhook: 'POST /api/auth/webhook',
+            me: 'GET /api/auth/me',
+          },
         },
         documentation: 'https://github.com/your-username/video-analytics-platform',
       });
@@ -150,7 +187,7 @@ export class App {
       storage,
       {
         routePrefix: '/api',
-        controllers: [HealthController, AnalyticsController],
+        controllers: [HealthController, AnalyticsController, AuthController],
         middlewares: [ErrorHandler],
       },
       {
