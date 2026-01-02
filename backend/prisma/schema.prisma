@@ -130,3 +130,62 @@ enum Sentiment {
   NEUTRAL
   NEGATIVE
 }
+
+// ============================================
+// Phase 1.1: Clerk Authentication System
+// ============================================
+
+// User model with Clerk integration
+model User {
+  id              String    @id @default(cuid())
+  clerkId         String    @unique
+  email           String    @unique
+  firstName       String?
+  lastName        String?
+  imageUrl        String?
+
+  // Subscription tier
+  tier            UserTier  @default(FREE)
+
+  // Usage tracking
+  dailyRequests   Int       @default(0)
+  lastRequestDate DateTime?
+
+  // Relations - placeholders for future phases
+  apiKeys         UserApiKey[]
+  // analyses        VideoAnalysis[]      // Phase 2+
+  // competitors     CompetitorTrack[]    // Phase 2
+  // campaigns       Campaign[]           // Phase 9
+  // alerts          Alert[]              // Phase 7
+  // reports         Report[]             // Phase 11
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([clerkId])
+  @@index([email])
+}
+
+// User subscription tiers
+enum UserTier {
+  FREE      // 5 requests/day
+  CREATOR   // 100 requests/day
+  PRO       // 500 requests/day
+  AGENCY    // 2000 requests/day
+}
+
+// User API keys for programmatic access (Phase 1.2)
+model UserApiKey {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name            String
+  key             String    @unique
+  lastUsedAt      DateTime?
+
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+  @@index([key])
+}
