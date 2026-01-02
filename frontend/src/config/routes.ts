@@ -15,6 +15,9 @@ export const ROUTES = {
   SIGN_IN: '/sign-in',
   SIGN_UP: '/sign-up',
 
+  // User pages
+  SETTINGS: '/settings',
+
   // Guides
   GUIDE: {
     YOUTUBE_API_KEY: '/guide/youtube-api-key',

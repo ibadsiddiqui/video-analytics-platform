@@ -2,12 +2,15 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, Sparkles } from 'lucide-react';
+import { BarChart3, Sparkles, Settings } from 'lucide-react';
 import Link from 'next/link';
+import { useUser } from '@clerk/nextjs';
 import AuthButton from '@/components/AuthButton';
 import { ROUTES } from '@/config/routes';
 
 function Header() {
+  const { isSignedIn } = useUser();
+
   return (
     <header className="border-b border-slate-200/80 bg-white/50 backdrop-blur-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -54,6 +57,18 @@ function Header() {
               <Sparkles className="w-4 h-4 text-amber-500" />
               <span className="text-sm font-medium text-amber-700">Pro Features</span>
             </Link>
+
+            {/* Settings Link (authenticated users only) */}
+            {isSignedIn && (
+              <Link
+                href={ROUTES.SETTINGS}
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 hover:border-slate-300 transition-all duration-300 cursor-pointer"
+                title="Settings"
+              >
+                <Settings className="w-4 h-4 text-slate-600" />
+                <span className="text-sm font-medium text-slate-700">Settings</span>
+              </Link>
+            )}
 
             <div className="border-l border-slate-200/80 pl-4">
               <AuthButton />
