@@ -6,3 +6,4 @@
 export { HealthController } from './HealthController';
 export { AnalyticsController } from './AnalyticsController';
 export { AuthController } from './AuthController';
+export { ApiKeyController } from './ApiKeyController';

@@ -12,3 +12,7 @@ export * from './CompareVideosResponse';
 export * from './DetectPlatformResponse';
 export * from './VideoHistoryResponse';
 export * from './ErrorResponse';
+export * from './CreateApiKeyRequest';
+export * from './UpdateApiKeyRequest';
+export * from './ApiKeyResponse';
+export * from './TestApiKeyResponse';

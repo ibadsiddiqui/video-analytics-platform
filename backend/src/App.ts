@@ -9,7 +9,7 @@ import { routingControllersToSpec } from 'routing-controllers-openapi';
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
 import { Container } from './shared/Container';
 import { ConfigService } from '@shared/config';
-import { HealthController, AnalyticsController, AuthController } from '@presentation/controllers';
+import { HealthController, AnalyticsController, AuthController, ApiKeyController } from '@presentation/controllers';
 import { ErrorHandler, withAuth, anonymousRateLimit } from '@presentation/middleware';
 
 /**
@@ -137,7 +137,7 @@ export class App {
   private setupRoutingControllers(): void {
     useExpressServer(this.app, {
       routePrefix: '/api', // Add /api prefix to all routes
-      controllers: [HealthController, AnalyticsController, AuthController],
+      controllers: [HealthController, AnalyticsController, AuthController, ApiKeyController],
       middlewares: [ErrorHandler],
       defaultErrorHandler: false, // Use our custom error handler
       validation: true, // Enable class-validator validation
@@ -161,6 +161,13 @@ export class App {
           auth: {
             webhook: 'POST /api/auth/webhook',
             me: 'GET /api/auth/me',
+          },
+          keys: {
+            create: 'POST /api/keys',
+            list: 'GET /api/keys',
+            update: 'PUT /api/keys/:id',
+            delete: 'DELETE /api/keys/:id',
+            test: 'POST /api/keys/:id/test',
           },
         },
         documentation: 'https://github.com/your-username/video-analytics-platform',
@@ -187,7 +194,7 @@ export class App {
       storage,
       {
         routePrefix: '/api',
-        controllers: [HealthController, AnalyticsController, AuthController],
+        controllers: [HealthController, AnalyticsController, AuthController, ApiKeyController],
         middlewares: [ErrorHandler],
       },
       {
@@ -228,6 +235,14 @@ export class App {
           {
             name: 'Analytics',
             description: 'Video analytics endpoints',
+          },
+          {
+            name: 'Authentication',
+            description: 'User authentication and profile endpoints',
+          },
+          {
+            name: 'API Keys',
+            description: 'User API key management endpoints',
           },
         ],
       }

@@ -11,6 +11,8 @@ import {
   QueryParam,
   Param,
   HttpCode,
+  Req,
+  UseBefore,
 } from 'routing-controllers';
 import { Service } from 'typedi';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
@@ -23,6 +25,7 @@ import { CompareVideosRequest } from '@application/dtos/CompareVideosRequest';
 import { DetectPlatformRequest } from '@application/dtos/DetectPlatformRequest';
 import { VideoAnalyticsResponse } from '@application/dtos/VideoAnalyticsResponse';
 import { DetectPlatformResponse } from '@application/dtos/DetectPlatformResponse';
+import { withAuth, AuthRequest } from '@presentation/middleware/AuthMiddleware';
 
 @Service()
 @JsonController()
@@ -40,18 +43,20 @@ export class AnalyticsController {
    */
   @Post('/analyze')
   @HttpCode(200)
+  @UseBefore(withAuth)
   @OpenAPI({
     summary: 'Analyze Video (POST)',
     description: 'Analyze a video from YouTube or Instagram with detailed analytics including metrics, sentiment, and engagement data',
     tags: ['Analytics'],
   })
   @ResponseSchema(VideoAnalyticsResponse)
-  async analyzeVideo(@Body() request: AnalyzeVideoRequest): Promise<any> {
+  async analyzeVideo(@Body() request: AnalyzeVideoRequest, @Req() req: AuthRequest): Promise<any> {
     const result = await this.analyzeVideoUseCase.execute(request.url, {
       skipCache: request.skipCache,
       includeSentiment: request.includeSentiment,
       includeKeywords: request.includeKeywords,
       apiKey: request.apiKey,
+      userId: req.auth?.userId,
     });
 
     return {
@@ -66,6 +71,7 @@ export class AnalyticsController {
    */
   @Get('/analyze')
   @HttpCode(200)
+  @UseBefore(withAuth)
   @OpenAPI({
     summary: 'Analyze Video (GET)',
     description: 'Analyze a video from YouTube or Instagram using query parameters',
@@ -106,12 +112,14 @@ export class AnalyticsController {
     @QueryParam('url', { required: true }) url: string,
     @QueryParam('skipCache') skipCache?: boolean | string,
     @QueryParam('includeSentiment') includeSentiment?: boolean | string,
-    @QueryParam('includeKeywords') includeKeywords?: boolean | string
+    @QueryParam('includeKeywords') includeKeywords?: boolean | string,
+    @Req() req?: AuthRequest
   ): Promise<any> {
     const result = await this.analyzeVideoUseCase.execute(url, {
       skipCache: skipCache === true || skipCache === 'true',
       includeSentiment: includeSentiment !== false && includeSentiment !== 'false',
       includeKeywords: includeKeywords !== false && includeKeywords !== 'false',
+      userId: req?.auth?.userId,
     });
 
     return {

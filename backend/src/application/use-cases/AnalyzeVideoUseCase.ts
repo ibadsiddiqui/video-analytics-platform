@@ -9,6 +9,7 @@ import { IVideoService } from '@domain/interfaces/IVideoService';
 import { YouTubeService } from '@infrastructure/external-apis/YouTubeService';
 import { InstagramService } from '@infrastructure/external-apis/InstagramService';
 import { SentimentService } from '@infrastructure/sentiment/SentimentService';
+import { ApiKeyResolverService } from '@application/services/ApiKeyResolverService';
 import { VideoMetrics } from '@domain/value-objects/VideoMetrics';
 import { SentimentAnalysis } from '@domain/value-objects/SentimentAnalysis';
 
@@ -17,6 +18,7 @@ export interface AnalyzeVideoOptions {
   includeSentiment?: boolean;
   includeKeywords?: boolean;
   apiKey?: string;
+  userId?: string;
 }
 
 export interface AnalyticsResult {
@@ -81,7 +83,8 @@ export class AnalyzeVideoUseCase {
     private readonly cacheService: RedisCacheService,
     private readonly youtubeService: YouTubeService,
     private readonly instagramService: InstagramService,
-    private readonly sentimentService: SentimentService
+    private readonly sentimentService: SentimentService,
+    private readonly apiKeyResolver: ApiKeyResolverService
   ) {
     this.platformServices = new Map();
     this.platformServices.set('youtube', this.youtubeService);
@@ -114,7 +117,7 @@ export class AnalyzeVideoUseCase {
    * Main execution method
    */
   async execute(url: string, options: AnalyzeVideoOptions = {}): Promise<AnalyticsResult> {
-    const { skipCache = false, includeSentiment = true, includeKeywords = true, apiKey } = options;
+    const { skipCache = false, includeSentiment = true, includeKeywords = true, apiKey, userId } = options;
 
     // Validate URL
     if (!url || typeof url !== 'string') {
@@ -142,7 +145,17 @@ export class AnalyzeVideoUseCase {
       throw new Error(`Service not available for platform: ${platform}`);
     }
 
-    const videoData = await service.getVideoAnalytics(url, apiKey);
+    // Resolve API key (user's key takes priority over provided apiKey)
+    let resolvedApiKey = apiKey;
+    if (!resolvedApiKey && userId) {
+      const platformEnum = platform.toUpperCase() as 'YOUTUBE' | 'INSTAGRAM';
+      const userKey = await this.apiKeyResolver.getApiKey(userId, platformEnum);
+      if (userKey) {
+        resolvedApiKey = userKey;
+      }
+    }
+
+    const videoData = await service.getVideoAnalytics(url, resolvedApiKey);
 
     // Perform sentiment analysis on comments
     let sentimentAnalysis: SentimentAnalysis | null = null;
