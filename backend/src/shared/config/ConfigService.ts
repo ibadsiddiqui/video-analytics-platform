@@ -38,6 +38,7 @@ export class ConfigService implements IConfigService {
       maxRequests: number;
     };
     cacheTtl: number;
+    encryptionKey?: string;
   };
 
   constructor() {
@@ -61,6 +62,7 @@ export class ConfigService implements IConfigService {
         maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),
       },
       cacheTtl: parseInt(process.env.CACHE_TTL_SECONDS || '3600', 10),
+      encryptionKey: process.env.ENCRYPTION_KEY,
     };
 
     // Validate required configuration on initialization
