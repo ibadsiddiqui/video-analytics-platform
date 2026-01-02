@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { ClerkProvider } from '@clerk/nextjs';
 import '@/styles/index.css';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://video-analytics-platform.vercel.app';
@@ -91,59 +92,61 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps): React.JSX.Element {
   return (
-    <html lang="en">
-      <head>
-        {/* Fonts */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+    <ClerkProvider>
+      <html lang="en">
+        <head>
+          {/* Fonts */}
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
-        {/* PWA Manifest */}
-        <link rel="manifest" href="/manifest.json" />
+          {/* PWA Manifest */}
+          <link rel="manifest" href="/manifest.json" />
 
-        {/* Favicons */}
-        <link rel="icon" href="/images/favicon.ico" sizes="any" />
-        <link rel="icon" href="/images/icon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+          {/* Favicons */}
+          <link rel="icon" href="/images/favicon.ico" sizes="any" />
+          <link rel="icon" href="/images/icon.svg" type="image/svg+xml" />
+          <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
 
-        {/* Structured Data */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'WebApplication',
-              name: 'Video Analytics Platform',
-              description: 'Comprehensive video analytics platform for YouTube and Instagram videos with sentiment analysis and engagement metrics.',
-              url: siteUrl,
-              applicationCategory: 'BusinessApplication',
-              operatingSystem: 'Any',
-              offers: {
-                '@type': 'Offer',
-                price: '0',
-                priceCurrency: 'USD',
-              },
-              author: {
-                '@type': 'Person',
-                name: 'Ibad Siddiqui',
-              },
-              aggregateRating: {
-                '@type': 'AggregateRating',
-                ratingValue: '4.8',
-                ratingCount: '150',
-              },
-              featureList: [
-                'YouTube video analytics',
-                'Instagram video analytics',
-                'Sentiment analysis',
-                'Engagement metrics',
-                'Real-time data',
-                'Audience demographics',
-              ],
-            }),
-          }}
-        />
-      </head>
-      <body>{children}</body>
-    </html>
+          {/* Structured Data */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'WebApplication',
+                name: 'Video Analytics Platform',
+                description: 'Comprehensive video analytics platform for YouTube and Instagram videos with sentiment analysis and engagement metrics.',
+                url: siteUrl,
+                applicationCategory: 'BusinessApplication',
+                operatingSystem: 'Any',
+                offers: {
+                  '@type': 'Offer',
+                  price: '0',
+                  priceCurrency: 'USD',
+                },
+                author: {
+                  '@type': 'Person',
+                  name: 'Ibad Siddiqui',
+                },
+                aggregateRating: {
+                  '@type': 'AggregateRating',
+                  ratingValue: '4.8',
+                  ratingCount: '150',
+                },
+                featureList: [
+                  'YouTube video analytics',
+                  'Instagram video analytics',
+                  'Sentiment analysis',
+                  'Engagement metrics',
+                  'Real-time data',
+                  'Audience demographics',
+                ],
+              }),
+            }}
+          />
+        </head>
+        <body>{children}</body>
+      </html>
+    </ClerkProvider>
   );
 }
