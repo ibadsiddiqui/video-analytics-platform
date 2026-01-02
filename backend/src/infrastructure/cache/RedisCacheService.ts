@@ -263,4 +263,78 @@ export class RedisCacheService implements ICacheService {
       connected: this.redis !== null,
     };
   }
+
+  /**
+   * Increment anonymous user request counter with daily reset
+   * Used for anonymous rate limiting
+   *
+   * @param identifier - Unique identifier for anonymous user (hash of IP + fingerprint)
+   * @param dateString - Current date string (YYYY-MM-DD)
+   * @param limit - Daily request limit for anonymous users
+   * @returns Current count and remaining requests
+   */
+  async incrementAnonymousRequests(
+    identifier: string,
+    dateString: string,
+    limit: number
+  ): Promise<{ count: number; remaining: number }> {
+    if (!this.enabled || !this.redis) {
+      return { count: 0, remaining: Infinity };
+    }
+
+    const key = `ratelimit:anon:${identifier}:${dateString}`;
+
+    try {
+      const count = await this.redis.incr(key);
+
+      // Set expiry to midnight (end of day) on first request
+      if (count === 1) {
+        // Calculate seconds until midnight
+        const now = new Date();
+        const midnight = new Date(now);
+        midnight.setHours(24, 0, 0, 0);
+        const secondsUntilMidnight = Math.floor(
+          (midnight.getTime() - now.getTime()) / 1000
+        );
+
+        await this.redis.expire(key, secondsUntilMidnight);
+      }
+
+      return {
+        count,
+        remaining: Math.max(0, limit - count),
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Anonymous rate limit increment error:', errorMessage);
+      return { count: 0, remaining: Infinity };
+    }
+  }
+
+  /**
+   * Get current anonymous request count
+   *
+   * @param identifier - Unique identifier for anonymous user
+   * @param dateString - Current date string (YYYY-MM-DD)
+   * @returns Current request count
+   */
+  async getAnonymousRequestCount(
+    identifier: string,
+    dateString: string
+  ): Promise<number> {
+    if (!this.enabled || !this.redis) {
+      return 0;
+    }
+
+    const key = `ratelimit:anon:${identifier}:${dateString}`;
+
+    try {
+      const count = await this.redis.get(key);
+      return count ? parseInt(count.toString()) : 0;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Get anonymous request count error:', errorMessage);
+      return 0;
+    }
+  }
 }
