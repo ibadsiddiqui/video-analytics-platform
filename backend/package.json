@@ -18,6 +18,8 @@
     "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
+    "@clerk/backend": "^1.19.8",
+    "@clerk/express": "^1.5.0",
     "@prisma/client": "^5.7.0",
     "@upstash/redis": "^1.28.0",
     "class-transformer": "^0.5.1",
@@ -35,6 +37,7 @@
     "routing-controllers": "^0.10.4",
     "routing-controllers-openapi": "^5.0.0",
     "sentiment": "^5.0.2",
+    "svix": "^1.84.1",
     "swagger-ui-express": "^5.0.1",
     "typedi": "^0.10.0",
     "uuid": "^9.0.1",
