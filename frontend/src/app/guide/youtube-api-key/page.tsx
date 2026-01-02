@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, ExternalLink, CheckCircle, AlertCircle, Key, Shield } from 'lucide-react';
 import Link from 'next/link';
 import Header from '@/components/Header';
+import { ROUTES, EXTERNAL_LINKS } from '@/config/routes';
 
 interface Step {
   title: string;
@@ -20,7 +21,7 @@ export default function YouTubeApiKeyGuide(): React.JSX.Element {
       title: 'Go to Google Cloud Console',
       description: 'Visit the Google Cloud Console to create a new project or select an existing one.',
       action: 'Visit Console',
-      link: 'https://console.cloud.google.com/',
+      link: EXTERNAL_LINKS.GOOGLE_CLOUD_CONSOLE,
       substeps: [
         'Sign in with your Google account',
         'If you don\'t have a Google Cloud account, you\'ll need to create one (free tier available)',
@@ -41,7 +42,7 @@ export default function YouTubeApiKeyGuide(): React.JSX.Element {
       title: 'Enable YouTube Data API v3',
       description: 'Enable the YouTube Data API v3 for your project.',
       action: 'Go to API Library',
-      link: 'https://console.cloud.google.com/apis/library',
+      link: EXTERNAL_LINKS.GOOGLE_CLOUD_API_LIBRARY,
       substeps: [
         'Make sure your new project is selected in the project dropdown',
         'In the API Library, search for "YouTube Data API v3"',
@@ -109,7 +110,7 @@ export default function YouTubeApiKeyGuide(): React.JSX.Element {
           className="mb-8"
         >
           <Link
-            href="/"
+            href={ROUTES.HOME}
             className="inline-flex items-center gap-2 text-slate-600 hover:text-primary-600 transition-colors mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -254,7 +255,7 @@ export default function YouTubeApiKeyGuide(): React.JSX.Element {
             <p className="mt-2">
               You can monitor your quota usage in the{' '}
               <a
-                href="https://console.cloud.google.com/apis/api/youtube.googleapis.com/quotas"
+                href={EXTERNAL_LINKS.YOUTUBE_API_QUOTAS}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary-600 hover:text-primary-700 underline"
@@ -320,7 +321,7 @@ export default function YouTubeApiKeyGuide(): React.JSX.Element {
           className="mt-12 text-center"
         >
           <Link
-            href="/"
+            href={ROUTES.HOME}
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl font-semibold shadow-lg shadow-primary-500/25 transition-all"
           >
             <ArrowLeft className="w-5 h-5" />

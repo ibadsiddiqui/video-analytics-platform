@@ -2,8 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Youtube, Instagram, Loader2, Link2, Key, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Youtube, Instagram, Loader2, Link2, Key, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { ROUTES } from '@/config/routes';
+import { useAnonymousTracking } from '@/hooks/useAnonymousTracking';
+import { useUser } from '@clerk/nextjs';
 
 interface SearchBarProps {
   url: string;
@@ -17,6 +20,8 @@ interface SearchBarProps {
 function SearchBar({ url, setUrl, onAnalyze, loading, apiKey, setApiKey }: SearchBarProps): React.JSX.Element {
   const [focused, setFocused] = useState<boolean>(false);
   const [showApiKey, setShowApiKey] = useState<boolean>(false);
+  const { user } = useUser();
+  const { isLimitReached } = useAnonymousTracking();
 
   // Load API key from localStorage on mount
   useEffect(() => {
@@ -106,22 +111,27 @@ function SearchBar({ url, setUrl, onAnalyze, loading, apiKey, setApiKey }: Searc
           {/* Submit button */}
           <motion.button
             type="submit"
-            disabled={loading || !url.trim()}
+            disabled={loading || !url.trim() || (isLimitReached && !user)}
             className={`
               flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white
               transition-all duration-300
-              ${loading || !url.trim() 
-                ? 'bg-slate-300 cursor-not-allowed' 
+              ${loading || !url.trim() || (isLimitReached && !user)
+                ? 'bg-slate-300 cursor-not-allowed'
                 : 'bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg shadow-primary-500/25'
               }
             `}
-            whileHover={!loading && url.trim() ? { scale: 1.02 } : {}}
-            whileTap={!loading && url.trim() ? { scale: 0.98 } : {}}
+            whileHover={!loading && url.trim() && !(isLimitReached && !user) ? { scale: 1.02 } : {}}
+            whileTap={!loading && url.trim() && !(isLimitReached && !user) ? { scale: 0.98 } : {}}
           >
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
                 <span>Analyzing...</span>
+              </>
+            ) : isLimitReached && !user ? (
+              <>
+                <AlertCircle className="w-5 h-5" />
+                <span>Limit Reached</span>
               </>
             ) : (
               <>
@@ -185,7 +195,7 @@ function SearchBar({ url, setUrl, onAnalyze, loading, apiKey, setApiKey }: Searc
               <p className="mt-2 text-xs text-slate-500">
                 Don't have an API key?{' '}
                 <Link
-                  href="/guide/youtube-api-key"
+                  href={ROUTES.GUIDE.YOUTUBE_API_KEY}
                   className="text-primary-600 hover:text-primary-700 underline font-medium"
                 >
                   Follow our step-by-step guide
