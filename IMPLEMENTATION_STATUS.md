@@ -10,7 +10,7 @@
 | Phase | Feature | Status | Progress | Notes |
 |-------|---------|--------|----------|-------|
 | 1.1 | Clerk Authentication | ✅ **COMPLETED** | 100% | Backend + Frontend + Tests |
-| 1.2 | User API Key Management | ⏸️ **NOT STARTED** | 0% | Ready to begin |
+| 1.2 | User API Key Management | ✅ **COMPLETED** | 100% | Backend + Frontend + Tests |
 | 1.3 | Anonymous Rate Limiting | ✅ **COMPLETED** | 100% | Backend + Frontend + Tests |
 | 2.x | Competitive Intelligence | ⏸️ **NOT STARTED** | 0% | Requires Phase 1 |
 | 3.x | Predictive Analytics | ⏸️ **NOT STARTED** | 0% | Requires Phase 1 |
@@ -189,48 +189,274 @@
 
 ---
 
-## 🔄 Ready to Implement Next
+## ✅ Phase 1.2: User API Key Management - COMPLETED
 
-### Phase 1.2: User API Key Management
+**Completion Date:** 2026-01-02
+**Test Coverage:** 100% (EncryptionService), 80%+ overall
 
-**Prerequisites:** ✅ Phase 1.1 completed
+### What Was Implemented
 
-**What Needs to Be Built:**
+#### Backend Components (/backend)
 
-1. **EncryptionService** (Backend)
-   - AES-256-GCM encryption for API keys
-   - Generate secure IV and auth tags
-   - **CRITICAL:** Must fix security vulnerability (remove hardcoded salt fallback)
-   - Methods: `encrypt()`, `decrypt()`, `maskKey()`
+**1. EncryptionService** ✅
+- Location: `src/infrastructure/encryption/EncryptionService.ts`
+- AES-256-GCM encryption implementation:
+  - Random IV (initialization vector) per encryption
+  - Authentication tag for integrity verification
+  - Secure key derivation using crypto.scrypt with random salt per key
+  - **SECURITY:** No hardcoded salts - each encryption uses unique random salt
+- Methods:
+  - `encrypt(apiKey: string)` - Returns `{ encryptedKey, iv, authTag, salt }`
+  - `decrypt(encryptedData)` - Decrypts and returns original API key
+  - `maskKey(apiKey: string)` - Returns masked display (e.g., "AIza...k7x9")
+- Environment: `ENCRYPTION_KEY` (32-byte base64 encoded)
+- Unit tests: 33 passing tests, 100% coverage
 
-2. **ApiKeyResolver Service** (Backend)
-   - Resolve which API key to use (user's or system)
-   - Priority: User key > System key
-   - Methods: `getApiKey(userId, platform)`, `hasUserKey()`
+**2. ApiKeyResolverService** ✅
+- Location: `src/application/services/ApiKeyResolverService.ts`
+- Smart API key resolution:
+  - Priority: User's custom key > System key from environment
+  - Checks if user has active key for platform
+  - Tracks lastUsedAt when user key is accessed
+- Methods:
+  - `getApiKey(userId, platform)` - Returns appropriate API key
+  - `hasUserKey(userId, platform)` - Boolean check for user key
+  - `getKeySource(userId, platform)` - Returns key source info
+- Integration with YouTubeService and InstagramService
 
-3. **API Key CRUD Endpoints** (Backend)
-   - `POST /api/keys` - Add new API key (with encryption)
-   - `GET /api/keys` - List user's API keys (masked display)
-   - `PUT /api/keys/:id` - Update key label or toggle active/inactive
-   - `DELETE /api/keys/:id` - Remove API key
-   - `POST /api/keys/:id/test` - Test API key validity
+**3. ApiKeyController** ✅
+- Location: `src/presentation/controllers/ApiKeyController.ts`
+- Complete CRUD API with routing-controllers decorators:
+  - `POST /api/keys` - Add new encrypted API key
+  - `GET /api/keys` - List user's keys (masked)
+  - `PUT /api/keys/:id` - Update label or isActive status
+  - `DELETE /api/keys/:id` - Delete API key
+  - `POST /api/keys/:id/test` - Test key validity (rate limited: 5 tests/hour)
+- Security features:
+  - All endpoints require authentication (`@UseBefore(requireAuth)`)
+  - Ownership validation on all operations
+  - Never returns decrypted keys in responses
+  - Rate limiting on testing endpoint
+- OpenAPI/Swagger documentation with proper decorators
 
-4. **Settings Page** (Frontend)
-   - Location: `src/app/settings/page.tsx`
-   - Features:
-     - Display current tier and rate limits
-     - List API keys with masked display (e.g., "AIza...k7x9")
-     - Add/Edit key modal with platform selector
-     - Delete confirmation
-     - Test key functionality
-     - Security banner explaining encryption
+**4. DTOs and Validation** ✅
+- Location: `src/application/dtos/`
+- Created:
+  - `CreateApiKeyRequest.ts` - Validation for creating keys
+  - `UpdateApiKeyRequest.ts` - Validation for updates
+  - `ApiKeyResponse.ts` - Response format with masked keys
+  - `TestApiKeyResponse.ts` - Test result format
+- Uses class-validator for request validation
 
-5. **Database Changes**
-   - UserApiKey model already exists (from Phase 1.1)
-   - Fields: userId, platform, encryptedKey, iv, authTag, label, isActive, lastUsedAt
+**5. Database Integration** ✅
+- Updated UserApiKey model in Prisma schema:
+  ```prisma
+  model UserApiKey {
+    id              String    @id @default(cuid())
+    userId          String
+    platform        String    // 'YOUTUBE' | 'INSTAGRAM'
+    encryptedKey    String    // AES-256-GCM encrypted
+    iv              String    // Initialization vector
+    authTag         String    // Authentication tag
+    salt            String    // Random salt for key derivation
+    label           String?   // User-friendly label
+    isActive        Boolean   @default(true)
+    lastUsedAt      DateTime?
+    createdAt       DateTime  @default(now())
+    updatedAt       DateTime  @updatedAt
 
-**Estimated Effort:** 5-7 days
-**Test Coverage Target:** 80%+ (follow Phase 1.1 testing patterns)
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([platform])
+  }
+  ```
+- Ran `npx prisma db push` and `npx prisma generate`
+
+**6. Integration with Analytics Services** ✅
+- Updated AnalyzeVideoUseCase to use ApiKeyResolverService
+- Passes userId to resolve appropriate API key
+- YouTube/Instagram services now accept optional apiKey parameter
+- Seamless fallback to system keys when user hasn't provided custom keys
+
+#### Frontend Components (/frontend)
+
+**1. Settings Page** ✅
+- Location: `src/app/settings/page.tsx`
+- Protected route requiring Clerk authentication
+- Sections:
+  - **Account Info**: Displays email, tier, rate limits with progress bar
+  - **API Keys**: Full CRUD management (CREATOR+ only)
+  - Responsive design with Framer Motion animations
+- Real-time data fetching from `/api/auth/me` endpoint
+- Dynamic tier display (FREE users see upgrade prompt)
+
+**2. API Key Components** ✅
+- **ApiKeyCard** (`src/components/ApiKeyCard.tsx`):
+  - Individual key display with platform-specific styling
+  - YouTube: Red gradient, Instagram: Purple gradient
+  - Shows: platform, label, masked key, status, last used
+  - Actions: Test, Edit, Delete buttons
+  - Copy masked key to clipboard
+  - Active/Inactive toggle switch
+
+- **ApiKeyModal** (`src/components/ApiKeyModal.tsx`):
+  - Add/Edit modal with smooth animations
+  - Platform selector (radio buttons with icons)
+  - API key input with show/hide toggle
+  - Real-time validation:
+    - YouTube: Must start with "AIza"
+    - Instagram: RapidAPI key pattern
+  - Label input (optional)
+  - Loading states during submission
+
+- **DeleteConfirmation** (`src/components/DeleteConfirmation.tsx`):
+  - Confirmation dialog for destructive action
+  - Shows masked key being deleted
+  - Delete (red) and Cancel buttons
+  - Framer Motion animation
+
+**3. Custom Hooks** ✅
+- **useApiKeys** (`src/hooks/useApiKeys.ts`):
+  - Full CRUD operations using axios
+  - Methods: refetch, addKey, updateKey, deleteKey, testKey
+  - Automatic toast notifications (success/error)
+  - Clerk authentication integration
+  - All requests include `Authorization: Bearer <token>` header
+
+- **useUserProfile** (`src/hooks/useUserProfile.ts`):
+  - Fetches user data from `/api/auth/me`
+  - Returns: email, tier, dailyRequests, dailyLimit, firstName, lastName, imageUrl
+  - Proper data mapping from nested JSON response
+  - Loading and error states
+  - Refetch functionality
+
+**4. Type Definitions** ✅
+- Location: `src/types/apiKey.ts`
+- TypeScript interfaces:
+  - `ApiKey` - Full API key object
+  - `AddKeyRequest` - Create request
+  - `UpdateKeyRequest` - Update request
+  - `TestResult` - Test response
+  - `UserProfile` - User profile data
+
+**5. Routes Configuration** ✅
+- Added `SETTINGS: '/settings'` to `src/config/routes.ts`
+- Updated Header component with Settings link (visible to authenticated users only)
+
+### Files Created/Modified
+
+#### Backend Files
+**Created:**
+- `/backend/src/infrastructure/encryption/EncryptionService.ts` (213 lines)
+- `/backend/src/application/services/ApiKeyResolverService.ts` (166 lines)
+- `/backend/src/presentation/controllers/ApiKeyController.ts` (469 lines)
+- `/backend/src/application/dtos/CreateApiKeyRequest.ts`
+- `/backend/src/application/dtos/UpdateApiKeyRequest.ts`
+- `/backend/src/application/dtos/ApiKeyResponse.ts`
+- `/backend/src/application/dtos/TestApiKeyResponse.ts`
+- `/backend/src/__tests__/infrastructure/encryption/EncryptionService.test.ts` (360 lines, 33 tests)
+- `/backend/src/__tests__/presentation/controllers/ApiKeyController.test.ts` (472 lines)
+- `/backend/.env.example` - Added ENCRYPTION_KEY documentation
+
+**Modified:**
+- `/backend/prisma/schema.prisma` - Updated UserApiKey model with encryption fields
+- `/backend/src/App.ts` - Registered ApiKeyController
+- `/backend/src/application/use-cases/AnalyzeVideoUseCase.ts` - Integrated ApiKeyResolverService
+- `/backend/src/presentation/controllers/AnalyticsController.ts` - Added withAuth middleware
+- `/backend/src/shared/config/ConfigService.ts` - Added encryptionKey field
+
+#### Frontend Files
+**Created:**
+- `/frontend/src/app/settings/page.tsx` (475 lines)
+- `/frontend/src/components/ApiKeyCard.tsx` (262 lines)
+- `/frontend/src/components/ApiKeyModal.tsx` (362 lines)
+- `/frontend/src/components/DeleteConfirmation.tsx` (127 lines)
+- `/frontend/src/hooks/useApiKeys.ts` (256 lines)
+- `/frontend/src/hooks/useUserProfile.ts` (95 lines)
+- `/frontend/src/types/apiKey.ts` (63 lines)
+
+**Modified:**
+- `/frontend/src/config/routes.ts` - Added SETTINGS route
+- `/frontend/src/components/Header.tsx` - Added Settings link
+- `/frontend/package.json` - Added axios dependency
+
+### Security Features
+
+**Encryption:**
+- AES-256-GCM authenticated encryption
+- Unique salt per encryption (prevents rainbow table attacks)
+- Random IV per encryption (prevents pattern analysis)
+- Authentication tags for integrity verification
+- Secure key derivation using crypto.scrypt
+
+**Access Control:**
+- All API key endpoints require authentication
+- Ownership validation on all operations
+- Users can only access their own keys
+- CREATOR+ tier required for API key management
+
+**Data Protection:**
+- API keys encrypted at rest in database
+- Never returned in plaintext via API
+- Automatic masking for display (e.g., "AIza...k7x9")
+- Secure token transmission via HTTPS
+
+**Rate Limiting:**
+- Test endpoint limited to 5 tests per hour per user
+- Prevents API quota abuse
+
+### User Experience Flow
+
+**For FREE Users:**
+- See tier info and current limits in Settings
+- View upgrade prompt to unlock API key feature
+- Encouraged to upgrade to CREATOR tier
+
+**For CREATOR+ Users:**
+- Full API key management in Settings page
+- Add custom YouTube/Instagram API keys
+- Test keys before use to verify validity
+- Track usage with last used timestamp
+- Easy CRUD operations with beautiful UI
+- Platform-specific validation and styling
+
+**API Key Priority:**
+1. User's custom key (if active and valid)
+2. System key from environment (fallback)
+
+### Bundle Sizes
+
+**Frontend:**
+- Settings page: 30.5 kB
+- Total build: 298 kB
+- axios added: ~13 kB (gzipped)
+
+### Environment Variables
+
+**Backend (.env):**
+```env
+# Generate encryption key with:
+# node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+ENCRYPTION_KEY=<base64-encoded-32-byte-key>
+```
+
+### Known Issues & Future Enhancements
+
+**Completed:**
+- ✅ All CRUD operations working
+- ✅ Encryption with no hardcoded salts
+- ✅ API key testing functional
+- ✅ Integration with YouTube/Instagram services
+- ✅ Beautiful, responsive UI
+- ✅ Comprehensive error handling
+
+**Future Enhancements:**
+- Consider adding API key usage analytics
+- Add quota tracking per user key
+- Support for additional platforms (TikTok, Twitter)
+- Bulk API key import/export
+- API key rotation reminders
 
 ---
 
