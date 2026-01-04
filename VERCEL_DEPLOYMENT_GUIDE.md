@@ -8,13 +8,12 @@
 
 1. [Prerequisites](#prerequisites)
 2. [Architecture Overview](#architecture-overview)
-3. [Backend Deployment](#backend-deployment)
-4. [Frontend Deployment](#frontend-deployment)
-5. [Database Setup](#database-setup)
-6. [Environment Variables](#environment-variables)
-7. [Clerk Configuration](#clerk-configuration)
-8. [Post-Deployment Steps](#post-deployment-steps)
-9. [Troubleshooting](#troubleshooting)
+3. [Frontend Deployment](#frontend-deployment)
+4. [Database Setup](#database-setup)
+5. [Environment Variables](#environment-variables)
+6. [Clerk Configuration](#clerk-configuration)
+7. [Post-Deployment Steps](#post-deployment-steps)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -62,135 +61,6 @@ Before deploying, ensure you have:
 **Two Separate Deployments:**
 1. **Backend**: Express API deployed as Vercel Serverless Functions
 2. **Frontend**: Next.js app with SSR/SSG capabilities
-
----
-
-## Backend Deployment
-
-### Step 1: Prepare Backend for Vercel
-
-#### 1.1 Create `vercel.json` in `/backend` directory
-
-```json
-{
-  "version": 2,
-  "name": "video-analytics-backend",
-  "builds": [
-    {
-      "src": "src/index.ts",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "src/index.ts"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "src/index.ts"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
-}
-```
-
-#### 1.2 Update `package.json` scripts
-
-Ensure your `/backend/package.json` has:
-
-```json
-{
-  "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "vercel-build": "prisma generate && tsc"
-  }
-}
-```
-
-### Step 2: Deploy Backend to Vercel
-
-#### Option A: Using Vercel CLI
-
-```bash
-# Install Vercel CLI
-npm install -g vercel
-
-# Navigate to backend directory
-cd backend
-
-# Login to Vercel
-vercel login
-
-# Deploy (first time)
-vercel --prod
-
-# Follow prompts:
-# - Project name: video-analytics-backend
-# - Link to existing project: No
-# - Deploy: Yes
-```
-
-#### Option B: Using Vercel Dashboard
-
-1. Go to [vercel.com/dashboard](https://vercel.com/dashboard)
-2. Click **"Add New Project"**
-3. Import from GitHub
-4. Select your repository
-5. Configure project:
-   - **Framework Preset**: Other
-   - **Root Directory**: `backend`
-   - **Build Command**: `yarn vercel-build`
-   - **Output Directory**: (leave empty)
-   - **Install Command**: `yarn install`
-
-### Step 3: Configure Backend Environment Variables
-
-In Vercel Dashboard → Project → Settings → Environment Variables:
-
-```env
-# Database
-DATABASE_URL=postgresql://user:password@host:5432/database?sslmode=require
-
-# Clerk Authentication
-CLERK_SECRET_KEY=sk_live_xxxxx
-CLERK_WEBHOOK_SECRET=whsec_xxxxx
-CLERK_PUBLISHABLE_KEY=pk_live_xxxxx
-
-# Redis Cache
-UPSTASH_REDIS_REST_URL=https://xxxxx.upstash.io
-UPSTASH_REDIS_REST_TOKEN=xxxxx
-
-# APIs
-YOUTUBE_API_KEY=AIzaSyXXXXX
-RAPIDAPI_KEY=xxxxx (optional)
-
-# Encryption (Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))")
-ENCRYPTION_KEY=your-base64-encoded-32-byte-key
-
-# CORS
-FRONTEND_URL=https://your-frontend.vercel.app
-
-# App Config
-NODE_ENV=production
-PORT=3000
-```
-
-**Important:** Set environment variables for **Production**, **Preview**, and **Development** environments.
-
-### Step 4: Verify Backend Deployment
-
-After deployment, test the backend:
-
-```bash
-# Health check
-curl https://your-backend.vercel.app/api/health
-
-# Should return: {"status":"OK","message":"Video Analytics API is running"}
-```
 
 ---
 

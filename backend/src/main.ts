@@ -184,13 +184,11 @@ async function bootstrap() {
     });
   });
 
-  // Only start server if not in serverless environment (Vercel)
-  if (process.env.VERCEL !== '1') {
-    const port = configService.getPort();
-    const env = configService.getNodeEnv();
+  const port = configService.getPort();
+  const env = configService.getNodeEnv();
 
-    await app.listen(port);
-    console.log(`
+  await app.listen(port);
+  console.log(`
 ╔══════════════════════════════════════════╗
 ║   Video Analytics API v2.0               ║
 ║   NestJS + Clean Architecture            ║
@@ -202,23 +200,9 @@ Architecture: NestJS + Clean Architecture
 Routing: NestJS Controllers
 Documentation: http://localhost:${port}/api/spec-docs
     `);
-  }
 
   return app;
 }
 
-// Cache app instance for Vercel serverless (reduces cold start time)
-let cachedApp: NestExpressApplication;
-
-// Export for Vercel serverless functions
-export default async (req: any, res: any) => {
-  if (!cachedApp) {
-    cachedApp = await bootstrap();
-  }
-  return cachedApp.getHttpAdapter().getInstance()(req, res);
-};
-
-// Bootstrap for local development
-if (process.env.VERCEL !== '1') {
-  bootstrap();
-}
+// Bootstrap application
+bootstrap();

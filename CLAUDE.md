@@ -8,12 +8,12 @@ A full-stack video analytics platform that analyzes YouTube and Instagram videos
 
 **Tech Stack:**
 - **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS, Framer Motion, Recharts
-- **Backend:** TypeScript, Node.js, Express, routing-controllers, TypeDI, Prisma ORM
+- **Backend:** NestJS, TypeScript, Node.js, Prisma ORM
 - **Database:** PostgreSQL (Vercel Postgres/Neon/Supabase)
 - **Cache:** Upstash Redis (1-hour TTL)
 - **APIs:** YouTube Data API v3, RapidAPI (Instagram)
 - **Deployment:** Vercel (serverless functions)
-- **Architecture:** Clean Architecture with domain-driven design
+- **Architecture:** Clean Architecture with NestJS modules
 
 ## Development Commands
 
@@ -68,61 +68,117 @@ Open two terminals:
 
 ## Architecture
 
-### Backend Clean Architecture
+### Backend Clean Architecture with NestJS
 
-The backend follows **Clean Architecture** principles with TypeScript, organizing code into layers with clear dependencies:
+The backend follows **Clean Architecture** principles with **NestJS**, organizing code into layers with clear dependencies:
 
 ```
 backend/src/
+├── main.ts              # NestJS bootstrap (serverless export for Vercel)
+├── app.module.ts        # Root module (imports all feature modules)
+│
 ├── domain/              # Core business logic (no external dependencies)
 │   ├── entities/        # Business entities (Video, Analytics)
 │   ├── exceptions/      # Domain exceptions (VideoNotFoundException)
 │   └── interfaces/      # Service contracts (IVideoService, ICacheService)
+│
 ├── application/         # Use cases and business workflows
+│   ├── application.module.ts  # Application module
 │   ├── use-cases/       # Business logic orchestration
 │   │   ├── AnalyzeVideoUseCase.ts
 │   │   ├── CompareVideosUseCase.ts
-│   │   └── DetectPlatformUseCase.ts
-│   └── dtos/            # Data Transfer Objects with validation
+│   │   ├── DetectPlatformUseCase.ts
+│   │   └── GetVideoHistoryUseCase.ts
+│   ├── dtos/            # Data Transfer Objects with validation
+│   └── services/        # Application services (ApiKeyResolverService)
+│
 ├── infrastructure/      # External service implementations
-│   ├── cache/           # RedisCacheService (Upstash Redis)
-│   ├── database/        # Prisma repositories
-│   └── external/        # YouTubeService, InstagramService, SentimentService
-├── presentation/        # HTTP layer
-│   ├── controllers/     # HealthController, AnalyticsController
-│   └── middleware/      # ErrorHandler, validation
-├── shared/              # Cross-cutting concerns
-│   ├── config/          # ConfigService
-│   └── constants/       # Platform enums
-├── App.ts               # Application bootstrap
-└── index.ts             # Entry point
+│   ├── database/
+│   │   ├── database.module.ts    # Global database module
+│   │   └── prisma.service.ts     # PrismaClient wrapper
+│   ├── cache/
+│   │   ├── cache.module.ts       # Global cache module
+│   │   └── RedisCacheService.ts  # Upstash Redis
+│   ├── external-apis/
+│   │   ├── external-apis.module.ts
+│   │   ├── YouTubeService.ts
+│   │   └── InstagramService.ts
+│   ├── sentiment/
+│   │   ├── sentiment.module.ts
+│   │   └── SentimentService.ts
+│   └── encryption/
+│       ├── encryption.module.ts
+│       └── EncryptionService.ts
+│
+├── presentation/        # HTTP layer (NestJS controllers, guards, filters)
+│   ├── modules/         # Feature-based modules
+│   │   ├── health/
+│   │   │   ├── health.module.ts
+│   │   │   └── health.controller.ts
+│   │   ├── analytics/
+│   │   │   ├── analytics.module.ts
+│   │   │   └── analytics.controller.ts
+│   │   ├── auth/
+│   │   │   ├── auth.module.ts
+│   │   │   └── auth.controller.ts (Clerk webhook + user profile)
+│   │   └── api-keys/
+│   │       ├── api-keys.module.ts
+│   │       └── api-keys.controller.ts
+│   ├── guards/
+│   │   ├── auth.guard.ts           # Requires Clerk JWT
+│   │   └── optional-auth.guard.ts  # Optional authentication
+│   ├── interceptors/
+│   │   ├── logging.interceptor.ts         # Request logging
+│   │   └── anonymous-rate-limit.interceptor.ts  # 5 req/day for anonymous
+│   └── filters/
+│       └── http-exception.filter.ts  # Global error handling
+│
+└── shared/              # Cross-cutting concerns
+    ├── config/
+    │   ├── config.module.ts   # Global config module
+    │   └── ConfigService.ts   # Environment variables
+    └── constants/
+        └── Platform.ts        # Platform enum
 ```
 
-**Key Services:**
+**Key NestJS Modules:**
 
-1. **Use Cases** (Application Layer):
-   - `AnalyzeVideoUseCase` - Orchestrates video analysis workflow
-   - `CompareVideosUseCase` - Compares multiple videos
-   - `DetectPlatformUseCase` - Identifies platform from URL
+1. **Feature Modules** (Presentation Layer):
+   - `HealthModule` - Health check endpoint
+   - `AnalyticsModule` - Video analytics endpoints (analyze, compare, history)
+   - `AuthModule` - Clerk webhook and user profile endpoints
+   - `ApiKeysModule` - User API key management endpoints
 
-2. **Infrastructure Services**:
-   - `YouTubeService` - YouTube Data API v3 integration
-   - `InstagramService` - Instagram API integration (RapidAPI)
-   - `SentimentService` - Comment sentiment analysis using `sentiment` package
-   - `RedisCacheService` - Upstash Redis caching layer
+2. **Infrastructure Modules**:
+   - `DatabaseModule` (global) - PrismaService for database access
+   - `CacheModule` (global) - RedisCacheService for Upstash Redis
+   - `ConfigModule` (global) - Environment variable management
+   - `ExternalApisModule` - YouTubeService, InstagramService
+   - `SentimentModule` - SentimentService for comment analysis
+   - `EncryptionModule` - EncryptionService for API key encryption
 
-3. **Controllers** (Presentation Layer):
-   - `HealthController` - Health check endpoint
-   - `AnalyticsController` - Video analytics endpoints
+3. **Application Module**:
+   - `ApplicationModule` - Exports all use cases and application services
+   - Orchestrates business logic workflows
 
-**Dependency Injection:** Services are injected using **TypeDI**, enabling testability and loose coupling.
+**Dependency Injection:** NestJS built-in DI system replaces TypeDI
+- All services use `@Injectable()` decorator
+- Modules handle dependency registration automatically
+- Constructor injection for all dependencies
 
-### Request Flow
+### Request Flow (NestJS)
 
 ```
 User submits URL → SearchBar (frontend)
   ↓
 useAnalytics hook → POST /api/analyze
+  ↓
+NestJS Request Pipeline:
+  1. Global Middleware (helmet, CORS, body parsing)
+  2. LoggingInterceptor (logs request)
+  3. OptionalAuthGuard (extracts user if authenticated)
+  4. AnonymousRateLimitInterceptor (5 req/day for anonymous)
+  5. ValidationPipe (validates DTO with class-validator)
   ↓
 AnalyticsController.analyzeVideo() [Presentation Layer]
   ↓
@@ -135,6 +191,10 @@ AnalyzeVideoUseCase.execute() [Application Layer]
   └─ RedisCacheService.set() + addToHistory()
   ↓
 Return enriched analytics JSON (via DTOs)
+  ↓
+Response Pipeline:
+  1. LoggingInterceptor (logs response time)
+  2. HttpExceptionFilter (catches errors)
   ↓
 Frontend renders: VideoPreview, MetricsGrid, Charts, Comments
 ```
@@ -180,31 +240,49 @@ The Prisma schema defines:
 
 **Important:** The application uses PostgreSQL's `BigInt` for view/like/comment counts to handle very large numbers on viral videos.
 
-### Security Middleware Stack (in order)
+### Security & Request Pipeline (NestJS)
 
-Applied in `src/index.js`:
-1. `helmet()` - Security headers (CORS policy set to cross-origin for API)
-2. `cors(corsOptions)` - CORS with whitelist (configured via FRONTEND_URL env var)
-3. `createRateLimiter()` - 100 requests per 15 minutes (configurable)
+Configured in `src/main.ts`:
+
+**Express Middleware** (applied to NestJS app):
+1. `helmet()` - Security headers (CORS policy: cross-origin)
+2. `app.enableCors()` - Custom CORS with origin validation (localhost, Vercel, Clerk domains)
+3. Raw body middleware - For `/api/auth/webhook` signature verification (Svix/Clerk)
 4. `express.json({ limit: '1mb' })` - JSON body parsing with size limit
-5. `requestLogger` - Logs requests to console
-6. `sanitizeInput` - XSS prevention via validator library
-7. `validateUrl` - Validates video URLs against domain whitelist
+
+**Global NestJS Components**:
+1. `app.setGlobalPrefix('api')` - All routes prefixed with `/api`
+2. `ValidationPipe` (global) - Validates all DTOs with class-validator, transforms payloads
+3. `LoggingInterceptor` (global) - Logs all requests with timing
+4. `HttpExceptionFilter` (global) - Catches all errors, formats responses
+
+**Route-Specific Guards** (applied via decorators):
+- `@UseGuards(AuthGuard)` - Requires valid Clerk JWT token (for protected routes)
+- `@UseGuards(OptionalAuthGuard)` - Allows anonymous + authenticated (for analyze/compare)
+
+**Route-Specific Interceptors**:
+- `@UseInterceptors(AnonymousRateLimitInterceptor)` - 5 requests/day for anonymous users
+- Uses Redis to track: IP address + browser fingerprint hash
+
+**Rate Limiting**:
+- **Anonymous users**: 5 requests/day (via AnonymousRateLimitInterceptor)
+- **Authenticated users**: Tier-based limits (FREE: 5, CREATOR: 100, PRO: 500, AGENCY: 2000)
 
 ### Environment Configuration
 
 Backend requires these environment variables (see `backend/.env.example`):
 
 **Required:**
-- `DATABASE_URL` - PostgreSQL connection string
+- `DATABASE_URL` - PostgreSQL connection string (use connection pooling for serverless)
 - `UPSTASH_REDIS_REST_URL` - Redis REST endpoint
 - `UPSTASH_REDIS_REST_TOKEN` - Redis token
 - `YOUTUBE_API_KEY` - YouTube Data API v3 key
+- `CLERK_SECRET_KEY` - Clerk authentication secret key
+- `CLERK_PUBLISHABLE_KEY` - Clerk publishable key
 
 **Optional:**
 - `RAPIDAPI_KEY` - For Instagram support
 - `FRONTEND_URL` - CORS whitelist (default: http://localhost:3000)
-- `RATE_LIMIT_MAX_REQUESTS` - Rate limit threshold (default: 100)
 - `CACHE_TTL_SECONDS` - Cache duration (default: 3600)
 
 Frontend uses:
@@ -234,22 +312,43 @@ engagementRate = ((likes + comments) / views) * 100
 - Duration formatted as HH:MM:SS (handled in `analytics.service.formatDuration()`)
 - All BigInt values converted to numbers in API responses
 
-### Serverless Compatibility
-- Backend exports Express app for Vercel serverless functions
-- Conditional server startup: `if (process.env.VERCEL !== '1')`
-- Vercel configuration in `backend/vercel.json`
-- Frontend: Next.js deployed as serverless functions (API routes) + static pages
-- API rewrites in `next.config.js` proxy `/api/*` to backend in development
+### Serverless Compatibility (Vercel)
+- **Backend**: NestJS app exported as default function in `main.ts`
+- **App Caching**: `cachedApp` variable reduces cold start time (reuses bootstrapped app)
+- **Conditional Startup**: `if (process.env.VERCEL !== '1')` prevents `app.listen()` on Vercel
+- **Vercel Config**: `backend/vercel.json` points to `dist/main.js` as entry point
+- **Build Command**: `yarn vercel-build` runs `prisma generate && nest build`
+- **Frontend**: Next.js deployed as serverless functions + static pages
+- **API Rewrites**: `next.config.js` proxies `/api/*` to backend in development
+
+Example serverless export in `main.ts`:
+```typescript
+let cachedApp: NestExpressApplication;
+
+export default async (req: any, res: any) => {
+  if (!cachedApp) {
+    cachedApp = await bootstrap();
+  }
+  return cachedApp.getHttpAdapter().getInstance()(req, res);
+};
+```
 
 ## Common Patterns
 
-### Adding a New Platform
-1. Create service in `backend/src/infrastructure/external/{Platform}Service.ts`
-2. Implement `IVideoService` interface with `getVideoAnalytics(url)` method
-3. Add platform detection logic to `DetectPlatformUseCase`
-4. Register service in TypeDI container (automatically via `@Service()` decorator)
-5. Update `Platform` enum in `shared/constants/Platform.ts`
-6. Add platform to Prisma schema if needed
+### Adding a New Platform (NestJS)
+1. Create service in `backend/src/infrastructure/external-apis/{Platform}Service.ts`
+   - Add `@Injectable()` decorator
+   - Implement `IVideoService` interface with `getVideoAnalytics(url)` method
+2. Add service to `ExternalApisModule` providers and exports
+   ```typescript
+   @Module({
+     providers: [YouTubeService, InstagramService, TikTokService],
+     exports: [YouTubeService, InstagramService, TikTokService],
+   })
+   ```
+3. Update `DetectPlatformUseCase` to recognize new platform URLs
+4. Update `Platform` enum in `shared/constants/Platform.ts`
+5. Add platform to Prisma schema if needed (run `npx prisma migrate dev`)
 
 ### Adding New Analytics Features
 1. Create or extend use case in `application/use-cases/`
@@ -259,25 +358,41 @@ engagementRate = ((likes + comments) / views) * 100
 5. Import and render in frontend `App.jsx`
 6. Update Prisma schema if persistence is required
 
-### Adding a New Controller Endpoint
-1. Create DTO classes with validation decorators in `application/dtos/`
-2. Add method to existing controller or create new controller in `presentation/controllers/`
-3. Use `@Get()`, `@Post()`, etc. decorators from routing-controllers
-4. Inject required use cases via constructor (TypeDI handles injection)
-5. Return DTO instances (automatically serialized to JSON)
+### Adding a New Controller Endpoint (NestJS)
+1. Create DTO classes with `class-validator` decorators in `application/dtos/`
+2. Add method to existing controller or create new controller in `presentation/modules/{feature}/`
+3. Use NestJS decorators: `@Controller()`, `@Get()`, `@Post()`, `@Body()`, `@Query()`, `@Param()`
+4. Add guards (`@UseGuards()`), interceptors (`@UseInterceptors()`), Swagger docs
+5. Inject required use cases via constructor (NestJS DI handles it automatically)
+6. Return DTO instances (automatically serialized to JSON)
 
-Example:
+Example (NestJS):
 ```typescript
-@JsonController('/api/analytics')
-export class AnalyticsController {
-  constructor(private analyzeVideoUseCase: AnalyzeVideoUseCase) {}
+import { Controller, Post, Body, UseGuards, UseInterceptors } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-  @Post('/analyze')
+@ApiTags('Analytics')
+@Controller()  // No path needed, set in module
+export class AnalyticsController {
+  constructor(private readonly analyzeVideoUseCase: AnalyzeVideoUseCase) {}
+
+  @Post('analyze')
+  @UseGuards(OptionalAuthGuard)
+  @UseInterceptors(AnonymousRateLimitInterceptor)
+  @ApiOperation({ summary: 'Analyze video metrics' })
+  @ApiResponse({ status: 200, description: 'Video analyzed successfully' })
   async analyze(@Body() request: AnalyzeVideoRequest): Promise<AnalyticsResponse> {
     return this.analyzeVideoUseCase.execute(request);
   }
 }
 ```
+
+**Key differences from routing-controllers:**
+- `@JsonController()` → `@Controller()` (path set in module)
+- `@QueryParam()` → `@Query()`
+- No need for `@Service()` - use `@Injectable()` on services
+- Guards replace middleware for authentication
+- Interceptors replace middleware for logging/rate limiting
 
 ### Testing API Endpoints
 ```bash

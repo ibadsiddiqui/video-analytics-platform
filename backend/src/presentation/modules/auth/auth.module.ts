@@ -1,5 +1,6 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { json } from 'express';
+import type { Request, Response } from 'express';
 import { AuthController } from './auth.controller';
 import { DatabaseModule } from '@infrastructure/database/database.module';
 import { AuthGuard } from '@presentation/guards/auth.guard';
@@ -26,8 +27,8 @@ export class AuthModule implements NestModule {
     consumer
       .apply(
         json({
-          verify: (req: any, _res, buf) => {
-            req.rawBody = buf.toString('utf8');
+          verify: (req: Request, _res: Response, buf: Buffer) => {
+            (req as any).rawBody = buf.toString('utf8');
           },
         })
       )
