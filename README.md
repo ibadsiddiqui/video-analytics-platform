@@ -1,6 +1,6 @@
 # 📊 Video Analytics Platform
 
-A production-ready, full-stack application that pulls comprehensive analytics for YouTube and Instagram videos. Built with Next.js, Node.js, PostgreSQL, and Redis (Upstash).
+A production-ready, full-stack application that pulls comprehensive analytics for YouTube and Instagram videos. Built with Next.js 15 (App Router with API routes), PostgreSQL, and Redis (Upstash).
 
 ![Video Analytics Platform](https://via.placeholder.com/1200x600/4F46E5/FFFFFF?text=Video+Analytics+Platform)
 
@@ -27,10 +27,11 @@ A production-ready, full-stack application that pulls comprehensive analytics fo
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | Next.js 15, React 19, Tailwind CSS, Framer Motion, Recharts |
-| Backend | Node.js, Express, Prisma ORM |
-| Database | PostgreSQL (Vercel Postgres / Neon / Supabase) |
+| Frontend | Next.js 15 (App Router), React 19, Tailwind CSS, Framer Motion, Recharts |
+| Backend | Next.js API Routes (serverless functions) |
+| Database | PostgreSQL (Vercel Postgres / Neon / Supabase) + Prisma ORM |
 | Cache | Redis (Upstash) |
+| Authentication | Clerk (JWT-based) |
 | APIs | YouTube Data API v3, RapidAPI (Instagram) |
 | Deployment | Vercel (Serverless) |
 
@@ -38,42 +39,49 @@ A production-ready, full-stack application that pulls comprehensive analytics fo
 
 ```
 video-analytics-platform/
-├── backend/
+├── frontend/                 # Main application (Next.js)
 │   ├── src/
-│   │   ├── config/          # Environment configuration
-│   │   ├── middleware/      # Security, rate limiting, validation
-│   │   ├── routes/          # API endpoints
-│   │   └── services/        # Business logic
-│   │       ├── analytics.service.js   # Main orchestration
-│   │       ├── youtube.service.js     # YouTube Data API
-│   │       ├── instagram.service.js   # Instagram via RapidAPI
-│   │       ├── sentiment.service.js   # AI sentiment analysis
-│   │       └── cache.service.js       # Upstash Redis
+│   │   ├── app/             # Next.js 15 App Router
+│   │   │   ├── layout.tsx   # Root layout (Clerk provider)
+│   │   │   ├── page.tsx     # Home page
+│   │   │   └── api/         # API Routes (backend logic)
+│   │   │       ├── analyze/route.ts
+│   │   │       ├── compare/route.ts
+│   │   │       ├── history/[videoId]/route.ts
+│   │   │       ├── auth/
+│   │   │       │   ├── webhook/route.ts
+│   │   │       │   └── me/route.ts
+│   │   │       └── keys/    # API key management
+│   │   ├── components/      # React components
+│   │   │   ├── SearchBar.tsx
+│   │   │   ├── MetricsGrid.tsx
+│   │   │   ├── EngagementChart.tsx
+│   │   │   ├── SentimentChart.tsx
+│   │   │   ├── DemographicsChart.tsx
+│   │   │   ├── KeywordsCloud.tsx
+│   │   │   └── TopComments.tsx
+│   │   ├── hooks/           # Custom React hooks
+│   │   ├── lib/             # Server-side business logic
+│   │   │   ├── prisma.ts    # Database client
+│   │   │   ├── redis.ts     # Cache service
+│   │   │   ├── services/    # Business services
+│   │   │   │   ├── youtube.ts
+│   │   │   │   ├── instagram.ts
+│   │   │   │   ├── sentiment.ts
+│   │   │   │   └── encryption.ts
+│   │   │   └── utils/       # Helper utilities
+│   │   └── styles/          # Tailwind CSS styles
 │   ├── prisma/
 │   │   └── schema.prisma    # Database schema
 │   ├── .env.example         # Environment template
 │   ├── package.json
+│   ├── next.config.js
+│   ├── middleware.ts        # Clerk authentication
+│   ├── tailwind.config.js
 │   └── vercel.json          # Vercel deployment config
 │
-├── frontend/
-│   ├── src/
-│   │   ├── app/             # Next.js 15 App Router
-│   │   │   ├── layout.jsx   # Root layout
-│   │   │   └── page.jsx     # Home page
-│   │   ├── components/      # React components
-│   │   │   ├── SearchBar.jsx
-│   │   │   ├── MetricsGrid.jsx
-│   │   │   ├── EngagementChart.jsx
-│   │   │   ├── SentimentChart.jsx
-│   │   │   ├── DemographicsChart.jsx
-│   │   │   ├── KeywordsCloud.jsx
-│   │   │   └── TopComments.jsx
-│   │   ├── hooks/           # Custom React hooks
-│   │   └── styles/          # Tailwind CSS styles
-│   ├── package.json
-│   ├── next.config.js
-│   └── tailwind.config.js
-│
+├── CLAUDE.md                # Development guide
+├── VERCEL_DEPLOYMENT_GUIDE.md
 └── README.md
 ```
 
@@ -85,6 +93,7 @@ video-analytics-platform/
 - PostgreSQL database
 - Upstash Redis account
 - YouTube Data API key
+- Clerk account (for authentication)
 
 ### 1. Clone and Install
 
@@ -93,64 +102,69 @@ video-analytics-platform/
 git clone https://github.com/your-username/video-analytics-platform.git
 cd video-analytics-platform
 
-# Install backend dependencies
-cd backend
-npm install
+# Navigate to frontend directory (main application)
+cd frontend
 
-# Install frontend dependencies
-cd ../frontend
+# Install dependencies (automatically runs prisma generate via postinstall)
 npm install
 ```
 
 ### 2. Configure Environment Variables
 
 ```bash
-# Backend
-cd backend
 cp .env.example .env
 ```
 
 Edit `.env` with your credentials:
 
 ```env
-# Database
+# Database (PostgreSQL)
 DATABASE_URL="postgresql://user:pass@host:5432/db?sslmode=require"
 
-# Upstash Redis
+# Redis Cache (Upstash)
 UPSTASH_REDIS_REST_URL="https://your-instance.upstash.io"
 UPSTASH_REDIS_REST_TOKEN="your-token"
 
-# YouTube API
+# YouTube Data API v3
 YOUTUBE_API_KEY="your-youtube-api-key"
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
+CLERK_SECRET_KEY="sk_test_..."
+CLERK_WEBHOOK_SECRET="whsec_..."
+
+# Encryption Key (generate with command below)
+ENCRYPTION_KEY="your-base64-encryption-key"
 
 # Optional: Instagram via RapidAPI
 RAPIDAPI_KEY="your-rapidapi-key"
+```
 
-# App Config
-FRONTEND_URL="http://localhost:3000"
+**Generate encryption key:**
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
 ### 3. Setup Database
 
 ```bash
-cd backend
-npx prisma generate
-npx prisma db push
+# Generate Prisma client (if not done automatically)
+npm run prisma:generate
+
+# Push schema to database
+npm run prisma:push
+
+# Or run migrations (recommended for production)
+npm run prisma:migrate
 ```
 
-### 4. Run Development Servers
+### 4. Run Development Server
 
 ```bash
-# Terminal 1 - Backend
-cd backend
-npm run dev
-
-# Terminal 2 - Frontend (Next.js)
-cd frontend
 npm run dev
 ```
 
-Open http://localhost:3000 in your browser.
+Open http://localhost:3000 in your browser. The application runs as a single Next.js app with API routes at `/api/*`.
 
 ## 📡 API Endpoints
 
@@ -168,7 +182,7 @@ Open http://localhost:3000 in your browser.
 ### Example Request
 
 ```bash
-curl -X POST http://localhost:3001/api/analyze \
+curl -X POST http://localhost:3000/api/analyze \
   -H "Content-Type: application/json" \
   -d '{"url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}'
 ```
@@ -209,7 +223,7 @@ curl -X POST http://localhost:3001/api/analyze \
 
 ## 🌐 Deployment to Vercel
 
-### Backend Deployment
+### Quick Deploy
 
 1. **Push to GitHub**
 ```bash
@@ -220,30 +234,37 @@ git remote add origin https://github.com/your-username/video-analytics-platform.
 git push -u origin main
 ```
 
-2. **Deploy Backend**
-- Go to [vercel.com](https://vercel.com)
+2. **Deploy to Vercel**
+- Go to [vercel.com/new](https://vercel.com/new)
 - Import your repository
-- Set root directory to `backend`
-- Add environment variables in Vercel dashboard
-- Deploy!
+- Set **root directory** to `frontend`
+- Framework will be auto-detected as Next.js
+- Add environment variables (see below)
+- Click **Deploy**
 
-3. **Deploy Frontend**
-- Create another Vercel project
-- Set root directory to `frontend`
-- Add `VITE_API_URL` pointing to your backend URL
-- Deploy!
+3. **Post-Deployment**
+- Update Clerk webhook URL to your production domain
+- Update Clerk allowed origins
+- Restrict YouTube API key to your domain
+- Test all endpoints
 
 ### Environment Variables for Vercel
 
-| Variable | Backend | Frontend |
-|----------|---------|----------|
-| `DATABASE_URL` | ✅ | - |
-| `UPSTASH_REDIS_REST_URL` | ✅ | - |
-| `UPSTASH_REDIS_REST_TOKEN` | ✅ | - |
-| `YOUTUBE_API_KEY` | ✅ | - |
-| `RAPIDAPI_KEY` | ✅ (optional) | - |
-| `FRONTEND_URL` | ✅ | - |
-| `NEXT_PUBLIC_API_URL` | - | ✅ |
+Add these in **Project Settings → Environment Variables** for all environments (Production, Preview, Development):
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | ✅ | PostgreSQL connection string |
+| `UPSTASH_REDIS_REST_URL` | ✅ | Upstash Redis REST URL |
+| `UPSTASH_REDIS_REST_TOKEN` | ✅ | Upstash Redis token |
+| `YOUTUBE_API_KEY` | ✅ | YouTube Data API v3 key |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | ✅ | Clerk publishable key |
+| `CLERK_SECRET_KEY` | ✅ | Clerk secret key |
+| `CLERK_WEBHOOK_SECRET` | ✅ | Clerk webhook secret |
+| `ENCRYPTION_KEY` | ✅ | Base64 encryption key |
+| `RAPIDAPI_KEY` | - | Instagram API (optional) |
+
+**For detailed deployment instructions**, see `frontend/VERCEL_DEPLOYMENT.md`
 
 ## 🔑 Getting API Keys
 

@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from 'react';
 import { getBrowserFingerprint } from '@/utils/fingerprint';
 import { syncTrackingWithHeaders } from '@/hooks/useAnonymousTracking';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_URL = '/api';
 
 interface AnalyzeOptions {
   apiKey?: string;

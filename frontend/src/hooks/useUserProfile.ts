@@ -23,7 +23,7 @@ interface UseUserProfileReturn {
   refetch: () => Promise<void>;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_URL = '/api';
 
 export function useUserProfile(): UseUserProfileReturn {
   const [profile, setProfile] = useState<UserProfile | null>(null);

@@ -8,43 +8,17 @@ A full-stack video analytics platform that analyzes YouTube and Instagram videos
 
 **Tech Stack:**
 - **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS, Framer Motion, Recharts
-- **Backend:** NestJS, TypeScript, Node.js, Prisma ORM
+- **Backend:** Next.js API Routes (serverless functions)
 - **Database:** PostgreSQL (Vercel Postgres/Neon/Supabase)
 - **Cache:** Upstash Redis (1-hour TTL)
 - **APIs:** YouTube Data API v3, RapidAPI (Instagram)
-- **Deployment:** Vercel (serverless functions)
-- **Architecture:** Clean Architecture with NestJS modules
+- **Authentication:** Clerk (JWT-based auth)
+- **Deployment:** Vercel (single Next.js app with serverless functions)
+- **Architecture:** Full-stack Next.js with server-side business logic
 
 ## Development Commands
 
-### Backend (from `/backend`)
-
-```bash
-# Development server with hot reload (TypeScript)
-yarn dev
-
-# Build TypeScript to JavaScript
-yarn build
-
-# Production server (runs compiled JS)
-yarn start
-
-# Type checking
-yarn type-check
-
-# Testing
-yarn test
-yarn test:watch
-yarn test:coverage
-
-# Database operations
-yarn prisma:generate      # Generate Prisma client
-yarn prisma:push          # Push schema changes without migrations
-yarn prisma:migrate       # Create and apply migrations
-npx prisma studio         # Open Prisma Studio GUI
-```
-
-### Frontend (from `/frontend`)
+All commands run from `/frontend` directory:
 
 ```bash
 # Development server (runs on http://localhost:3000)
@@ -58,143 +32,153 @@ npm start
 
 # Linting
 npm run lint
+
+# Database operations
+npm run prisma:generate   # Generate Prisma client (runs automatically on postinstall)
+npm run prisma:push       # Push schema changes without migrations
+npm run prisma:migrate    # Create and apply migrations
+npm run prisma:studio     # Open Prisma Studio GUI
 ```
 
-### Running the Full Stack
+### Running the Application
 
-Open two terminals:
-1. Terminal 1: `cd backend && yarn dev` (runs on port 3001)
-2. Terminal 2: `cd frontend && npm run dev` (runs on port 3000)
+```bash
+cd frontend
+npm install              # Install dependencies (automatically runs prisma generate)
+npm run dev              # Start development server on http://localhost:3000
+```
+
+The application is now a single Next.js app with API routes handling all backend logic.
 
 ## Architecture
 
-### Backend Clean Architecture with NestJS
+### Full-Stack Next.js Architecture
 
-The backend follows **Clean Architecture** principles with **NestJS**, organizing code into layers with clear dependencies:
+The application is a monolithic Next.js app with server-side business logic in API routes:
 
 ```
-backend/src/
-├── main.ts              # NestJS bootstrap (serverless export for Vercel)
-├── app.module.ts        # Root module (imports all feature modules)
+frontend/
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── layout.tsx         # Root layout (Clerk provider, fonts, metadata)
+│   │   ├── page.tsx           # Home page (main analytics UI)
+│   │   ├── middleware.ts      # Clerk auth middleware
+│   │   └── api/               # API Routes (serverless functions)
+│   │       ├── health/route.ts          # Health check endpoint
+│   │       ├── analyze/route.ts         # Analyze video endpoint
+│   │       ├── compare/route.ts         # Compare videos endpoint
+│   │       ├── detect-platform/route.ts # Detect video platform
+│   │       ├── history/[videoId]/route.ts # Video history
+│   │       ├── auth/
+│   │       │   ├── webhook/route.ts     # Clerk user sync webhook
+│   │       │   └── me/route.ts          # Get current user profile
+│   │       └── keys/
+│   │           ├── route.ts             # List/create API keys
+│   │           └── [id]/
+│   │               ├── route.ts         # Get/update/delete API key
+│   │               └── test/route.ts    # Test API key
+│   │
+│   ├── components/            # React components
+│   │   ├── SearchBar.tsx     # Video URL input
+│   │   ├── VideoPreview.tsx  # Video metadata display
+│   │   ├── MetricsGrid.tsx   # Key metrics cards
+│   │   ├── charts/           # Recharts visualizations
+│   │   │   ├── EngagementChart.tsx
+│   │   │   ├── SentimentChart.tsx
+│   │   │   └── DemographicsChart.tsx
+│   │   └── comments/         # Comment components
+│   │
+│   ├── hooks/                # Custom React hooks
+│   │   ├── useAnalytics.ts  # Video analytics API calls
+│   │   ├── useApiKeys.ts    # API key management
+│   │   └── useUserProfile.ts # User profile data
+│   │
+│   └── lib/                  # Server-side business logic
+│       ├── prisma.ts         # PrismaClient singleton
+│       ├── redis.ts          # Upstash Redis client
+│       ├── services/         # Business logic services
+│       │   ├── youtube.ts    # YouTube Data API integration
+│       │   ├── instagram.ts  # Instagram API integration
+│       │   ├── sentiment.ts  # Sentiment analysis
+│       │   ├── cache.ts      # Redis caching utilities
+│       │   └── encryption.ts # API key encryption (AES-256-GCM)
+│       ├── utils/            # Utility functions
+│       │   ├── platform-detector.ts # Detect video platform from URL
+│       │   ├── rate-limiter.ts      # Anonymous rate limiting
+│       │   └── formatters.ts        # Number/duration formatting
+│       └── types/            # TypeScript types and interfaces
 │
-├── domain/              # Core business logic (no external dependencies)
-│   ├── entities/        # Business entities (Video, Analytics)
-│   ├── exceptions/      # Domain exceptions (VideoNotFoundException)
-│   └── interfaces/      # Service contracts (IVideoService, ICacheService)
+├── prisma/
+│   ├── schema.prisma         # Database schema (PostgreSQL)
+│   └── migrations/           # Database migrations
 │
-├── application/         # Use cases and business workflows
-│   ├── application.module.ts  # Application module
-│   ├── use-cases/       # Business logic orchestration
-│   │   ├── AnalyzeVideoUseCase.ts
-│   │   ├── CompareVideosUseCase.ts
-│   │   ├── DetectPlatformUseCase.ts
-│   │   └── GetVideoHistoryUseCase.ts
-│   ├── dtos/            # Data Transfer Objects with validation
-│   └── services/        # Application services (ApiKeyResolverService)
-│
-├── infrastructure/      # External service implementations
-│   ├── database/
-│   │   ├── database.module.ts    # Global database module
-│   │   └── prisma.service.ts     # PrismaClient wrapper
-│   ├── cache/
-│   │   ├── cache.module.ts       # Global cache module
-│   │   └── RedisCacheService.ts  # Upstash Redis
-│   ├── external-apis/
-│   │   ├── external-apis.module.ts
-│   │   ├── YouTubeService.ts
-│   │   └── InstagramService.ts
-│   ├── sentiment/
-│   │   ├── sentiment.module.ts
-│   │   └── SentimentService.ts
-│   └── encryption/
-│       ├── encryption.module.ts
-│       └── EncryptionService.ts
-│
-├── presentation/        # HTTP layer (NestJS controllers, guards, filters)
-│   ├── modules/         # Feature-based modules
-│   │   ├── health/
-│   │   │   ├── health.module.ts
-│   │   │   └── health.controller.ts
-│   │   ├── analytics/
-│   │   │   ├── analytics.module.ts
-│   │   │   └── analytics.controller.ts
-│   │   ├── auth/
-│   │   │   ├── auth.module.ts
-│   │   │   └── auth.controller.ts (Clerk webhook + user profile)
-│   │   └── api-keys/
-│   │       ├── api-keys.module.ts
-│   │       └── api-keys.controller.ts
-│   ├── guards/
-│   │   ├── auth.guard.ts           # Requires Clerk JWT
-│   │   └── optional-auth.guard.ts  # Optional authentication
-│   ├── interceptors/
-│   │   ├── logging.interceptor.ts         # Request logging
-│   │   └── anonymous-rate-limit.interceptor.ts  # 5 req/day for anonymous
-│   └── filters/
-│       └── http-exception.filter.ts  # Global error handling
-│
-└── shared/              # Cross-cutting concerns
-    ├── config/
-    │   ├── config.module.ts   # Global config module
-    │   └── ConfigService.ts   # Environment variables
-    └── constants/
-        └── Platform.ts        # Platform enum
+├── public/                   # Static assets
+├── next.config.js            # Next.js configuration
+├── middleware.ts             # Clerk authentication middleware
+└── vercel.json              # Vercel deployment config
 ```
 
-**Key NestJS Modules:**
+**Key Architectural Patterns:**
 
-1. **Feature Modules** (Presentation Layer):
-   - `HealthModule` - Health check endpoint
-   - `AnalyticsModule` - Video analytics endpoints (analyze, compare, history)
-   - `AuthModule` - Clerk webhook and user profile endpoints
-   - `ApiKeysModule` - User API key management endpoints
+1. **API Routes as Serverless Functions:**
+   - Each route.ts file exports GET, POST, PUT, DELETE handlers
+   - Runs as separate serverless functions on Vercel
+   - Stateless design with external state (PostgreSQL, Redis)
 
-2. **Infrastructure Modules**:
-   - `DatabaseModule` (global) - PrismaService for database access
-   - `CacheModule` (global) - RedisCacheService for Upstash Redis
-   - `ConfigModule` (global) - Environment variable management
-   - `ExternalApisModule` - YouTubeService, InstagramService
-   - `SentimentModule` - SentimentService for comment analysis
-   - `EncryptionModule` - EncryptionService for API key encryption
+2. **Server-Side Services:**
+   - Located in `src/lib/services/`
+   - Handle business logic: API integrations, caching, sentiment analysis
+   - Shared across multiple API routes
 
-3. **Application Module**:
-   - `ApplicationModule` - Exports all use cases and application services
-   - Orchestrates business logic workflows
+3. **Database Layer:**
+   - Prisma ORM for type-safe database access
+   - PostgreSQL for persistent storage (videos, users, analytics)
+   - Connection pooling for serverless compatibility
 
-**Dependency Injection:** NestJS built-in DI system replaces TypeDI
-- All services use `@Injectable()` decorator
-- Modules handle dependency registration automatically
-- Constructor injection for all dependencies
+4. **Caching Layer:**
+   - Upstash Redis for fast data access
+   - 1-hour TTL for video analytics
+   - Rate limiting for anonymous users
 
-### Request Flow (NestJS)
+5. **Authentication:**
+   - Clerk for user authentication and management
+   - Middleware validates JWT tokens on protected routes
+   - Webhooks sync user data to local database
+
+### Request Flow (Next.js API Routes)
 
 ```
 User submits URL → SearchBar (frontend)
   ↓
 useAnalytics hook → POST /api/analyze
   ↓
-NestJS Request Pipeline:
-  1. Global Middleware (helmet, CORS, body parsing)
-  2. LoggingInterceptor (logs request)
-  3. OptionalAuthGuard (extracts user if authenticated)
-  4. AnonymousRateLimitInterceptor (5 req/day for anonymous)
-  5. ValidationPipe (validates DTO with class-validator)
+Next.js Middleware (src/middleware.ts):
+  1. Clerk authentication (extracts user if authenticated)
+  2. Public routes allowed without auth
   ↓
-AnalyticsController.analyzeVideo() [Presentation Layer]
+API Route Handler (/api/analyze/route.ts):
+  1. Validate request body
+  2. Check user authentication status
+  3. Apply rate limiting (5 req/day for anonymous users)
   ↓
-AnalyzeVideoUseCase.execute() [Application Layer]
-  ├─ DetectPlatformUseCase.execute() (identify platform)
-  ├─ RedisCacheService.get() (check cache)
-  ├─ YouTubeService.getVideoAnalytics() OR InstagramService.getVideoAnalytics()
-  ├─ SentimentService.analyzeComments() (enrichment)
-  ├─ SentimentService.extractKeywords() (enrichment)
-  └─ RedisCacheService.set() + addToHistory()
+Business Logic Flow:
+  ├─ detectPlatform(url) → Identify YouTube/Instagram/etc
+  ├─ checkCache(videoId) → Redis lookup (1-hour TTL)
+  ├─ If cache miss:
+  │   ├─ fetchYouTubeAnalytics() OR fetchInstagramAnalytics()
+  │   ├─ analyzeSentiment(comments) → Positive/Neutral/Negative
+  │   ├─ extractKeywords(comments) → Top keywords/hashtags
+  │   ├─ calculateEngagementRate() → (likes + comments) / views * 100
+  │   ├─ saveToDatabase() → Prisma insert/update
+  │   └─ cacheResults() → Redis set with TTL
+  └─ If cache hit: Return cached data
   ↓
-Return enriched analytics JSON (via DTOs)
-  ↓
-Response Pipeline:
-  1. LoggingInterceptor (logs response time)
-  2. HttpExceptionFilter (catches errors)
+Return JSON Response:
+  - Video metadata (title, channel, thumbnail)
+  - Engagement metrics (views, likes, comments, shares)
+  - Sentiment analysis (score, distribution)
+  - Keywords and hashtags
+  - Demographics (mocked data for now)
   ↓
 Frontend renders: VideoPreview, MetricsGrid, Charts, Comments
 ```
@@ -228,7 +212,7 @@ src/app/
 - React hooks (useState, useCallback, useEffect)
 - Event handlers and interactivity
 
-**API Calls:** The `useAnalytics` hook fetches from `/api/*` endpoints, which are proxied to the backend via `next.config.js` rewrites in development, or direct calls in production.
+**API Calls:** The `useAnalytics` hook makes fetch requests to `/api/*` endpoints, which are handled by Next.js API route handlers in the same application.
 
 ### Database Schema
 
@@ -240,53 +224,50 @@ The Prisma schema defines:
 
 **Important:** The application uses PostgreSQL's `BigInt` for view/like/comment counts to handle very large numbers on viral videos.
 
-### Security & Request Pipeline (NestJS)
+### Security & Request Pipeline
 
-Configured in `src/main.ts`:
+**Next.js Middleware** (`src/middleware.ts`):
+1. Clerk authentication - Validates JWT tokens, extracts user info
+2. Public routes - Allows `/api/analyze`, `/api/compare` without auth
+3. Protected routes - Requires authentication for `/api/keys`, `/api/auth/me`
 
-**Express Middleware** (applied to NestJS app):
-1. `helmet()` - Security headers (CORS policy: cross-origin)
-2. `app.enableCors()` - Custom CORS with origin validation (localhost, Vercel, Clerk domains)
-3. Raw body middleware - For `/api/auth/webhook` signature verification (Svix/Clerk)
-4. `express.json({ limit: '1mb' })` - JSON body parsing with size limit
+**API Route Security**:
+1. Request validation - Validate request body/query parameters
+2. Rate limiting - Redis-based rate limiting for anonymous users
+3. Error handling - Try-catch blocks with proper error responses
+4. CORS - Configured in Next.js config and Clerk settings
 
-**Global NestJS Components**:
-1. `app.setGlobalPrefix('api')` - All routes prefixed with `/api`
-2. `ValidationPipe` (global) - Validates all DTOs with class-validator, transforms payloads
-3. `LoggingInterceptor` (global) - Logs all requests with timing
-4. `HttpExceptionFilter` (global) - Catches all errors, formats responses
-
-**Route-Specific Guards** (applied via decorators):
-- `@UseGuards(AuthGuard)` - Requires valid Clerk JWT token (for protected routes)
-- `@UseGuards(OptionalAuthGuard)` - Allows anonymous + authenticated (for analyze/compare)
-
-**Route-Specific Interceptors**:
-- `@UseInterceptors(AnonymousRateLimitInterceptor)` - 5 requests/day for anonymous users
-- Uses Redis to track: IP address + browser fingerprint hash
+**Clerk Webhook Security** (`/api/auth/webhook`):
+1. Signature verification using Svix library
+2. Raw body parsing for signature validation
+3. User sync to local database (create/update/delete)
 
 **Rate Limiting**:
-- **Anonymous users**: 5 requests/day (via AnonymousRateLimitInterceptor)
+- **Anonymous users**: 5 requests/day (IP + browser fingerprint)
 - **Authenticated users**: Tier-based limits (FREE: 5, CREATOR: 100, PRO: 500, AGENCY: 2000)
+- Tracked in Redis with 24-hour rolling window
 
 ### Environment Configuration
 
-Backend requires these environment variables (see `backend/.env.example`):
+The application requires these environment variables (see `frontend/.env.example`):
 
 **Required:**
 - `DATABASE_URL` - PostgreSQL connection string (use connection pooling for serverless)
 - `UPSTASH_REDIS_REST_URL` - Redis REST endpoint
 - `UPSTASH_REDIS_REST_TOKEN` - Redis token
 - `YOUTUBE_API_KEY` - YouTube Data API v3 key
-- `CLERK_SECRET_KEY` - Clerk authentication secret key
-- `CLERK_PUBLISHABLE_KEY` - Clerk publishable key
+- `CLERK_SECRET_KEY` - Clerk authentication secret key (server-side only)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk publishable key (exposed to browser)
+- `CLERK_WEBHOOK_SECRET` - Clerk webhook signature verification
+- `ENCRYPTION_KEY` - AES-256-GCM key for encrypting user API keys
 
 **Optional:**
 - `RAPIDAPI_KEY` - For Instagram support
-- `FRONTEND_URL` - CORS whitelist (default: http://localhost:3000)
-- `CACHE_TTL_SECONDS` - Cache duration (default: 3600)
+- `CACHE_TTL_SECONDS` - Cache duration (default: 3600 seconds)
+- `RATE_LIMIT_WINDOW_MS` - Rate limit window (default: 900000ms / 15 minutes)
+- `RATE_LIMIT_MAX_REQUESTS` - Max requests per window (default: 100)
 
-Frontend uses:
-- `NEXT_PUBLIC_API_URL` - Backend API URL (optional, defaults to `/api` which is rewritten via next.config.js)
+**Note:** Variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. All other variables are server-side only.
 
 ## Key Implementation Details
 
@@ -313,102 +294,136 @@ engagementRate = ((likes + comments) / views) * 100
 - All BigInt values converted to numbers in API responses
 
 ### Serverless Compatibility (Vercel)
-- **Backend**: NestJS app exported as default function in `main.ts`
-- **App Caching**: `cachedApp` variable reduces cold start time (reuses bootstrapped app)
-- **Conditional Startup**: `if (process.env.VERCEL !== '1')` prevents `app.listen()` on Vercel
-- **Vercel Config**: `backend/vercel.json` points to `dist/main.js` as entry point
-- **Build Command**: `yarn vercel-build` runs `prisma generate && nest build`
-- **Frontend**: Next.js deployed as serverless functions + static pages
-- **API Rewrites**: `next.config.js` proxies `/api/*` to backend in development
+- **Single Next.js App**: Frontend and backend in one deployment
+- **API Routes**: Each route handler runs as a separate serverless function
+- **Prisma Client**: Singleton pattern to reuse database connections
+- **Redis Client**: Singleton pattern with connection pooling
+- **Build Command**: `npm run build` (automatically runs `prisma generate` via postinstall)
+- **Environment Variables**: Set in Vercel dashboard (not in code)
+- **Database Pooling**: Required for PostgreSQL (use Vercel Postgres, Neon pooling, or Supabase)
 
-Example serverless export in `main.ts`:
+Example singleton pattern for Prisma:
 ```typescript
-let cachedApp: NestExpressApplication;
+// src/lib/prisma.ts
+import { PrismaClient } from '@prisma/client';
 
-export default async (req: any, res: any) => {
-  if (!cachedApp) {
-    cachedApp = await bootstrap();
-  }
-  return cachedApp.getHttpAdapter().getInstance()(req, res);
-};
+declare global {
+  var prisma: PrismaClient | undefined;
+}
+
+export const prisma = global.prisma || new PrismaClient();
+
+if (process.env.NODE_ENV !== 'production') {
+  global.prisma = prisma;
+}
 ```
 
 ## Common Patterns
 
-### Adding a New Platform (NestJS)
-1. Create service in `backend/src/infrastructure/external-apis/{Platform}Service.ts`
-   - Add `@Injectable()` decorator
-   - Implement `IVideoService` interface with `getVideoAnalytics(url)` method
-2. Add service to `ExternalApisModule` providers and exports
-   ```typescript
-   @Module({
-     providers: [YouTubeService, InstagramService, TikTokService],
-     exports: [YouTubeService, InstagramService, TikTokService],
-   })
-   ```
-3. Update `DetectPlatformUseCase` to recognize new platform URLs
-4. Update `Platform` enum in `shared/constants/Platform.ts`
-5. Add platform to Prisma schema if needed (run `npx prisma migrate dev`)
+### Adding a New Platform
+1. Create service in `frontend/src/lib/services/{platform}.ts`
+   - Export async function `fetch{Platform}Analytics(url: string)`
+   - Use platform's API to fetch video data
+   - Return standardized analytics object
+2. Update `detectPlatform()` in `src/lib/utils/platform-detector.ts`
+   - Add URL pattern matching for new platform
+3. Update `Platform` enum in Prisma schema
+4. Run `npx prisma migrate dev` to update database
+5. Update `/api/analyze/route.ts` to call new service
+
+Example service structure:
+```typescript
+// src/lib/services/tiktok.ts
+export async function fetchTikTokAnalytics(url: string) {
+  const videoId = extractVideoId(url);
+  // Call TikTok API
+  const response = await fetch(`https://api.tiktok.com/...`);
+  const data = await response.json();
+
+  return {
+    platform: 'TIKTOK',
+    videoId,
+    title: data.title,
+    // ... other fields
+  };
+}
+```
 
 ### Adding New Analytics Features
-1. Create or extend use case in `application/use-cases/`
-2. Define DTOs in `application/dtos/` with class-validator decorators
-3. Extend infrastructure services in `infrastructure/` if needed
-4. Create corresponding React component in `frontend/src/components/`
-5. Import and render in frontend `App.jsx`
-6. Update Prisma schema if persistence is required
+1. Create service function in `src/lib/services/` if needed
+2. Update Prisma schema to store new data
+3. Update API route handler to call service and return data
+4. Create React component in `src/components/`
+5. Import and render in `src/app/page.tsx`
 
-### Adding a New Controller Endpoint (NestJS)
-1. Create DTO classes with `class-validator` decorators in `application/dtos/`
-2. Add method to existing controller or create new controller in `presentation/modules/{feature}/`
-3. Use NestJS decorators: `@Controller()`, `@Get()`, `@Post()`, `@Body()`, `@Query()`, `@Param()`
-4. Add guards (`@UseGuards()`), interceptors (`@UseInterceptors()`), Swagger docs
-5. Inject required use cases via constructor (NestJS DI handles it automatically)
-6. Return DTO instances (automatically serialized to JSON)
+### Adding a New API Endpoint
+1. Create route file: `src/app/api/{endpoint}/route.ts`
+2. Export HTTP method handlers: `GET`, `POST`, `PUT`, `DELETE`
+3. Add authentication check if needed (using Clerk)
+4. Validate request body/query parameters
+5. Implement business logic or call service functions
+6. Return `NextResponse.json()` with data
 
-Example (NestJS):
+Example API route:
 ```typescript
-import { Controller, Post, Body, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+// src/app/api/videos/[id]/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs';
+import { prisma } from '@/lib/prisma';
 
-@ApiTags('Analytics')
-@Controller()  // No path needed, set in module
-export class AnalyticsController {
-  constructor(private readonly analyzeVideoUseCase: AnalyzeVideoUseCase) {}
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    // Authentication (optional)
+    const { userId } = auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-  @Post('analyze')
-  @UseGuards(OptionalAuthGuard)
-  @UseInterceptors(AnonymousRateLimitInterceptor)
-  @ApiOperation({ summary: 'Analyze video metrics' })
-  @ApiResponse({ status: 200, description: 'Video analyzed successfully' })
-  async analyze(@Body() request: AnalyzeVideoRequest): Promise<AnalyticsResponse> {
-    return this.analyzeVideoUseCase.execute(request);
+    // Fetch data
+    const video = await prisma.video.findUnique({
+      where: { id: params.id },
+      include: { analytics: true, comments: true },
+    });
+
+    if (!video) {
+      return NextResponse.json({ error: 'Video not found' }, { status: 404 });
+    }
+
+    // Return response
+    return NextResponse.json(video);
+  } catch (error) {
+    console.error('Error fetching video:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 ```
 
-**Key differences from routing-controllers:**
-- `@JsonController()` → `@Controller()` (path set in module)
-- `@QueryParam()` → `@Query()`
-- No need for `@Service()` - use `@Injectable()` on services
-- Guards replace middleware for authentication
-- Interceptors replace middleware for logging/rate limiting
-
 ### Testing API Endpoints
 ```bash
+# Health check
+curl http://localhost:3000/api/health
+
 # Analyze video
-curl -X POST http://localhost:3001/api/analyze \
+curl -X POST http://localhost:3000/api/analyze \
   -H "Content-Type: application/json" \
   -d '{"url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}'
 
+# Compare videos
+curl -X POST http://localhost:3000/api/compare \
+  -H "Content-Type: application/json" \
+  -d '{"urls": ["https://www.youtube.com/watch?v=abc", "https://www.youtube.com/watch?v=xyz"]}'
+
 # Get history
-curl http://localhost:3001/api/history/{videoId}
+curl http://localhost:3000/api/history/{videoId}
 
-# YouTube search
-curl "http://localhost:3001/api/youtube/search?q=react+tutorial"
-
-# Health check
-curl http://localhost:3001/api/health
+# Detect platform
+curl http://localhost:3000/api/detect-platform?url=https://www.youtube.com/watch?v=abc
 ```
 
 ## Important Constraints
@@ -423,17 +438,24 @@ curl http://localhost:3001/api/health
 ## Deployment Notes
 
 ### Vercel Deployment
-1. Backend deployed as serverless function (root: `backend`)
-2. Frontend deployed as Next.js app with serverless functions (root: `frontend`)
-3. Environment variables set in Vercel dashboard (not in code)
-   - Backend: Standard env vars
-   - Frontend: Must prefix public vars with `NEXT_PUBLIC_`
-4. Database connection pooling recommended (use `?connection_limit=1` for serverless)
-5. Frontend API rewrites automatically handled by `next.config.js`
+1. **Single deployment** - Next.js app with API routes (root: `frontend`)
+2. **Environment variables** - Set in Vercel dashboard (Production, Preview, Development)
+   - Must prefix public vars with `NEXT_PUBLIC_`
+   - Server-side vars are only accessible in API routes
+3. **Database setup** - Use Vercel Postgres, Neon, Supabase, or Railway
+   - Connection pooling required for serverless (Neon pooling or Supabase transaction mode)
+4. **Build process** - `npm run build` automatically runs `prisma generate`
+5. **Clerk webhook** - Update webhook URL after first deployment
+
+For detailed deployment instructions, see `frontend/VERCEL_DEPLOYMENT.md`
 
 ### Production Checklist
-- Set `NODE_ENV=production` in backend environment
-- Configure proper `FRONTEND_URL` for CORS
-- Use connection pooling for PostgreSQL (Prisma Data Proxy or Supabase pooler)
-- Monitor YouTube API quota usage
-- Set up error tracking (e.g., Sentry)
+- Set environment variables in Vercel dashboard
+- Use connection pooling for PostgreSQL (`?connection_limit=1&pool_timeout=0`)
+- Configure Clerk webhook URL to production domain
+- Update Clerk allowed origins with production domain
+- Restrict YouTube API key to production domain
+- Monitor YouTube API quota usage (Google Cloud Console)
+- Set up error tracking (e.g., Sentry, LogRocket)
+- Enable Vercel Analytics for performance monitoring
+- Test all API endpoints after deployment

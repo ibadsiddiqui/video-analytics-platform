@@ -6,27 +6,44 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@clerk/backend": "^1.19.8",
     "@clerk/nextjs": "^6.36.5",
+    "@prisma/client": "^5.7.0",
+    "@upstash/redis": "^1.28.0",
     "axios": "^1.13.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
     "clsx": "^2.1.1",
     "framer-motion": "^11.15.0",
+    "googleapis": "^131.0.0",
     "lucide-react": "^0.468.0",
+    "natural": "^6.10.4",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.4.1",
-    "recharts": "^2.13.3"
+    "recharts": "^2.13.3",
+    "sentiment": "^5.0.2",
+    "svix": "^1.84.1"
   },
   "devDependencies": {
+    "@types/natural": "^6.0.1",
     "@types/node": "25.0.3",
     "@types/react": "19.2.7",
+    "@types/sentiment": "^5.0.4",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.17.0",
     "eslint-config-next": "^15.1.0",
     "postcss": "^8.4.49",
+    "prisma": "^5.7.0",
     "tailwindcss": "^3.4.17",
     "typescript": "5.9.3"
   }

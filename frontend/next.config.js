@@ -3,18 +3,6 @@ const nextConfig = {
   // Enable React strict mode
   reactStrictMode: true,
 
-  // API rewrites for development proxy
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: process.env.NEXT_PUBLIC_API_URL
-          ? `${process.env.NEXT_PUBLIC_API_URL}/:path*`
-          : 'http://localhost:3001/api/:path*',
-      },
-    ];
-  },
-
   // Image optimization configuration
   images: {
     remotePatterns: [
