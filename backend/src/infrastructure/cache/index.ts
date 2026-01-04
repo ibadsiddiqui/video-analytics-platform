@@ -4,3 +4,4 @@
  */
 
 export * from './RedisCacheService';
+export { CacheModule } from './cache.module';

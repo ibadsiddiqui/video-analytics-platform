@@ -3,7 +3,7 @@
  * Orchestrates video analytics workflow across platforms
  */
 
-import { Service } from 'typedi';
+import { Injectable } from '@nestjs/common';
 import { RedisCacheService } from '@infrastructure/cache/RedisCacheService';
 import { IVideoService } from '@domain/interfaces/IVideoService';
 import { YouTubeService } from '@infrastructure/external-apis/YouTubeService';
@@ -75,7 +75,7 @@ export interface AnalyticsResult {
   };
 }
 
-@Service()
+@Injectable()
 export class AnalyzeVideoUseCase {
   private platformServices: Map<string, IVideoService>;
 

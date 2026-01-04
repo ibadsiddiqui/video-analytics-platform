@@ -8,7 +8,7 @@
  * - Key masking for display purposes
  */
 
-import { Service } from 'typedi';
+import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { ConfigService } from '@shared/config';
 
@@ -22,7 +22,7 @@ export interface EncryptedData {
   salt: string;
 }
 
-@Service()
+@Injectable()
 export class EncryptionService {
   private readonly ALGORITHM = 'aes-256-gcm';
   private readonly IV_LENGTH = 16; // 128 bits

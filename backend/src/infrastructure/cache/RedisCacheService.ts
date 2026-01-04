@@ -3,7 +3,7 @@
  * Implements ICacheService using Upstash Redis
  */
 
-import { Service } from 'typedi';
+import { Injectable } from '@nestjs/common';
 import { Redis } from '@upstash/redis';
 import { ICacheService } from '@domain/interfaces/ICacheService';
 import { ConfigService } from '@shared/config';
@@ -21,7 +21,7 @@ interface AnalyticsSnapshot {
   [key: string]: any;
 }
 
-@Service()
+@Injectable()
 export class RedisCacheService implements ICacheService {
   private redis: Redis | null = null;
   private enabled: boolean = false;

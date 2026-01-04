@@ -4,15 +4,12 @@
     "target": "ES2022",
     "lib": ["ES2022"],
     "module": "commonjs",
-    "moduleResolution": "node",
 
-    // Emit
+    // Emit - NestJS compilation
     "outDir": "./dist",
     "rootDir": "./src",
-    "sourceMap": true,
     "declaration": true,
-    "declarationMap": true,
-    "removeComments": false,
+    "removeComments": true,
 
     // Type Checking - STRICT MODE
     "strict": true,
@@ -29,7 +26,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
 
-    // Decorators (required for routing-controllers and TypeDI)
+    // Decorators (required for NestJS)
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
 
@@ -59,7 +56,12 @@
     "node_modules",
     "dist",
     "**/*.spec.ts",
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "src/index.ts",
+    "src/App.ts",
+    "src/shared/Container.ts",
+    "src/presentation/controllers/*.ts",
+    "src/presentation/middleware/*.ts"
   ],
   "ts-node": {
     "require": ["tsconfig-paths/register"],

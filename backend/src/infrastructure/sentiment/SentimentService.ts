@@ -3,7 +3,7 @@
  * Provides sentiment analysis, keyword extraction, and text processing
  */
 
-import { Service } from 'typedi';
+import { Injectable } from '@nestjs/common';
 import Sentiment from 'sentiment';
 import natural from 'natural';
 import { SentimentType } from '@domain/entities/Comment';
@@ -52,7 +52,7 @@ export interface AudienceDemographics {
   genderSplit: { male: number; female: number };
 }
 
-@Service()
+@Injectable()
 export class SentimentService {
   private sentiment: Sentiment;
 

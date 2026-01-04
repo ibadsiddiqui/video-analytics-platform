@@ -1,5 +1,5 @@
-import { Service } from 'typedi';
-import * as dotenv from 'dotenv';
+import { Injectable } from '@nestjs/common';
+import { ConfigService as NestConfigService } from '@nestjs/config';
 import {
   IConfigService,
   DatabaseConfig,
@@ -9,137 +9,85 @@ import {
   RateLimitConfig,
 } from '@domain/interfaces';
 
-// Load environment variables
-dotenv.config();
-
 /**
  * Configuration Service Implementation
  * Provides centralized access to environment configuration
  */
-@Service()
+@Injectable()
 export class ConfigService implements IConfigService {
-  private readonly config: {
-    port: number;
-    nodeEnv: string;
-    databaseUrl: string;
-    upstash: {
-      url: string;
-      token: string;
-    };
-    youtube: {
-      apiKey: string;
-    };
-    rapidApi: {
-      key?: string;
-    };
-    frontendUrl: string;
-    rateLimit: {
-      windowMs: number;
-      maxRequests: number;
-    };
-    cacheTtl: number;
-    encryptionKey?: string;
-  };
-
-  constructor() {
-    this.config = {
-      port: parseInt(process.env.PORT || '3001', 10),
-      nodeEnv: process.env.NODE_ENV || 'development',
-      databaseUrl: process.env.DATABASE_URL || '',
-      upstash: {
-        url: process.env.UPSTASH_REDIS_REST_URL || '',
-        token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
-      },
-      youtube: {
-        apiKey: process.env.YOUTUBE_API_KEY || '',
-      },
-      rapidApi: {
-        key: process.env.RAPIDAPI_KEY,
-      },
-      frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
-      rateLimit: {
-        windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),
-        maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),
-      },
-      cacheTtl: parseInt(process.env.CACHE_TTL_SECONDS || '3600', 10),
-      encryptionKey: process.env.ENCRYPTION_KEY,
-    };
-
+  constructor(private readonly nestConfigService: NestConfigService) {
     // Validate required configuration on initialization
     this.validateRequiredConfig();
   }
 
   getPort(): number {
-    return this.config.port;
+    return this.nestConfigService.get<number>('PORT', 3001);
   }
 
   getNodeEnv(): string {
-    return this.config.nodeEnv;
+    return this.nestConfigService.get<string>('NODE_ENV', 'development');
   }
 
   isProduction(): boolean {
-    return this.config.nodeEnv === 'production';
+    return this.getNodeEnv() === 'production';
   }
 
   isDevelopment(): boolean {
-    return this.config.nodeEnv === 'development';
+    return this.getNodeEnv() === 'development';
   }
 
   getDatabaseConfig(): DatabaseConfig {
     return {
-      url: this.config.databaseUrl,
+      url: this.nestConfigService.get<string>('DATABASE_URL', ''),
     };
   }
 
   getUpstashConfig(): UpstashConfig {
     return {
-      url: this.config.upstash.url,
-      token: this.config.upstash.token,
+      url: this.nestConfigService.get<string>('UPSTASH_REDIS_REST_URL', ''),
+      token: this.nestConfigService.get<string>('UPSTASH_REDIS_REST_TOKEN', ''),
     };
   }
 
   getYouTubeConfig(): YouTubeConfig {
     return {
-      apiKey: this.config.youtube.apiKey,
+      apiKey: this.nestConfigService.get<string>('YOUTUBE_API_KEY', ''),
     };
   }
 
   getRapidApiConfig(): RapidApiConfig {
     return {
-      key: this.config.rapidApi.key,
+      key: this.nestConfigService.get<string>('RAPIDAPI_KEY'),
     };
   }
 
   getFrontendUrl(): string {
-    return this.config.frontendUrl;
+    return this.nestConfigService.get<string>('FRONTEND_URL', 'http://localhost:3000');
   }
 
   getRateLimitConfig(): RateLimitConfig {
     return {
-      windowMs: this.config.rateLimit.windowMs,
-      maxRequests: this.config.rateLimit.maxRequests,
+      windowMs: this.nestConfigService.get<number>('RATE_LIMIT_WINDOW_MS', 900000),
+      maxRequests: this.nestConfigService.get<number>('RATE_LIMIT_MAX_REQUESTS', 100),
     };
   }
 
   getCacheTtl(): number {
-    return this.config.cacheTtl;
+    return this.nestConfigService.get<number>('CACHE_TTL_SECONDS', 3600);
   }
 
   /**
    * Get raw environment variable
    */
   get(key: string): string | undefined {
-    return process.env[key];
+    return this.nestConfigService.get<string>(key);
   }
 
   /**
    * Get environment variable as number with optional default
    */
   getNumber(key: string, defaultValue: number = 0): number {
-    const value = process.env[key];
-    if (!value) return defaultValue;
-    const parsed = parseInt(value, 10);
-    return isNaN(parsed) ? defaultValue : parsed;
+    return this.nestConfigService.get<number>(key, defaultValue);
   }
 
   /**
@@ -148,10 +96,10 @@ export class ConfigService implements IConfigService {
    */
   validateRequiredConfig(): void {
     const required: Array<[string, string]> = [
-      ['DATABASE_URL', this.config.databaseUrl],
-      ['UPSTASH_REDIS_REST_URL', this.config.upstash.url],
-      ['UPSTASH_REDIS_REST_TOKEN', this.config.upstash.token],
-      ['YOUTUBE_API_KEY', this.config.youtube.apiKey],
+      ['DATABASE_URL', this.getDatabaseConfig().url],
+      ['UPSTASH_REDIS_REST_URL', this.getUpstashConfig().url],
+      ['UPSTASH_REDIS_REST_TOKEN', this.getUpstashConfig().token],
+      ['YOUTUBE_API_KEY', this.getYouTubeConfig().apiKey],
     ];
 
     const missing = required.filter(([, value]) => !value);

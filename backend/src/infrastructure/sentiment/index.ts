@@ -4,3 +4,4 @@
  */
 
 export * from './SentimentService';
+export { SentimentModule } from './sentiment.module';

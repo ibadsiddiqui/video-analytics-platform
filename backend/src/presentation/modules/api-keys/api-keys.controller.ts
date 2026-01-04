@@ -10,21 +10,20 @@
  */
 
 import {
-  JsonController,
+  Controller,
   Get,
   Post,
   Put,
   Delete,
   Body,
   Param,
-  UseBefore,
+  UseGuards,
   Req,
   HttpCode,
-} from 'routing-controllers';
-import { Service } from 'typedi';
+  HttpStatus,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiSecurity } from '@nestjs/swagger';
 import { PrismaClient } from '@prisma/client';
-import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
-import { requireAuth, AuthRequest } from '@presentation/middleware/AuthMiddleware';
 import { EncryptionService } from '@infrastructure/encryption';
 import {
   CreateApiKeyRequest,
@@ -32,15 +31,17 @@ import {
   ApiKeyResponse,
   TestApiKeyResponse,
 } from '@application/dtos';
+import { AuthGuard, AuthRequest } from '@presentation/guards/auth.guard';
 import { google } from 'googleapis';
 import axios from 'axios';
 
 const prisma = new PrismaClient();
 
-@Service()
-@JsonController('/keys')
-@UseBefore(requireAuth)
-export class ApiKeyController {
+@ApiTags('API Keys')
+@Controller('keys')
+@UseGuards(AuthGuard)
+@ApiSecurity('bearerAuth')
+export class ApiKeysController {
   // Rate limit tracking for testing endpoint
   private testRateLimits = new Map<string, { count: number; resetAt: number }>();
 
@@ -49,15 +50,21 @@ export class ApiKeyController {
   /**
    * POST /api/keys - Add new API key
    */
-  @Post('/')
-  @HttpCode(201)
-  @OpenAPI({
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
     summary: 'Create API Key',
     description: 'Add a new YouTube or Instagram API key for authenticated user',
-    tags: ['API Keys'],
-    security: [{ bearerAuth: [] }],
   })
-  @ResponseSchema(ApiKeyResponse)
+  @ApiResponse({
+    status: 201,
+    description: 'API key created successfully',
+    type: ApiKeyResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - invalid or missing token',
+  })
   async createApiKey(
     @Body() request: CreateApiKeyRequest,
     @Req() req: AuthRequest
@@ -117,14 +124,16 @@ export class ApiKeyController {
   /**
    * GET /api/keys - List user's API keys
    */
-  @Get('/')
-  @OpenAPI({
+  @Get()
+  @ApiOperation({
     summary: 'List API Keys',
     description: 'Get all API keys for authenticated user',
-    tags: ['API Keys'],
-    security: [{ bearerAuth: [] }],
   })
-  @ResponseSchema(ApiKeyResponse, { isArray: true })
+  @ApiResponse({
+    status: 200,
+    description: 'API keys retrieved successfully',
+    type: [ApiKeyResponse],
+  })
   async listApiKeys(@Req() req: AuthRequest): Promise<ApiKeyResponse[]> {
     const userId = req.auth?.userId;
 
@@ -174,14 +183,16 @@ export class ApiKeyController {
   /**
    * PUT /api/keys/:id - Update API key
    */
-  @Put('/:id')
-  @OpenAPI({
+  @Put(':id')
+  @ApiOperation({
     summary: 'Update API Key',
     description: 'Update label or active status of an API key',
-    tags: ['API Keys'],
-    security: [{ bearerAuth: [] }],
   })
-  @ResponseSchema(ApiKeyResponse)
+  @ApiResponse({
+    status: 200,
+    description: 'API key updated successfully',
+    type: ApiKeyResponse,
+  })
   async updateApiKey(
     @Param('id') id: string,
     @Body() request: UpdateApiKeyRequest,
@@ -249,13 +260,15 @@ export class ApiKeyController {
   /**
    * DELETE /api/keys/:id - Delete API key
    */
-  @Delete('/:id')
-  @HttpCode(204)
-  @OpenAPI({
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
     summary: 'Delete API Key',
     description: 'Permanently delete an API key',
-    tags: ['API Keys'],
-    security: [{ bearerAuth: [] }],
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'API key deleted successfully',
   })
   async deleteApiKey(@Param('id') id: string, @Req() req: AuthRequest): Promise<void> {
     const userId = req.auth?.userId;
@@ -296,14 +309,16 @@ export class ApiKeyController {
    * POST /api/keys/:id/test - Test API key validity
    * Rate limited to 5 tests per hour per user
    */
-  @Post('/:id/test')
-  @OpenAPI({
+  @Post(':id/test')
+  @ApiOperation({
     summary: 'Test API Key',
     description: 'Validate API key by making a test request to the platform. Rate limited to 5 tests per hour.',
-    tags: ['API Keys'],
-    security: [{ bearerAuth: [] }],
   })
-  @ResponseSchema(TestApiKeyResponse)
+  @ApiResponse({
+    status: 200,
+    description: 'API key test result',
+    type: TestApiKeyResponse,
+  })
   async testApiKey(@Param('id') id: string, @Req() req: AuthRequest): Promise<TestApiKeyResponse> {
     const userId = req.auth?.userId;
 
@@ -439,7 +454,6 @@ export class ApiKeyController {
   private async testInstagramKey(apiKey: string): Promise<TestApiKeyResponse> {
     try {
       // Make a basic RapidAPI request to test the key
-      // This is a placeholder - adjust based on actual Instagram API endpoint
       const response = await axios.get('https://instagram-scraper-api2.p.rapidapi.com/v1/info', {
         params: { username_or_id_or_url: 'instagram' },
         headers: {

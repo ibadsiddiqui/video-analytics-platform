@@ -4,18 +4,19 @@
  */
 
 import {
-  JsonController,
+  Controller,
   Post,
   Get,
   Req,
   Res,
-  UseBefore,
-} from 'routing-controllers';
+  UseGuards,
+  HttpStatus,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Webhook } from 'svix';
 import { PrismaClient } from '@prisma/client';
-import { Service } from 'typedi';
-import { requireAuth, AuthRequest } from '@presentation/middleware/AuthMiddleware';
+import { AuthGuard, AuthRequest } from '@presentation/guards/auth.guard';
 
 const prisma = new PrismaClient();
 
@@ -37,15 +38,31 @@ interface ClerkWebhookEvent {
  * Auth Controller
  * Routes: /api/auth/*
  */
-@Service()
-@JsonController('/auth')
+@ApiTags('Auth')
+@Controller('auth')
 export class AuthController {
   /**
    * Clerk webhook handler
    * Handles user.created, user.updated, user.deleted events
    * POST /api/auth/webhook
    */
-  @Post('/webhook')
+  @Post('webhook')
+  @ApiOperation({
+    summary: 'Clerk Webhook',
+    description: 'Handles Clerk user lifecycle events (created, updated, deleted)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Webhook processed successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid webhook signature or missing headers',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
   async handleWebhook(
     @Req() req: Request,
     @Res() res: Response
@@ -54,7 +71,7 @@ export class AuthController {
 
     if (!WEBHOOK_SECRET) {
       console.error('Missing CLERK_WEBHOOK_SECRET');
-      return res.status(500).json({ error: 'Server configuration error' });
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Server configuration error' });
     }
 
     // Get Svix headers
@@ -63,7 +80,7 @@ export class AuthController {
     const svix_signature = req.headers['svix-signature'] as string;
 
     if (!svix_id || !svix_timestamp || !svix_signature) {
-      return res.status(400).json({ error: 'Missing svix headers' });
+      return res.status(HttpStatus.BAD_REQUEST).json({ error: 'Missing svix headers' });
     }
 
     // Get the raw body
@@ -81,7 +98,7 @@ export class AuthController {
       }) as ClerkWebhookEvent;
     } catch (err) {
       console.error('Webhook verification failed:', (err as Error).message);
-      return res.status(400).json({ error: 'Invalid webhook signature' });
+      return res.status(HttpStatus.BAD_REQUEST).json({ error: 'Invalid webhook signature' });
     }
 
     // Handle events
@@ -127,10 +144,10 @@ export class AuthController {
           console.log(`Unhandled webhook event: ${eventType}`);
       }
 
-      return res.status(200).json({ success: true });
+      return res.status(HttpStatus.OK).json({ success: true });
     } catch (error) {
       console.error('Webhook handler error:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
     }
   }
 
@@ -138,8 +155,20 @@ export class AuthController {
    * Get current user profile
    * GET /api/auth/me
    */
-  @Get('/me')
-  @UseBefore(requireAuth)
+  @Get('me')
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Get Current User',
+    description: 'Get the profile of the currently authenticated user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile retrieved successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - invalid or missing token',
+  })
   async getCurrentUser(@Req() req: AuthRequest): Promise<any> {
     const userId = req.auth?.userId;
 

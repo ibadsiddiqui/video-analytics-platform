@@ -7,7 +7,7 @@ import swaggerUi from 'swagger-ui-express';
 import { getMetadataArgsStorage } from 'routing-controllers';
 import { routingControllersToSpec } from 'routing-controllers-openapi';
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
-import { Container } from './shared/Container';
+import { Container } from '@shared/Container';
 import { ConfigService } from '@shared/config';
 import { HealthController, AnalyticsController, AuthController, ApiKeyController } from '@presentation/controllers';
 import { ErrorHandler, withAuth, anonymousRateLimit } from '@presentation/middleware';

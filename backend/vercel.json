@@ -1,18 +1,22 @@
 {
   "version": 2,
+  "buildCommand": "yarn vercel-build",
+  "outputDirectory": "dist",
+  "installCommand": "yarn install",
   "builds": [
     {
-      "src": "src/index.js",
+      "src": "dist/main.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "src/index.js"
+      "dest": "dist/main.js"
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "VERCEL": "1"
   }
 }

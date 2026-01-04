@@ -3,7 +3,7 @@
  * Retrieves historical analytics data for tracking growth
  */
 
-import { Service } from 'typedi';
+import { Injectable } from '@nestjs/common';
 import { RedisCacheService } from '@infrastructure/cache/RedisCacheService';
 
 export interface HistorySnapshot {
@@ -26,7 +26,7 @@ export interface HistoryResult {
   };
 }
 
-@Service()
+@Injectable()
 export class GetVideoHistoryUseCase {
   constructor(private readonly cacheService: RedisCacheService) {}
 

@@ -3,7 +3,7 @@
  * Detects which platform a URL belongs to
  */
 
-import { Service } from 'typedi';
+import { Injectable } from '@nestjs/common';
 
 export interface DetectPlatformResult {
   url: string;
@@ -12,7 +12,7 @@ export interface DetectPlatformResult {
   supportedPlatforms: string[];
 }
 
-@Service()
+@Injectable()
 export class DetectPlatformUseCase {
   private readonly supportedPlatforms = ['youtube', 'instagram'];
 

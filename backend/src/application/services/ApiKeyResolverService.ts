@@ -8,14 +8,14 @@
  * Priority: User key > System key
  */
 
-import { Service } from 'typedi';
+import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { EncryptionService } from '@infrastructure/encryption';
 import { ConfigService } from '@shared/config';
 
 const prisma = new PrismaClient();
 
-@Service()
+@Injectable()
 export class ApiKeyResolverService {
   constructor(
     private readonly encryptionService: EncryptionService,

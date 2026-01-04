@@ -1,0 +1,15 @@
+src/
+*.ts
+!dist/**/*.ts
+tsconfig.json
+node_modules/
+.env
+.env.local
+.env.development
+.env.test
+.git/
+.gitignore
+*.md
+tests/
+coverage/
+.DS_Store

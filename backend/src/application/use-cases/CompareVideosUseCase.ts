@@ -3,7 +3,7 @@
  * Compares analytics of multiple videos
  */
 
-import { Service } from 'typedi';
+import { Injectable } from '@nestjs/common';
 import { AnalyzeVideoUseCase, AnalyticsResult } from './AnalyzeVideoUseCase';
 
 export interface ComparisonMetrics {
@@ -43,7 +43,7 @@ export interface ComparisonResult {
   };
 }
 
-@Service()
+@Injectable()
 export class CompareVideosUseCase {
   constructor(private readonly analyzeVideoUseCase: AnalyzeVideoUseCase) {}
 

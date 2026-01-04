@@ -5,3 +5,4 @@
 
 export * from './YouTubeService';
 export * from './InstagramService';
+export { ExternalApisModule } from './external-apis.module';

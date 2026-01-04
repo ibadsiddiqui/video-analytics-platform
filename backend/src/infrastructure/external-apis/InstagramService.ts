@@ -5,7 +5,7 @@
  * This service uses RapidAPI Instagram Scraper as an alternative
  */
 
-import { Service } from 'typedi';
+import { Injectable } from '@nestjs/common';
 import { IVideoService, VideoAnalyticsData, VideoComment } from '@domain/interfaces/IVideoService';
 import { ConfigService } from '@shared/config';
 import { InvalidUrlException } from '@domain/exceptions/InvalidUrlException';
@@ -41,7 +41,7 @@ interface InstagramPost {
   video_url?: string;
 }
 
-@Service()
+@Injectable()
 export class InstagramService implements IVideoService {
   private enabled: boolean = false;
   private readonly baseUrl = 'https://instagram-scraper-api2.p.rapidapi.com';

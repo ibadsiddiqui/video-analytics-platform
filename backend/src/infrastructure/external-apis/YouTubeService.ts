@@ -3,7 +3,7 @@
  * Implements IVideoService for YouTube platform
  */
 
-import { Service } from 'typedi';
+import { Injectable } from '@nestjs/common';
 import { google, youtube_v3 } from 'googleapis';
 import { IVideoService, VideoAnalyticsData, VideoComment } from '@domain/interfaces/IVideoService';
 import { ConfigService } from '@shared/config';
@@ -12,7 +12,7 @@ import { VideoNotFoundException } from '@domain/exceptions/VideoNotFoundExceptio
 import { ServiceNotConfiguredException } from '@domain/exceptions/ServiceNotConfiguredException';
 import { Platform } from '@shared/constants/Platform';
 
-@Service()
+@Injectable()
 export class YouTubeService implements IVideoService {
   private youtube: youtube_v3.Youtube | null = null;
   private enabled: boolean = false;
