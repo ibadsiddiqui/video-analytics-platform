@@ -4,8 +4,8 @@
  * Detect which platform a URL belongs to
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { detectPlatformUseCase } from '@/lib/use-cases';
+import { NextRequest, NextResponse } from "next/server";
+import { detectPlatformUseCase } from "@/lib/use-cases";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
 
     if (!url) {
       return NextResponse.json(
-        { success: false, error: 'URL is required' },
-        { status: 400 }
+        { success: false, error: "URL is required" },
+        { status: 400 },
       );
     }
 
@@ -26,13 +26,14 @@ export async function POST(request: NextRequest) {
       data: result,
     });
   } catch (error) {
-    console.error('Detect platform error:', error);
+    console.error("Detect platform error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to detect platform',
+        error:
+          error instanceof Error ? error.message : "Failed to detect platform",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -40,12 +41,12 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const url = searchParams.get('url');
+    const url = searchParams.get("url");
 
     if (!url) {
       return NextResponse.json(
-        { success: false, error: 'URL is required' },
-        { status: 400 }
+        { success: false, error: "URL is required" },
+        { status: 400 },
       );
     }
 
@@ -56,13 +57,14 @@ export async function GET(request: NextRequest) {
       data: result,
     });
   } catch (error) {
-    console.error('Detect platform error:', error);
+    console.error("Detect platform error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to detect platform',
+        error:
+          error instanceof Error ? error.message : "Failed to detect platform",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

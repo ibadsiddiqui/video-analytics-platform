@@ -3,20 +3,17 @@
  * POST /api/keys - Create new API key
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import { prisma } from '@/lib/prisma';
-import { encryptionService } from '@/lib/encryption';
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
+import { encryptionService } from "@/lib/encryption";
 
 export async function GET() {
   try {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -29,7 +26,7 @@ export async function GET() {
 
     const apiKeys = await prisma.userApiKey.findMany({
       where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     const response = apiKeys.map((apiKey) => {
@@ -55,10 +52,10 @@ export async function GET() {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('List API keys error:', error);
+    console.error("List API keys error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -68,10 +65,7 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -79,10 +73,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const body = await request.json();
@@ -90,15 +81,15 @@ export async function POST(request: NextRequest) {
 
     if (!platform || !apiKey) {
       return NextResponse.json(
-        { error: 'Platform and API key are required' },
-        { status: 400 }
+        { error: "Platform and API key are required" },
+        { status: 400 },
       );
     }
 
-    if (!['YOUTUBE', 'INSTAGRAM'].includes(platform)) {
+    if (!["YOUTUBE", "INSTAGRAM"].includes(platform)) {
       return NextResponse.json(
-        { error: 'Invalid platform. Must be YOUTUBE or INSTAGRAM' },
-        { status: 400 }
+        { error: "Invalid platform. Must be YOUTUBE or INSTAGRAM" },
+        { status: 400 },
       );
     }
 
@@ -119,21 +110,24 @@ export async function POST(request: NextRequest) {
 
     const maskedKey = encryptionService.maskKey(apiKey);
 
-    return NextResponse.json({
-      id: newApiKey.id,
-      platform: newApiKey.platform,
-      label: newApiKey.label,
-      maskedKey,
-      isActive: newApiKey.isActive,
-      lastUsedAt: newApiKey.lastUsedAt,
-      createdAt: newApiKey.createdAt,
-      updatedAt: newApiKey.updatedAt,
-    }, { status: 201 });
-  } catch (error) {
-    console.error('Create API key error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      {
+        id: newApiKey.id,
+        platform: newApiKey.platform,
+        label: newApiKey.label,
+        maskedKey,
+        isActive: newApiKey.isActive,
+        lastUsedAt: newApiKey.lastUsedAt,
+        createdAt: newApiKey.createdAt,
+        updatedAt: newApiKey.updatedAt,
+      },
+      { status: 201 },
+    );
+  } catch (error) {
+    console.error("Create API key error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
