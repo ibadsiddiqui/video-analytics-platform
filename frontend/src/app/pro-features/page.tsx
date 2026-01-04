@@ -33,6 +33,7 @@ interface PricingTier {
   popular?: boolean;
   gradient: string;
   iconBg: string;
+  comingSoon?: boolean;
 }
 
 export default function ProFeaturesPage(): React.JSX.Element {
@@ -68,8 +69,9 @@ export default function ProFeaturesPage(): React.JSX.Element {
       dailyRequests: 100,
       gradient: "from-primary-500 to-primary-600",
       iconBg: "bg-primary-100",
-      cta: "Start Creating",
+      cta: "Coming Soon",
       popular: true,
+      comingSoon: true,
       features: [
         { name: "100 video analyses per day", included: true },
         { name: "Advanced sentiment analysis", included: true },
@@ -91,7 +93,8 @@ export default function ProFeaturesPage(): React.JSX.Element {
       dailyRequests: 500,
       gradient: "from-amber-500 to-amber-600",
       iconBg: "bg-amber-100",
-      cta: "Go Pro",
+      cta: "Coming Soon",
+      comingSoon: true,
       features: [
         { name: "500 video analyses per day", included: true },
         { name: "Advanced sentiment analysis", included: true },
@@ -115,7 +118,8 @@ export default function ProFeaturesPage(): React.JSX.Element {
       dailyRequests: 2000,
       gradient: "from-purple-500 to-purple-600",
       iconBg: "bg-purple-100",
-      cta: "Contact Sales",
+      cta: "Coming Soon",
+      comingSoon: true,
       features: [
         { name: "2,000 video analyses per day", included: true },
         { name: "Advanced sentiment analysis", included: true },
@@ -201,6 +205,15 @@ export default function ProFeaturesPage(): React.JSX.Element {
                   </div>
                 )}
 
+                {/* Coming Soon Badge */}
+                {tier.comingSoon && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <div className="bg-gradient-to-r from-slate-500 to-slate-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                      COMING SOON
+                    </div>
+                  </div>
+                )}
+
                 {/* Tier Header */}
                 <div className="text-center mb-6">
                   <div
@@ -249,10 +262,12 @@ export default function ProFeaturesPage(): React.JSX.Element {
 
                 {/* CTA Button */}
                 <button
+                  disabled={tier.comingSoon}
                   className={`
                     w-full py-3 rounded-xl font-semibold text-white transition-all duration-300
                     bg-gradient-to-r ${tier.gradient} hover:shadow-lg
                     ${tier.popular ? "shadow-md" : ""}
+                    ${tier.comingSoon ? "opacity-50 cursor-not-allowed" : ""}
                   `}
                 >
                   {tier.cta}
@@ -283,12 +298,21 @@ export default function ProFeaturesPage(): React.JSX.Element {
                   </th>
                   <th className="text-center py-4 px-4 font-semibold text-primary-600">
                     CREATOR
+                    <span className="block text-xs text-slate-500 font-normal mt-1">
+                      Coming Soon
+                    </span>
                   </th>
                   <th className="text-center py-4 px-4 font-semibold text-amber-600">
                     PRO
+                    <span className="block text-xs text-slate-500 font-normal mt-1">
+                      Coming Soon
+                    </span>
                   </th>
                   <th className="text-center py-4 px-4 font-semibold text-purple-600">
                     AGENCY
+                    <span className="block text-xs text-slate-500 font-normal mt-1">
+                      Coming Soon
+                    </span>
                   </th>
                 </tr>
               </thead>
@@ -296,9 +320,9 @@ export default function ProFeaturesPage(): React.JSX.Element {
                 <tr className="border-b border-slate-100">
                   <td className="py-4 px-4 text-slate-700">Daily Requests</td>
                   <td className="text-center py-4 px-4 text-slate-600">5</td>
-                  <td className="text-center py-4 px-4 text-slate-600">100</td>
-                  <td className="text-center py-4 px-4 text-slate-600">500</td>
-                  <td className="text-center py-4 px-4 text-slate-600">
+                  <td className="text-center py-4 px-4 text-slate-400">100</td>
+                  <td className="text-center py-4 px-4 text-slate-400">500</td>
+                  <td className="text-center py-4 px-4 text-slate-400">
                     2,000
                   </td>
                 </tr>
@@ -308,13 +332,13 @@ export default function ProFeaturesPage(): React.JSX.Element {
                     <Check className="w-5 h-5 text-green-500 mx-auto" />
                   </td>
                   <td className="text-center py-4 px-4">
-                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                    <Check className="w-5 h-5 text-slate-300 mx-auto" />
                   </td>
                   <td className="text-center py-4 px-4">
-                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                    <Check className="w-5 h-5 text-slate-300 mx-auto" />
                   </td>
                   <td className="text-center py-4 px-4">
-                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                    <Check className="w-5 h-5 text-slate-300 mx-auto" />
                   </td>
                 </tr>
                 <tr className="border-b border-slate-100">
@@ -323,13 +347,13 @@ export default function ProFeaturesPage(): React.JSX.Element {
                   </td>
                   <td className="text-center py-4 px-4 text-slate-400">—</td>
                   <td className="text-center py-4 px-4">
-                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                    <Check className="w-5 h-5 text-slate-300 mx-auto" />
                   </td>
                   <td className="text-center py-4 px-4">
-                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                    <Check className="w-5 h-5 text-slate-300 mx-auto" />
                   </td>
                   <td className="text-center py-4 px-4">
-                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                    <Check className="w-5 h-5 text-slate-300 mx-auto" />
                   </td>
                 </tr>
                 <tr className="border-b border-slate-100">
@@ -338,12 +362,12 @@ export default function ProFeaturesPage(): React.JSX.Element {
                   </td>
                   <td className="text-center py-4 px-4 text-slate-400">—</td>
                   <td className="text-center py-4 px-4">
-                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                    <Check className="w-5 h-5 text-slate-300 mx-auto" />
                   </td>
                   <td className="text-center py-4 px-4">
-                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                    <Check className="w-5 h-5 text-slate-300 mx-auto" />
                   </td>
-                  <td className="text-center py-4 px-4 text-slate-600">
+                  <td className="text-center py-4 px-4 text-slate-400">
                     Unlimited
                   </td>
                 </tr>
@@ -352,13 +376,13 @@ export default function ProFeaturesPage(): React.JSX.Element {
                     Historical Analytics
                   </td>
                   <td className="text-center py-4 px-4 text-slate-400">—</td>
-                  <td className="text-center py-4 px-4 text-slate-600">
+                  <td className="text-center py-4 px-4 text-slate-400">
                     7 days
                   </td>
-                  <td className="text-center py-4 px-4 text-slate-600">
+                  <td className="text-center py-4 px-4 text-slate-400">
                     30 days
                   </td>
-                  <td className="text-center py-4 px-4 text-slate-600">
+                  <td className="text-center py-4 px-4 text-slate-400">
                     Unlimited
                   </td>
                 </tr>
@@ -369,20 +393,20 @@ export default function ProFeaturesPage(): React.JSX.Element {
                   <td className="text-center py-4 px-4 text-slate-400">—</td>
                   <td className="text-center py-4 px-4 text-slate-400">—</td>
                   <td className="text-center py-4 px-4">
-                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                    <Check className="w-5 h-5 text-slate-300 mx-auto" />
                   </td>
                   <td className="text-center py-4 px-4">
-                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                    <Check className="w-5 h-5 text-slate-300 mx-auto" />
                   </td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-4 px-4 text-slate-700">Export Reports</td>
                   <td className="text-center py-4 px-4 text-slate-400">—</td>
                   <td className="text-center py-4 px-4 text-slate-400">—</td>
-                  <td className="text-center py-4 px-4 text-slate-600">
+                  <td className="text-center py-4 px-4 text-slate-400">
                     CSV/PDF
                   </td>
-                  <td className="text-center py-4 px-4 text-slate-600">
+                  <td className="text-center py-4 px-4 text-slate-400">
                     CSV/PDF + White-label
                   </td>
                 </tr>
@@ -391,13 +415,13 @@ export default function ProFeaturesPage(): React.JSX.Element {
                   <td className="text-center py-4 px-4 text-slate-600">
                     Community
                   </td>
-                  <td className="text-center py-4 px-4 text-slate-600">
+                  <td className="text-center py-4 px-4 text-slate-400">
                     Email
                   </td>
-                  <td className="text-center py-4 px-4 text-slate-600">
+                  <td className="text-center py-4 px-4 text-slate-400">
                     Priority Email
                   </td>
-                  <td className="text-center py-4 px-4 text-slate-600">
+                  <td className="text-center py-4 px-4 text-slate-400">
                     24/7 + Manager
                   </td>
                 </tr>
