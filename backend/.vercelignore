@@ -1,15 +1,35 @@
+# Source files (will be built)
 src/
+
+# Compiled output (keep TypeScript files in dist)
 *.ts
 !dist/**/*.ts
-tsconfig.json
+!src/**/*.ts
+!api/**/*.ts
+
+# Config files needed for build
+# tsconfig.json - REQUIRED for NestJS build
+# nest-cli.json - REQUIRED for NestJS build
+
+# Dependencies
 node_modules/
+
+# Environment files
 .env
 .env.local
 .env.development
 .env.test
+
+# Git
 .git/
 .gitignore
+
+# Documentation
 *.md
+
+# Testing
 tests/
 coverage/
+
+# OS
 .DS_Store
