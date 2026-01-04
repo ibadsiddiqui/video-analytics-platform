@@ -8,7 +8,7 @@
 		"start": "node dist/main.js",
 		"build": "nest build",
 		"prebuild": "yarn type-check",
-		"vercel-build": "prisma generate && nest build",
+		"vercel-build": "prisma generate && nest build && ls -la dist && cp -r dist api/dist && echo 'Build completed successfully'",
 		"clean": "rm -rf dist",
 		"type-check": "tsc --noEmit",
 		"test": "jest",

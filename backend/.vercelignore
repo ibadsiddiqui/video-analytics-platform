@@ -1,15 +1,14 @@
-# Source files (will be built)
-src/
-
-# Compiled output (keep TypeScript files in dist)
-*.ts
-!dist/**/*.ts
-!src/**/*.ts
-!api/**/*.ts
-
 # Config files needed for build
 # tsconfig.json - REQUIRED for NestJS build
 # nest-cli.json - REQUIRED for NestJS build
+# src/ directory - REQUIRED for NestJS build (source files)
+
+# Note: src/ and dist/ are both needed:
+# - src/ for build time (NestJS compiles TypeScript)
+# - dist/ for runtime (after build, contains JavaScript)
+
+# Build artifacts that should be regenerated
+dist/
 
 # Dependencies
 node_modules/
