@@ -1,30 +1,37 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Youtube, Instagram, BarChart3, Sparkles, TrendingUp, MessageSquare } from 'lucide-react';
+import React from "react";
+import { motion } from "framer-motion";
+import {
+  Youtube,
+  Instagram,
+  BarChart3,
+  Sparkles,
+  TrendingUp,
+  MessageSquare,
+} from "lucide-react";
 
 const features = [
   {
     icon: TrendingUp,
-    title: 'View Analytics',
-    description: 'Track views, likes, comments, and engagement metrics',
-    color: 'text-blue-500',
-    bg: 'bg-blue-50',
+    title: "View Analytics",
+    description: "Track views, likes, comments, and engagement metrics",
+    color: "text-blue-500",
+    bg: "bg-blue-50",
   },
   {
     icon: MessageSquare,
-    title: 'Sentiment Analysis',
-    description: 'AI-powered analysis of comment sentiment',
-    color: 'text-violet-500',
-    bg: 'bg-violet-50',
+    title: "Sentiment Analysis",
+    description: "AI-powered analysis of comment sentiment",
+    color: "text-violet-500",
+    bg: "bg-violet-50",
   },
   {
     icon: BarChart3,
-    title: 'Audience Insights',
-    description: 'Demographics and engagement patterns',
-    color: 'text-emerald-500',
-    bg: 'bg-emerald-50',
+    title: "Audience Insights",
+    description: "Demographics and engagement patterns",
+    color: "text-emerald-500",
+    bg: "bg-emerald-50",
   },
 ];
 
@@ -47,7 +54,7 @@ function EmptyState() {
           <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-primary-500 to-accent-purple flex items-center justify-center shadow-xl shadow-primary-500/30">
             <BarChart3 className="w-16 h-16 text-white" />
           </div>
-          
+
           {/* Floating badges */}
           <motion.div
             animate={{ y: [0, -10, 0] }}
@@ -58,7 +65,7 @@ function EmptyState() {
               <Youtube className="w-5 h-5 text-white" />
             </div>
           </motion.div>
-          
+
           <motion.div
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
@@ -80,7 +87,8 @@ function EmptyState() {
             Ready to Analyze Your Videos
           </h3>
           <p className="text-slate-600 max-w-lg mx-auto">
-            Paste a YouTube or Instagram video URL above to get started with comprehensive analytics and AI-powered insights.
+            Paste a YouTube or Instagram video URL above to get started with
+            comprehensive analytics and AI-powered insights.
           </p>
         </motion.div>
       </div>
@@ -95,10 +103,14 @@ function EmptyState() {
             transition={{ delay: 0.3 + index * 0.1 }}
             className="bg-white rounded-2xl p-6 shadow-card border border-slate-100 hover:shadow-card-hover transition-shadow"
           >
-            <div className={`w-12 h-12 rounded-xl ${feature.bg} flex items-center justify-center mb-4`}>
+            <div
+              className={`w-12 h-12 rounded-xl ${feature.bg} flex items-center justify-center mb-4`}
+            >
               <feature.icon className={`w-6 h-6 ${feature.color}`} />
             </div>
-            <h4 className="font-semibold text-slate-900 mb-2">{feature.title}</h4>
+            <h4 className="font-semibold text-slate-900 mb-2">
+              {feature.title}
+            </h4>
             <p className="text-sm text-slate-600">{feature.description}</p>
           </motion.div>
         ))}

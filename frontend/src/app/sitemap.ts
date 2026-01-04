@@ -1,6 +1,8 @@
-import type { MetadataRoute } from 'next';
+import type { MetadataRoute } from "next";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://video-analytics-platform.vercel.app';
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  "https://video-analytics-platform.vercel.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const currentDate = new Date();
@@ -9,13 +11,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: siteUrl,
       lastModified: currentDate,
-      changeFrequency: 'daily',
+      changeFrequency: "daily",
       priority: 1.0,
     },
     {
       url: `${siteUrl}/guide/youtube-api-key`,
       lastModified: currentDate,
-      changeFrequency: 'monthly',
+      changeFrequency: "monthly",
       priority: 0.8,
     },
   ];

@@ -17,7 +17,7 @@ export class VideoMetrics {
     public readonly likeCount: number,
     public readonly commentCount: number,
     public readonly shareCount: number,
-    public readonly engagementRate: number
+    public readonly engagementRate: number,
   ) {}
 
   /**
@@ -29,7 +29,7 @@ export class VideoMetrics {
       props.likeCount,
       props.commentCount,
       props.shareCount || 0,
-      props.engagementRate
+      props.engagementRate,
     );
   }
 
@@ -40,7 +40,7 @@ export class VideoMetrics {
     viewCount: number,
     likeCount: number,
     commentCount: number,
-    shareCount: number = 0
+    shareCount: number = 0,
   ): number {
     if (viewCount === 0) return 0;
     const totalEngagement = likeCount + commentCount + shareCount;
@@ -54,13 +54,13 @@ export class VideoMetrics {
     viewCount: number,
     likeCount: number,
     commentCount: number,
-    shareCount: number = 0
+    shareCount: number = 0,
   ): VideoMetrics {
     const engagementRate = this.calculateEngagementRate(
       viewCount,
       likeCount,
       commentCount,
-      shareCount
+      shareCount,
     );
 
     return new VideoMetrics(
@@ -68,7 +68,7 @@ export class VideoMetrics {
       likeCount,
       commentCount,
       shareCount,
-      engagementRate
+      engagementRate,
     );
   }
 
@@ -159,13 +159,13 @@ export class VideoMetrics {
    */
   private formatNumber(num: number): string {
     if (num >= 1000000000) {
-      return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+      return (num / 1000000000).toFixed(1).replace(/\.0$/, "") + "B";
     }
     if (num >= 1000000) {
-      return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+      return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
     }
     if (num >= 1000) {
-      return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+      return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
     }
     return num.toLocaleString();
   }

@@ -3,7 +3,7 @@
  * Defines interfaces for user API keys across different platforms
  */
 
-export type ApiKeyPlatform = 'YOUTUBE' | 'INSTAGRAM';
+export type ApiKeyPlatform = "YOUTUBE" | "INSTAGRAM";
 
 export interface ApiKey {
   id: string;

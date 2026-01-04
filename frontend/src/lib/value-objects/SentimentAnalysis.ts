@@ -3,7 +3,7 @@
  * Immutable value object representing sentiment analysis results
  */
 
-export type SentimentType = 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL';
+export type SentimentType = "POSITIVE" | "NEGATIVE" | "NEUTRAL";
 
 export interface SentimentDistribution {
   positive: number; // percentage
@@ -23,7 +23,7 @@ export class SentimentAnalysis {
     public readonly overallScore: number,
     public readonly overallSentiment: SentimentType,
     public readonly distribution: SentimentDistribution,
-    public readonly totalAnalyzed: number
+    public readonly totalAnalyzed: number,
   ) {}
 
   /**
@@ -34,7 +34,7 @@ export class SentimentAnalysis {
       props.overallScore,
       props.overallSentiment,
       props.distribution,
-      props.totalAnalyzed
+      props.totalAnalyzed,
     );
   }
 
@@ -45,16 +45,16 @@ export class SentimentAnalysis {
     positiveCount: number,
     neutralCount: number,
     negativeCount: number,
-    weightedScore: number
+    weightedScore: number,
   ): SentimentAnalysis {
     const total = positiveCount + neutralCount + negativeCount;
 
     if (total === 0) {
       return new SentimentAnalysis(
         0,
-        'NEUTRAL',
+        "NEUTRAL",
         { positive: 0, neutral: 100, negative: 0 },
-        0
+        0,
       );
     }
 
@@ -70,7 +70,7 @@ export class SentimentAnalysis {
       parseFloat(weightedScore.toFixed(4)),
       sentiment,
       distribution,
-      total
+      total,
     );
   }
 
@@ -78,9 +78,9 @@ export class SentimentAnalysis {
    * Determine sentiment type from score
    */
   private static determineSentiment(score: number): SentimentType {
-    if (score > 0.1) return 'POSITIVE';
-    if (score < -0.1) return 'NEGATIVE';
-    return 'NEUTRAL';
+    if (score > 0.1) return "POSITIVE";
+    if (score < -0.1) return "NEGATIVE";
+    return "NEUTRAL";
   }
 
   /**
@@ -116,9 +116,9 @@ export class SentimentAnalysis {
     const { positive, neutral, negative } = this.distribution;
     const max = Math.max(positive, neutral, negative);
 
-    if (max === positive) return 'POSITIVE';
-    if (max === negative) return 'NEGATIVE';
-    return 'NEUTRAL';
+    if (max === positive) return "POSITIVE";
+    if (max === negative) return "NEGATIVE";
+    return "NEUTRAL";
   }
 
   /**
@@ -128,7 +128,7 @@ export class SentimentAnalysis {
     const max = Math.max(
       this.distribution.positive,
       this.distribution.neutral,
-      this.distribution.negative
+      this.distribution.negative,
     );
     return max;
   }

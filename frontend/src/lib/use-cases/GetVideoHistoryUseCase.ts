@@ -3,7 +3,7 @@
  * Retrieves historical analytics data for tracking growth
  */
 
-import { cacheService } from '@/lib/redis';
+import { cacheService } from "@/lib/redis";
 
 export interface HistorySnapshot {
   timestamp: string;
@@ -33,7 +33,7 @@ export class GetVideoHistoryUseCase {
    */
   async execute(videoId: string, days: number = 7): Promise<HistoryResult> {
     if (!videoId) {
-      throw new Error('Video ID is required');
+      throw new Error("Video ID is required");
     }
 
     if (!this.cache.isEnabled()) {
@@ -60,7 +60,9 @@ export class GetVideoHistoryUseCase {
   /**
    * Calculate summary statistics
    */
-  private calculateSummary(snapshots: HistorySnapshot[]): HistoryResult['summary'] {
+  private calculateSummary(
+    snapshots: HistorySnapshot[],
+  ): HistoryResult["summary"] {
     if (snapshots.length === 0) {
       return { totalSnapshots: 0 };
     }

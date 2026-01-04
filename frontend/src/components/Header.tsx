@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { BarChart3, Sparkles, Settings } from 'lucide-react';
-import Link from 'next/link';
-import { useUser } from '@clerk/nextjs';
-import AuthButton from '@/components/AuthButton';
-import { ROUTES } from '@/config/routes';
+import React from "react";
+import { motion } from "framer-motion";
+import { BarChart3, Sparkles, Settings } from "lucide-react";
+import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
+import AuthButton from "@/components/AuthButton";
+import { ROUTES } from "@/config/routes";
 
 function Header() {
   const { isSignedIn } = useUser();
@@ -16,7 +16,10 @@ function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href={ROUTES.HOME} className="hover:opacity-80 transition-opacity duration-200">
+          <Link
+            href={ROUTES.HOME}
+            className="hover:opacity-80 transition-opacity duration-200"
+          >
             <motion.div
               className="flex items-center gap-3 cursor-pointer"
               initial={{ opacity: 0, x: -20 }}
@@ -38,7 +41,9 @@ function Header() {
                 <h1 className="text-xl font-bold text-slate-900">
                   Video<span className="gradient-text">Analytics</span>
                 </h1>
-                <p className="text-xs text-slate-500 -mt-0.5">AI-Powered Insights</p>
+                <p className="text-xs text-slate-500 -mt-0.5">
+                  AI-Powered Insights
+                </p>
               </div>
             </motion.div>
           </Link>
@@ -55,7 +60,9 @@ function Header() {
               className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-full hover:from-amber-100 hover:to-orange-100 hover:border-amber-300 transition-all duration-300 cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-amber-500" />
-              <span className="text-sm font-medium text-amber-700">Pro Features</span>
+              <span className="text-sm font-medium text-amber-700">
+                Pro Features
+              </span>
             </Link>
 
             {/* Settings Link (authenticated users only) */}
@@ -66,7 +73,9 @@ function Header() {
                 title="Settings"
               >
                 <Settings className="w-4 h-4 text-slate-600" />
-                <span className="text-sm font-medium text-slate-700">Settings</span>
+                <span className="text-sm font-medium text-slate-700">
+                  Settings
+                </span>
               </Link>
             )}
 

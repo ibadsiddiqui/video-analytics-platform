@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Hash, Tag } from 'lucide-react';
+import React from "react";
+import { motion } from "framer-motion";
+import { Hash, Tag } from "lucide-react";
 
 function KeywordsCloud({ keywords, hashtags }) {
   const hasKeywords = keywords && keywords.length > 0;
@@ -25,8 +25,12 @@ function KeywordsCloud({ keywords, hashtags }) {
           <Tag className="w-5 h-5 text-amber-600" />
         </div>
         <div>
-          <h3 className="font-semibold text-slate-900">Top Keywords & Hashtags</h3>
-          <p className="text-sm text-slate-500">Most mentioned terms in comments</p>
+          <h3 className="font-semibold text-slate-900">
+            Top Keywords & Hashtags
+          </h3>
+          <p className="text-sm text-slate-500">
+            Most mentioned terms in comments
+          </p>
         </div>
       </div>
 
@@ -66,17 +70,19 @@ function KeywordsCloud({ keywords, hashtags }) {
               // Size based on score
               const maxScore = keywords[0]?.score || 1;
               const normalizedScore = keyword.score / maxScore;
-              const sizeClass = normalizedScore > 0.7 
-                ? 'text-base font-semibold' 
-                : normalizedScore > 0.4 
-                  ? 'text-sm font-medium' 
-                  : 'text-xs font-medium';
-              
-              const bgClass = normalizedScore > 0.7 
-                ? 'bg-slate-800 text-white' 
-                : normalizedScore > 0.4 
-                  ? 'bg-slate-200 text-slate-700' 
-                  : 'bg-slate-100 text-slate-600';
+              const sizeClass =
+                normalizedScore > 0.7
+                  ? "text-base font-semibold"
+                  : normalizedScore > 0.4
+                    ? "text-sm font-medium"
+                    : "text-xs font-medium";
+
+              const bgClass =
+                normalizedScore > 0.7
+                  ? "bg-slate-800 text-white"
+                  : normalizedScore > 0.4
+                    ? "bg-slate-200 text-slate-700"
+                    : "bg-slate-100 text-slate-600";
 
               return (
                 <motion.span

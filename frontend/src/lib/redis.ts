@@ -2,14 +2,14 @@
  * Redis Cache Service using Upstash Redis
  */
 
-import { Redis } from '@upstash/redis';
+import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
-const CACHE_TTL = parseInt(process.env.CACHE_TTL_SECONDS || '3600');
+const CACHE_TTL = parseInt(process.env.CACHE_TTL_SECONDS || "3600");
 
 interface AnalyticsSnapshot {
   timestamp: string;
@@ -46,7 +46,7 @@ export class RedisCacheService {
       if (value) {
         console.log(`🎯 Cache HIT: ${key}`);
         // Upstash Redis automatically deserializes JSON
-        if (typeof value === 'string') {
+        if (typeof value === "string") {
           return JSON.parse(value) as T;
         }
         return value as T;
@@ -54,7 +54,7 @@ export class RedisCacheService {
       console.log(`❌ Cache MISS: ${key}`);
       return null;
     } catch (error) {
-      console.error('[Redis] Get error:', error);
+      console.error("[Redis] Get error:", error);
       return null;
     }
   }
@@ -62,7 +62,11 @@ export class RedisCacheService {
   /**
    * Set value in cache with TTL
    */
-  async set(key: string, value: any, ttl: number = CACHE_TTL): Promise<boolean> {
+  async set(
+    key: string,
+    value: any,
+    ttl: number = CACHE_TTL,
+  ): Promise<boolean> {
     try {
       const timeToLive = ttl || this.DEFAULT_TTL;
       const serialized = JSON.stringify(value);
@@ -70,7 +74,7 @@ export class RedisCacheService {
       console.log(`💾 Cached: ${key} (TTL: ${timeToLive}s)`);
       return true;
     } catch (error) {
-      console.error('[Redis] Set error:', error);
+      console.error("[Redis] Set error:", error);
       return false;
     }
   }
@@ -84,7 +88,7 @@ export class RedisCacheService {
       console.log(`🗑️  Cache deleted: ${key}`);
       return true;
     } catch (error) {
-      console.error('[Redis] Delete error:', error);
+      console.error("[Redis] Delete error:", error);
       return false;
     }
   }
@@ -97,7 +101,7 @@ export class RedisCacheService {
       const result = await redis.exists(key);
       return result === 1;
     } catch (error) {
-      console.error('[Redis] Exists error:', error);
+      console.error("[Redis] Exists error:", error);
       return false;
     }
   }
@@ -105,12 +109,16 @@ export class RedisCacheService {
   /**
    * Set value with expiration timestamp
    */
-  async setWithExpiry(key: string, value: any, expiryTimestamp: number): Promise<boolean> {
+  async setWithExpiry(
+    key: string,
+    value: any,
+    expiryTimestamp: number,
+  ): Promise<boolean> {
     try {
       await redis.set(key, JSON.stringify(value), { exat: expiryTimestamp });
       return true;
     } catch (error) {
-      console.error('[Redis] SetWithExpiry error:', error);
+      console.error("[Redis] SetWithExpiry error:", error);
       return false;
     }
   }
@@ -122,7 +130,7 @@ export class RedisCacheService {
     try {
       return await redis.incr(key);
     } catch (error) {
-      console.error('[Redis] Incr error:', error);
+      console.error("[Redis] Incr error:", error);
       return 0;
     }
   }
@@ -130,7 +138,10 @@ export class RedisCacheService {
   /**
    * Get analytics history for a video
    */
-  async getAnalyticsHistory(videoId: string, days: number = 7): Promise<AnalyticsSnapshot[]> {
+  async getAnalyticsHistory(
+    videoId: string,
+    days: number = 7,
+  ): Promise<AnalyticsSnapshot[]> {
     const key = `history:${videoId}`;
 
     try {
@@ -139,13 +150,13 @@ export class RedisCacheService {
       if (!data || data.length === 0) return [];
 
       return data.map((item) => {
-        if (typeof item === 'string') {
+        if (typeof item === "string") {
           return JSON.parse(item) as AnalyticsSnapshot;
         }
         return item as AnalyticsSnapshot;
       });
     } catch (error) {
-      console.error('Get history error:', error);
+      console.error("Get history error:", error);
       return [];
     }
   }
@@ -153,7 +164,10 @@ export class RedisCacheService {
   /**
    * Add analytics snapshot to history
    */
-  async addToHistory(videoId: string, snapshot: AnalyticsSnapshot): Promise<boolean> {
+  async addToHistory(
+    videoId: string,
+    snapshot: AnalyticsSnapshot,
+  ): Promise<boolean> {
     const key = `history:${videoId}`;
 
     try {
@@ -162,7 +176,7 @@ export class RedisCacheService {
       await redis.expire(key, 86400 * 30); // 30 days TTL
       return true;
     } catch (error) {
-      console.error('Add history error:', error);
+      console.error("Add history error:", error);
       return false;
     }
   }

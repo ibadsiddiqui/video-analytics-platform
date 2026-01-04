@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Crown, CheckCircle, Zap, Clock } from 'lucide-react';
-import Link from 'next/link';
-import { useUser } from '@clerk/nextjs';
-import { ROUTES } from '@/config/routes';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Crown, CheckCircle, Zap, Clock } from "lucide-react";
+import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
+import { ROUTES } from "@/config/routes";
 
 interface UpgradePromptProps {
   isOpen: boolean;
@@ -14,7 +14,12 @@ interface UpgradePromptProps {
   resetAt: Date | null;
 }
 
-function UpgradePrompt({ isOpen, onClose, requestsLimit, resetAt }: UpgradePromptProps): React.JSX.Element {
+function UpgradePrompt({
+  isOpen,
+  onClose,
+  requestsLimit,
+  resetAt,
+}: UpgradePromptProps): React.JSX.Element {
   const [isClosing, setIsClosing] = useState(false);
   const { isSignedIn, user } = useUser();
 
@@ -32,31 +37,31 @@ function UpgradePrompt({ isOpen, onClose, requestsLimit, resetAt }: UpgradePromp
     midnight.setHours(24, 0, 0, 0);
 
     if (date.toDateString() === midnight.toDateString()) {
-      return 'tomorrow at midnight';
+      return "tomorrow at midnight";
     }
 
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
     });
   };
 
   const features = [
     {
       icon: Zap,
-      title: 'Unlimited Requests',
-      description: 'Analyze unlimited videos without daily limits',
+      title: "Unlimited Requests",
+      description: "Analyze unlimited videos without daily limits",
     },
     {
       icon: Clock,
-      title: 'Save History',
-      description: 'Keep track of all your analyzed videos',
+      title: "Save History",
+      description: "Keep track of all your analyzed videos",
     },
     {
       icon: Crown,
-      title: 'Pro Features',
-      description: 'Access advanced analytics and insights',
+      title: "Pro Features",
+      description: "Access advanced analytics and insights",
     },
   ];
 
@@ -79,10 +84,10 @@ function UpgradePrompt({ isOpen, onClose, requestsLimit, resetAt }: UpgradePromp
           <motion.div
             key="modal"
             className="fixed top-1/2 left-1/2 z-50 w-full max-w-md"
-            initial={{ opacity: 0, scale: 0.9, y: '-50%', x: '-50%' }}
-            animate={{ opacity: 1, scale: 1, y: '-50%', x: '-50%' }}
-            exit={{ opacity: 0, scale: 0.9, y: '-50%', x: '-50%' }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            initial={{ opacity: 0, scale: 0.9, y: "-50%", x: "-50%" }}
+            animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
+            exit={{ opacity: 0, scale: 0.9, y: "-50%", x: "-50%" }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
           >
             <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden">
               {/* Gradient background */}
@@ -104,7 +109,7 @@ function UpgradePrompt({ isOpen, onClose, requestsLimit, resetAt }: UpgradePromp
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
+                    transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
                     className="flex justify-center mb-4"
                   >
                     <div className="relative">
@@ -133,7 +138,10 @@ function UpgradePrompt({ isOpen, onClose, requestsLimit, resetAt }: UpgradePromp
                     className="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-lg"
                   >
                     <p className="text-sm text-amber-800">
-                      Your limit resets <span className="font-semibold">{formatResetTime(resetAt)}</span>
+                      Your limit resets{" "}
+                      <span className="font-semibold">
+                        {formatResetTime(resetAt)}
+                      </span>
                     </p>
                   </motion.div>
                 )}
@@ -154,8 +162,12 @@ function UpgradePrompt({ isOpen, onClose, requestsLimit, resetAt }: UpgradePromp
                           <Icon className="w-5 h-5 text-primary-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-slate-900">{feature.title}</p>
-                          <p className="text-sm text-slate-600">{feature.description}</p>
+                          <p className="font-medium text-slate-900">
+                            {feature.title}
+                          </p>
+                          <p className="text-sm text-slate-600">
+                            {feature.description}
+                          </p>
                         </div>
                       </motion.div>
                     );
@@ -172,10 +184,7 @@ function UpgradePrompt({ isOpen, onClose, requestsLimit, resetAt }: UpgradePromp
                   {isSignedIn ? (
                     <>
                       {/* Upgrade button for logged-in users */}
-                      <Link
-                        href={ROUTES.PRO_FEATURES}
-                        className="block w-full"
-                      >
+                      <Link href={ROUTES.PRO_FEATURES} className="block w-full">
                         <button
                           className="w-full px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-primary-500/25 hover:shadow-lg hover:shadow-primary-600/30 active:scale-95"
                           aria-label="Upgrade to pro plan"
@@ -196,10 +205,7 @@ function UpgradePrompt({ isOpen, onClose, requestsLimit, resetAt }: UpgradePromp
                   ) : (
                     <>
                       {/* Sign up button for anonymous users */}
-                      <Link
-                        href={ROUTES.SIGN_UP}
-                        className="block w-full"
-                      >
+                      <Link href={ROUTES.SIGN_UP} className="block w-full">
                         <button
                           className="w-full px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-primary-500/25 hover:shadow-lg hover:shadow-primary-600/30 active:scale-95"
                           aria-label="Create a free account"
@@ -211,7 +217,7 @@ function UpgradePrompt({ isOpen, onClose, requestsLimit, resetAt }: UpgradePromp
                       {/* Sign in link */}
                       <div className="text-center">
                         <p className="text-sm text-slate-600 mb-2">
-                          Already have an account?{' '}
+                          Already have an account?{" "}
                         </p>
                         <Link
                           href={ROUTES.SIGN_IN}
@@ -237,8 +243,8 @@ function UpgradePrompt({ isOpen, onClose, requestsLimit, resetAt }: UpgradePromp
                 {/* Footer note */}
                 <p className="text-center text-xs text-slate-500 mt-6 leading-relaxed">
                   {isSignedIn
-                    ? 'Upgrade your plan to analyze unlimited videos and unlock pro features.'
-                    : 'No credit card required. Create an account to unlock unlimited video analytics.'}
+                    ? "Upgrade your plan to analyze unlimited videos and unlock pro features."
+                    : "No credit card required. Create an account to unlock unlimited video analytics."}
                 </p>
               </div>
             </div>

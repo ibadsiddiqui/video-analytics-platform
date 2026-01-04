@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
 import {
   Youtube,
   Instagram,
@@ -13,9 +13,9 @@ import {
   Clock,
   ToggleLeft,
   ToggleRight,
-} from 'lucide-react';
-import toast from 'react-hot-toast';
-import type { ApiKey } from '@/types/apiKey';
+} from "lucide-react";
+import toast from "react-hot-toast";
+import type { ApiKey } from "@/types/apiKey";
 
 interface ApiKeyCardProps {
   apiKey: ApiKey;
@@ -28,20 +28,20 @@ interface ApiKeyCardProps {
 
 const PLATFORM_CONFIG = {
   YOUTUBE: {
-    name: 'YouTube',
+    name: "YouTube",
     icon: Youtube,
-    gradient: 'from-red-500/10 to-red-600/10',
-    border: 'border-red-500/30',
-    color: 'text-red-600',
-    badge: 'bg-red-100 text-red-700',
+    gradient: "from-red-500/10 to-red-600/10",
+    border: "border-red-500/30",
+    color: "text-red-600",
+    badge: "bg-red-100 text-red-700",
   },
   INSTAGRAM: {
-    name: 'Instagram',
+    name: "Instagram",
     icon: Instagram,
-    gradient: 'from-purple-500/10 to-pink-600/10',
-    border: 'border-purple-500/30',
-    color: 'text-purple-600',
-    badge: 'bg-purple-100 text-purple-700',
+    gradient: "from-purple-500/10 to-pink-600/10",
+    border: "border-purple-500/30",
+    color: "text-purple-600",
+    badge: "bg-purple-100 text-purple-700",
   },
 } as const;
 
@@ -63,21 +63,23 @@ export default function ApiKeyCard({
       // For now, we'll just copy the masked key as a placeholder
       await navigator.clipboard.writeText(apiKey.maskedKey);
       setCopied(true);
-      toast.success('Masked key copied to clipboard');
+      toast.success("Masked key copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast.error('Failed to copy key');
+      toast.error("Failed to copy key");
     }
   };
 
   const formatLastUsed = (dateString: string | null): string => {
-    if (!dateString) return 'Never used';
+    if (!dateString) return "Never used";
 
     const date = new Date(dateString);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const diffHours = Math.floor(
+      (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+    );
     const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
     if (diffDays > 0) {
@@ -89,7 +91,7 @@ export default function ApiKeyCard({
     if (diffMinutes > 0) {
       return `${diffMinutes}m ago`;
     }
-    return 'Just now';
+    return "Just now";
   };
 
   return (
@@ -117,9 +119,13 @@ export default function ApiKeyCard({
               {config.name}
             </p>
             {apiKey.label && (
-              <p className="text-sm font-semibold text-slate-900 truncate">{apiKey.label}</p>
+              <p className="text-sm font-semibold text-slate-900 truncate">
+                {apiKey.label}
+              </p>
             )}
-            <p className={`text-xs ${apiKey.label ? 'text-slate-500' : 'text-slate-700 font-medium'}`}>
+            <p
+              className={`text-xs ${apiKey.label ? "text-slate-500" : "text-slate-700 font-medium"}`}
+            >
               {apiKey.label ? apiKey.maskedKey : `Key: ${apiKey.maskedKey}`}
             </p>
           </div>
@@ -132,12 +138,12 @@ export default function ApiKeyCard({
               inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
               ${
                 apiKey.isActive
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-slate-200 text-slate-600'
+                  ? "bg-green-100 text-green-700"
+                  : "bg-slate-200 text-slate-600"
               }
             `}
           >
-            {apiKey.isActive ? '● Active' : '● Inactive'}
+            {apiKey.isActive ? "● Active" : "● Inactive"}
           </span>
         </div>
       </div>
@@ -187,11 +193,11 @@ export default function ApiKeyCard({
             transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
             ${
               apiKey.isActive
-                ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                ? "bg-green-100 text-green-700 hover:bg-green-200"
+                : "bg-slate-200 text-slate-700 hover:bg-slate-300"
             }
           `}
-          title={apiKey.isActive ? 'Deactivate key' : 'Activate key'}
+          title={apiKey.isActive ? "Deactivate key" : "Activate key"}
         >
           {apiKey.isActive ? (
             <>

@@ -1,18 +1,25 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  ResponsiveContainer, 
-  Cell 
-} from 'recharts';
-import { Users, User } from 'lucide-react';
+import React from "react";
+import { motion } from "framer-motion";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
+import { Users, User } from "lucide-react";
 
-const AGE_COLORS = ['#818cf8', '#a78bfa', '#c084fc', '#e879f9', '#f472b6', '#fb7185'];
+const AGE_COLORS = [
+  "#818cf8",
+  "#a78bfa",
+  "#c084fc",
+  "#e879f9",
+  "#f472b6",
+  "#fb7185",
+];
 
 function DemographicsChart({ demographics }) {
   if (!demographics) return null;
@@ -32,7 +39,9 @@ function DemographicsChart({ demographics }) {
           <Users className="w-5 h-5 text-rose-600" />
         </div>
         <div>
-          <h3 className="font-semibold text-slate-900">Audience Demographics</h3>
+          <h3 className="font-semibold text-slate-900">
+            Audience Demographics
+          </h3>
           <p className="text-sm text-slate-500">Estimated audience breakdown</p>
         </div>
       </div>
@@ -40,17 +49,23 @@ function DemographicsChart({ demographics }) {
       <div className="grid grid-cols-2 gap-6">
         {/* Age Distribution */}
         <div>
-          <h4 className="text-sm font-medium text-slate-600 mb-4">Age Distribution</h4>
+          <h4 className="text-sm font-medium text-slate-600 mb-4">
+            Age Distribution
+          </h4>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={ageDistribution} layout="vertical" barCategoryGap="25%">
+              <BarChart
+                data={ageDistribution}
+                layout="vertical"
+                barCategoryGap="25%"
+              >
                 <XAxis type="number" hide />
-                <YAxis 
-                  type="category" 
-                  dataKey="range" 
+                <YAxis
+                  type="category"
+                  dataKey="range"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#64748b', fontSize: 11 }}
+                  tick={{ fill: "#64748b", fontSize: 11 }}
                   width={45}
                 />
                 <Bar dataKey="percentage" radius={[0, 6, 6, 0]} maxBarSize={20}>
@@ -65,7 +80,9 @@ function DemographicsChart({ demographics }) {
 
         {/* Gender Split */}
         <div>
-          <h4 className="text-sm font-medium text-slate-600 mb-4">Gender Split</h4>
+          <h4 className="text-sm font-medium text-slate-600 mb-4">
+            Gender Split
+          </h4>
           <div className="space-y-4 pt-2">
             {/* Male */}
             <div>
@@ -74,9 +91,13 @@ function DemographicsChart({ demographics }) {
                   <div className="p-1.5 rounded-lg bg-blue-50">
                     <User className="w-4 h-4 text-blue-500" />
                   </div>
-                  <span className="text-sm font-medium text-slate-700">Male</span>
+                  <span className="text-sm font-medium text-slate-700">
+                    Male
+                  </span>
                 </div>
-                <span className="text-lg font-bold text-blue-500">{genderSplit.male}%</span>
+                <span className="text-lg font-bold text-blue-500">
+                  {genderSplit.male}%
+                </span>
               </div>
               <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                 <motion.div
@@ -95,9 +116,13 @@ function DemographicsChart({ demographics }) {
                   <div className="p-1.5 rounded-lg bg-pink-50">
                     <User className="w-4 h-4 text-pink-500" />
                   </div>
-                  <span className="text-sm font-medium text-slate-700">Female</span>
+                  <span className="text-sm font-medium text-slate-700">
+                    Female
+                  </span>
                 </div>
-                <span className="text-lg font-bold text-pink-500">{genderSplit.female}%</span>
+                <span className="text-lg font-bold text-pink-500">
+                  {genderSplit.female}%
+                </span>
               </div>
               <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                 <motion.div
@@ -119,9 +144,9 @@ function DemographicsChart({ demographics }) {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 + i * 0.05 }}
                 className={`w-4 h-4 rounded-full ${
-                  i < Math.round(genderSplit.male / 10) 
-                    ? 'bg-blue-400' 
-                    : 'bg-pink-400'
+                  i < Math.round(genderSplit.male / 10)
+                    ? "bg-blue-400"
+                    : "bg-pink-400"
                 }`}
               />
             ))}

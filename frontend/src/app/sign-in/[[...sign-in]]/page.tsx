@@ -1,5 +1,5 @@
-import { SignIn } from '@clerk/nextjs';
-import { ROUTES } from '@/config/routes';
+import { SignIn } from "@clerk/nextjs";
+import { ROUTES } from "@/config/routes";
 
 export default function SignInPage() {
   return (

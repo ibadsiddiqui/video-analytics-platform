@@ -3,8 +3,8 @@
  * Fetches video analytics from YouTube Data API v3
  */
 
-import { google, youtube_v3 } from 'googleapis';
-import { configService } from './config';
+import { google, youtube_v3 } from "googleapis";
+import { configService } from "./config";
 
 export interface VideoAnalyticsData {
   platform: string;
@@ -53,13 +53,13 @@ export class YouTubeService {
 
     if (apiKey) {
       this.youtube = google.youtube({
-        version: 'v3',
+        version: "v3",
         auth: apiKey,
       });
       this.enabled = true;
-      console.log('✅ YouTube API initialized');
+      console.log("✅ YouTube API initialized");
     } else {
-      console.warn('⚠️  YouTube API key not configured');
+      console.warn("⚠️  YouTube API key not configured");
     }
   }
 
@@ -98,29 +98,34 @@ export class YouTubeService {
   /**
    * Fetch video analytics from YouTube API
    */
-  async getVideoAnalytics(url: string, apiKey?: string): Promise<VideoAnalyticsData> {
+  async getVideoAnalytics(
+    url: string,
+    apiKey?: string,
+  ): Promise<VideoAnalyticsData> {
     // Use provided API key or default
     let youtubeClient = this.youtube;
 
     if (apiKey) {
       // Create temporary client with provided API key
       youtubeClient = google.youtube({
-        version: 'v3',
+        version: "v3",
         auth: apiKey,
       });
     } else if (!this.enabled || !this.youtube) {
-      throw new Error('YouTube API not configured. Please provide YOUTUBE_API_KEY');
+      throw new Error(
+        "YouTube API not configured. Please provide YOUTUBE_API_KEY",
+      );
     }
 
     const videoId = this.extractVideoId(url);
     if (!videoId) {
-      throw new Error('Invalid YouTube URL');
+      throw new Error("Invalid YouTube URL");
     }
 
     try {
       // Fetch video details
       const videoResponse = await youtubeClient!.videos.list({
-        part: ['snippet', 'statistics', 'contentDetails'],
+        part: ["snippet", "statistics", "contentDetails"],
         id: [videoId],
       });
 
@@ -138,11 +143,11 @@ export class YouTubeService {
       const contentDetails = video.contentDetails!;
 
       // Parse duration (ISO 8601 format)
-      const duration = this.parseDuration(contentDetails.duration || '');
+      const duration = this.parseDuration(contentDetails.duration || "");
 
       // Fetch channel details
       const channelResponse = await youtubeClient!.channels.list({
-        part: ['snippet', 'statistics'],
+        part: ["snippet", "statistics"],
         id: [snippet.channelId!],
       });
 
@@ -152,20 +157,20 @@ export class YouTubeService {
       const comments = await this.fetchComments(videoId, 100, youtubeClient!);
 
       // Calculate engagement metrics
-      const viewCount = parseInt(statistics.viewCount || '0');
-      const likeCount = parseInt(statistics.likeCount || '0');
-      const commentCount = parseInt(statistics.commentCount || '0');
+      const viewCount = parseInt(statistics.viewCount || "0");
+      const likeCount = parseInt(statistics.likeCount || "0");
+      const commentCount = parseInt(statistics.commentCount || "0");
 
       const engagementRate =
         viewCount > 0 ? ((likeCount + commentCount) / viewCount) * 100 : 0;
 
       return {
-        platform: 'YOUTUBE',
+        platform: "YOUTUBE",
         platformVideoId: videoId,
         url: url,
 
         // Video info
-        title: snippet.title || '',
+        title: snippet.title || "",
         description: snippet.description || undefined,
         thumbnailUrl:
           snippet.thumbnails?.maxres?.url ||
@@ -178,10 +183,13 @@ export class YouTubeService {
         categoryId: snippet.categoryId || undefined,
 
         // Channel info
-        channelName: snippet.channelTitle || '',
-        channelId: snippet.channelId || '',
-        channelThumbnail: channel?.snippet?.thumbnails?.default?.url || undefined,
-        channelSubscribers: parseInt(channel?.statistics?.subscriberCount || '0'),
+        channelName: snippet.channelTitle || "",
+        channelId: snippet.channelId || "",
+        channelThumbnail:
+          channel?.snippet?.thumbnails?.default?.url || undefined,
+        channelSubscribers: parseInt(
+          channel?.statistics?.subscriberCount || "0",
+        ),
 
         // Statistics
         viewCount,
@@ -196,8 +204,9 @@ export class YouTubeService {
         fetchedAt: new Date().toISOString(),
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('YouTube API error:', errorMessage);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      console.error("YouTube API error:", errorMessage);
       throw new Error(`Failed to fetch YouTube video: ${errorMessage}`);
     }
   }
@@ -208,16 +217,16 @@ export class YouTubeService {
   private async fetchComments(
     videoId: string,
     maxResults: number = 100,
-    youtubeClient: youtube_v3.Youtube
+    youtubeClient: youtube_v3.Youtube,
   ): Promise<VideoComment[]> {
     if (!youtubeClient) return [];
 
     try {
       const commentsResponse = await youtubeClient.commentThreads.list({
-        part: ['snippet'],
+        part: ["snippet"],
         videoId: videoId,
         maxResults: maxResults,
-        order: 'relevance',
+        order: "relevance",
       });
 
       if (!commentsResponse.data.items) return [];
@@ -225,15 +234,18 @@ export class YouTubeService {
       return commentsResponse.data.items.map((item) => {
         const comment = item.snippet!.topLevelComment!.snippet!;
         return {
-          id: item.id || '',
-          authorName: comment.authorDisplayName || 'Unknown',
-          content: this.decodeHtmlEntities(comment.textDisplay || ''),
+          id: item.id || "",
+          authorName: comment.authorDisplayName || "Unknown",
+          content: this.decodeHtmlEntities(comment.textDisplay || ""),
           likeCount: comment.likeCount || 0,
           publishedAt: comment.publishedAt || undefined,
         };
       });
     } catch (error) {
-      console.warn('Comments disabled or unavailable:', error instanceof Error ? error.message : 'Unknown error');
+      console.warn(
+        "Comments disabled or unavailable:",
+        error instanceof Error ? error.message : "Unknown error",
+      );
       return [];
     }
   }
@@ -242,24 +254,24 @@ export class YouTubeService {
    * Decode HTML entities and clean comment text
    */
   private decodeHtmlEntities(text: string): string {
-    if (!text) return '';
+    if (!text) return "";
 
     // Decode HTML entities
     let decoded = text
       .replace(/&quot;/g, '"')
       .replace(/&#39;/g, "'")
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
       .replace(/&#x27;/g, "'")
-      .replace(/&#x2F;/g, '/')
-      .replace(/&nbsp;/g, ' ');
+      .replace(/&#x2F;/g, "/")
+      .replace(/&nbsp;/g, " ");
 
     // Remove HTML tags (like <a>, <br>, etc.)
-    decoded = decoded.replace(/<[^>]*>/g, '');
+    decoded = decoded.replace(/<[^>]*>/g, "");
 
     // Clean up extra whitespace
-    decoded = decoded.replace(/\s+/g, ' ').trim();
+    decoded = decoded.replace(/\s+/g, " ").trim();
 
     return decoded;
   }
@@ -273,9 +285,9 @@ export class YouTubeService {
     const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
     if (!match) return 0;
 
-    const hours = parseInt(match[1] || '0', 10);
-    const minutes = parseInt(match[2] || '0', 10);
-    const seconds = parseInt(match[3] || '0', 10);
+    const hours = parseInt(match[1] || "0", 10);
+    const minutes = parseInt(match[2] || "0", 10);
+    const seconds = parseInt(match[3] || "0", 10);
 
     return hours * 3600 + minutes * 60 + seconds;
   }

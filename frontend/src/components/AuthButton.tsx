@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { SignInButton, SignUpButton, UserButton, useUser } from '@clerk/nextjs';
-import { LogIn, UserPlus } from 'lucide-react';
-import { ROUTES } from '@/config/routes';
+import React from "react";
+import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
+import { LogIn, UserPlus } from "lucide-react";
+import { ROUTES } from "@/config/routes";
 
 export default function AuthButton(): React.JSX.Element {
   const { isSignedIn } = useUser();
@@ -15,7 +15,7 @@ export default function AuthButton(): React.JSX.Element {
           afterSignOutUrl={ROUTES.HOME}
           appearance={{
             elements: {
-              avatarBox: 'w-10 h-10',
+              avatarBox: "w-10 h-10",
             },
           }}
         />

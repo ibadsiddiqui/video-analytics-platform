@@ -5,7 +5,9 @@ This document outlines the complete migration of the NestJS backend APIs to Next
 ## 📋 What Was Done
 
 ### 1. **Dependencies Installed**
+
 All necessary backend dependencies have been added to `package.json`:
+
 - `@prisma/client` - Database ORM
 - `@upstash/redis` - Redis caching
 - `@clerk/backend` - Server-side authentication
@@ -16,37 +18,42 @@ All necessary backend dependencies have been added to `package.json`:
 - `svix` - Clerk webhook verification
 
 ### 2. **Database Setup**
+
 - ✅ Prisma schema copied to `frontend/prisma/schema.prisma`
 - ✅ Prisma client singleton created at `src/lib/prisma.ts`
 - ✅ Scripts added to `package.json` for Prisma operations
 
 ### 3. **Infrastructure Services**
+
 All infrastructure services migrated to `src/lib/`:
 
-| Service | File | Description |
-|---------|------|-------------|
-| Prisma | `prisma.ts` | Database client singleton |
-| Redis | `redis.ts` | Cache service with Upstash |
-| Config | `config.ts` | Environment configuration |
+| Service    | File            | Description                         |
+| ---------- | --------------- | ----------------------------------- |
+| Prisma     | `prisma.ts`     | Database client singleton           |
+| Redis      | `redis.ts`      | Cache service with Upstash          |
+| Config     | `config.ts`     | Environment configuration           |
 | Encryption | `encryption.ts` | AES-256-GCM encryption for API keys |
-| Sentiment | `sentiment.ts` | Comment sentiment analysis |
-| YouTube | `youtube.ts` | YouTube Data API v3 integration |
-| Instagram | `instagram.ts` | Instagram scraper (RapidAPI) |
+| Sentiment  | `sentiment.ts`  | Comment sentiment analysis          |
+| YouTube    | `youtube.ts`    | YouTube Data API v3 integration     |
+| Instagram  | `instagram.ts`  | Instagram scraper (RapidAPI)        |
 
 ### 4. **Business Logic (Use Cases)**
+
 All use cases migrated to `src/lib/use-cases/`:
 
-| Use Case | File | Description |
-|----------|------|-------------|
-| Analyze Video | `AnalyzeVideoUseCase.ts` | Main analytics workflow |
-| Compare Videos | `CompareVideosUseCase.ts` | Side-by-side comparison |
-| Detect Platform | `DetectPlatformUseCase.ts` | URL platform detection |
-| Get History | `GetVideoHistoryUseCase.ts` | Historical data retrieval |
+| Use Case        | File                        | Description               |
+| --------------- | --------------------------- | ------------------------- |
+| Analyze Video   | `AnalyzeVideoUseCase.ts`    | Main analytics workflow   |
+| Compare Videos  | `CompareVideosUseCase.ts`   | Side-by-side comparison   |
+| Detect Platform | `DetectPlatformUseCase.ts`  | URL platform detection    |
+| Get History     | `GetVideoHistoryUseCase.ts` | Historical data retrieval |
 
 ### 5. **Next.js API Routes**
+
 All API endpoints implemented in `src/app/api/`:
 
 #### Analytics Endpoints
+
 - ✅ `POST /api/analyze` - Analyze video (with body)
 - ✅ `GET /api/analyze?url=...` - Analyze video (with query params)
 - ✅ `POST /api/compare` - Compare multiple videos
@@ -55,10 +62,12 @@ All API endpoints implemented in `src/app/api/`:
 - ✅ `GET /api/detect-platform?url=...` - Detect platform (with query params)
 
 #### Authentication Endpoints
+
 - ✅ `POST /api/auth/webhook` - Clerk webhook handler
 - ✅ `GET /api/auth/me` - Get current user profile
 
 #### API Keys Management
+
 - ✅ `GET /api/keys` - List user's API keys
 - ✅ `POST /api/keys` - Create new API key
 - ✅ `PUT /api/keys/:id` - Update API key
@@ -66,6 +75,7 @@ All API endpoints implemented in `src/app/api/`:
 - ✅ `POST /api/keys/:id/test` - Test API key validity
 
 #### Health Check
+
 - ✅ `GET /api/health` - Health status endpoint
 
 ## 🚀 Setup Instructions
@@ -79,6 +89,7 @@ cp .env.example .env
 ```
 
 **Required variables:**
+
 ```env
 # Database (PostgreSQL)
 DATABASE_URL="postgresql://username:password@localhost:5432/dbname"
@@ -100,6 +111,7 @@ ENCRYPTION_KEY=your-base64-encryption-key
 ```
 
 **Generate encryption key:**
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
@@ -130,6 +142,7 @@ The frontend will run on `http://localhost:3000` with all API routes available a
 ### Analyze a Video
 
 **POST Request:**
+
 ```bash
 curl -X POST http://localhost:3000/api/analyze \
   -H "Content-Type: application/json" \
@@ -137,6 +150,7 @@ curl -X POST http://localhost:3000/api/analyze \
 ```
 
 **GET Request:**
+
 ```bash
 curl "http://localhost:3000/api/analyze?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 ```
@@ -178,12 +192,14 @@ curl "http://localhost:3000/api/auth/me" \
 ### Manage API Keys (requires authentication)
 
 **List API Keys:**
+
 ```bash
 curl "http://localhost:3000/api/keys" \
   -H "Authorization: Bearer your-clerk-token"
 ```
 
 **Create API Key:**
+
 ```bash
 curl -X POST http://localhost:3000/api/keys \
   -H "Authorization: Bearer your-clerk-token" \
@@ -196,6 +212,7 @@ curl -X POST http://localhost:3000/api/keys \
 ```
 
 **Test API Key:**
+
 ```bash
 curl -X POST "http://localhost:3000/api/keys/{id}/test" \
   -H "Authorization: Bearer your-clerk-token"
@@ -241,27 +258,32 @@ frontend/
 ## 🔑 Key Features
 
 ### 1. **Caching**
+
 - All video analytics cached for 1 hour in Redis
 - Cache keys: `video:{platform}:{videoId}`
 - History stored as Redis lists with 30-day TTL
 
 ### 2. **Authentication**
+
 - Optional authentication using Clerk
 - Protected routes require valid JWT token
 - User profile and API key management
 
 ### 3. **Encryption**
+
 - User API keys encrypted with AES-256-GCM
 - Secure key derivation using scrypt
 - Random IV and salt per encryption
 
 ### 4. **Sentiment Analysis**
+
 - Analyzes video comments
 - Extracts keywords using TF-IDF
 - Identifies hashtags
 - Generates engagement metrics
 
 ### 5. **Rate Limiting**
+
 - API key testing: 5 tests per hour per user
 - In-memory rate limiting (consider Redis for production)
 
@@ -277,6 +299,7 @@ frontend/
 ## 🧪 Testing
 
 Test all endpoints using the examples above or use tools like:
+
 - Postman
 - Insomnia
 - curl
@@ -310,6 +333,7 @@ yarn start               # Start production server
 ## 🎉 Migration Complete!
 
 All backend APIs have been successfully migrated to the Next.js frontend. You can now:
+
 - ✅ Analyze videos directly from the frontend
 - ✅ Manage user authentication
 - ✅ Store and encrypt API keys

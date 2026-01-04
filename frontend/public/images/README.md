@@ -37,11 +37,13 @@ PWA screenshots for app store listings:
 ## Design Guidelines
 
 ### Favicon & Icons
+
 - Use the app's primary color scheme (primary-500: #6366f1, accent-purple: #8b5cf6)
 - Include the BarChart3 icon or similar analytics symbol
 - Maintain clarity at small sizes
 
 ### Open Graph Image
+
 - Dimensions: 1200x630 pixels
 - Include:
   - App name: "Video Analytics Platform"
@@ -50,6 +52,7 @@ PWA screenshots for app store listings:
   - Keep text readable at smaller sizes
 
 ### PWA Icons
+
 - Follow [Progressive Web App icon guidelines](https://web.dev/maskable-icon/)
 - Use solid background colors
 - Ensure icon is centered and has proper padding
@@ -67,6 +70,7 @@ PWA screenshots for app store listings:
 ⚠️ **Assets Pending**: All image assets are currently missing and need to be created.
 
 The application will function without these assets, but they are important for:
+
 - Professional appearance
 - SEO optimization
 - Social media sharing

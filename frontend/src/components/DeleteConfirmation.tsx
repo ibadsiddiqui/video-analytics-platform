@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, X, AlertCircle } from 'lucide-react';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Trash2, X, AlertCircle } from "lucide-react";
 
 interface DeleteConfirmationProps {
   isOpen: boolean;
@@ -47,7 +47,7 @@ export default function DeleteConfirmation({
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            transition={{ type: "spring", damping: 20, stiffness: 300 }}
             className="fixed inset-0 flex items-center justify-center z-50 px-4"
           >
             <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-200">
@@ -78,7 +78,9 @@ export default function DeleteConfirmation({
                     <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">
                       Will be deleted:
                     </p>
-                    <p className="text-sm font-mono text-slate-700 break-all">{itemPreview}</p>
+                    <p className="text-sm font-mono text-slate-700 break-all">
+                      {itemPreview}
+                    </p>
                   </div>
                 )}
 

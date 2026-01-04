@@ -3,11 +3,11 @@
  * Orchestrates video analytics workflow across platforms
  */
 
-import { cacheService } from '@/lib/redis';
-import { sentimentService } from '@/lib/sentiment';
-import { VideoMetrics } from '@/lib/value-objects/VideoMetrics';
-import { youtubeService } from '@/lib/youtube';
-import { instagramService } from '@/lib/instagram';
+import { cacheService } from "@/lib/redis";
+import { sentimentService } from "@/lib/sentiment";
+import { VideoMetrics } from "@/lib/value-objects/VideoMetrics";
+import { youtubeService } from "@/lib/youtube";
+import { instagramService } from "@/lib/instagram";
 
 export interface AnalyzeVideoOptions {
   skipCache?: boolean;
@@ -101,7 +101,7 @@ interface VideoAnalyticsData {
 export class AnalyzeVideoUseCase {
   constructor(
     private readonly cache = cacheService,
-    private readonly sentiment = sentimentService
+    private readonly sentiment = sentimentService,
   ) {}
 
   /**
@@ -110,17 +110,17 @@ export class AnalyzeVideoUseCase {
   detectPlatform(url: string): string | null {
     const normalized = url.toLowerCase();
 
-    if (normalized.includes('youtube.com') || normalized.includes('youtu.be')) {
-      return 'youtube';
+    if (normalized.includes("youtube.com") || normalized.includes("youtu.be")) {
+      return "youtube";
     }
-    if (normalized.includes('instagram.com')) {
-      return 'instagram';
+    if (normalized.includes("instagram.com")) {
+      return "instagram";
     }
-    if (normalized.includes('tiktok.com')) {
-      return 'tiktok';
+    if (normalized.includes("tiktok.com")) {
+      return "tiktok";
     }
-    if (normalized.includes('vimeo.com')) {
-      return 'vimeo';
+    if (normalized.includes("vimeo.com")) {
+      return "vimeo";
     }
 
     return null;
@@ -134,18 +134,27 @@ export class AnalyzeVideoUseCase {
    * is provided for client-side usage patterns but assumes you have
    * platform services available or will call backend API routes.
    */
-  async execute(url: string, options: AnalyzeVideoOptions = {}): Promise<AnalyticsResult> {
-    const { skipCache = false, includeSentiment = true, includeKeywords = true } = options;
+  async execute(
+    url: string,
+    options: AnalyzeVideoOptions = {},
+  ): Promise<AnalyticsResult> {
+    const {
+      skipCache = false,
+      includeSentiment = true,
+      includeKeywords = true,
+    } = options;
 
     // Validate URL
-    if (!url || typeof url !== 'string') {
-      throw new Error('Valid URL is required');
+    if (!url || typeof url !== "string") {
+      throw new Error("Valid URL is required");
     }
 
     // Detect platform
     const platform = this.detectPlatform(url);
     if (!platform) {
-      throw new Error('Unsupported platform. Currently supporting: YouTube, Instagram');
+      throw new Error(
+        "Unsupported platform. Currently supporting: YouTube, Instagram",
+      );
     }
 
     // Check cache first
@@ -164,11 +173,19 @@ export class AnalyzeVideoUseCase {
     const videoData = await this.fetchVideoData(url, platform, options.apiKey);
 
     // Perform sentiment analysis on comments
-    let sentimentAnalysis: ReturnType<typeof this.sentiment.createSentimentAnalysis> | null = null;
+    let sentimentAnalysis: ReturnType<
+      typeof this.sentiment.createSentimentAnalysis
+    > | null = null;
     let analyzedComments: any[] = [];
-    if (includeSentiment && videoData.comments && videoData.comments.length > 0) {
+    if (
+      includeSentiment &&
+      videoData.comments &&
+      videoData.comments.length > 0
+    ) {
       const result = this.sentiment.analyzeComments(videoData.comments);
-      sentimentAnalysis = this.sentiment.createSentimentAnalysis(result.analyzed);
+      sentimentAnalysis = this.sentiment.createSentimentAnalysis(
+        result.analyzed,
+      );
       analyzedComments = result.analyzed;
     }
 
@@ -179,7 +196,7 @@ export class AnalyzeVideoUseCase {
       const commentTexts = videoData.comments.map((c) => c.content);
       keywords = this.sentiment.extractKeywords(commentTexts);
       hashtags = this.sentiment.extractHashtags([
-        videoData.description || '',
+        videoData.description || "",
         ...commentTexts,
       ]);
     }
@@ -189,7 +206,7 @@ export class AnalyzeVideoUseCase {
       videoData.viewCount,
       videoData.likeCount,
       videoData.commentCount,
-      videoData.publishedAt
+      videoData.publishedAt,
     );
 
     // Generate demographics
@@ -200,7 +217,7 @@ export class AnalyzeVideoUseCase {
       videoData.viewCount,
       videoData.likeCount,
       videoData.commentCount,
-      videoData.shareCount || 0
+      videoData.shareCount || 0,
     );
 
     // Compile full analytics response
@@ -222,7 +239,9 @@ export class AnalyzeVideoUseCase {
         id: videoData.channelId,
         thumbnail: videoData.channelThumbnail,
         subscribers: videoData.channelSubscribers,
-        subscribersFormatted: this.formatNumber(videoData.channelSubscribers || 0),
+        subscribersFormatted: this.formatNumber(
+          videoData.channelSubscribers || 0,
+        ),
       },
 
       metrics: {
@@ -290,12 +309,12 @@ export class AnalyzeVideoUseCase {
   private async fetchVideoData(
     url: string,
     platform: string,
-    apiKey?: string
+    apiKey?: string,
   ): Promise<VideoAnalyticsData> {
     switch (platform.toLowerCase()) {
-      case 'youtube':
+      case "youtube":
         return await youtubeService.getVideoAnalytics(url, apiKey);
-      case 'instagram':
+      case "instagram":
         return await instagramService.getVideoAnalytics(url);
       default:
         throw new Error(`Unsupported platform: ${platform}`);
@@ -307,13 +326,13 @@ export class AnalyzeVideoUseCase {
    */
   private formatNumber(num: number): string {
     if (num >= 1000000000) {
-      return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+      return (num / 1000000000).toFixed(1).replace(/\.0$/, "") + "B";
     }
     if (num >= 1000000) {
-      return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+      return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
     }
     if (num >= 1000) {
-      return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+      return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
     }
     return num.toLocaleString();
   }
@@ -322,31 +341,31 @@ export class AnalyzeVideoUseCase {
    * Format duration in seconds to human readable
    */
   private formatDuration(seconds: number): string {
-    if (!seconds) return '0:00';
+    if (!seconds) return "0:00";
 
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
 
     if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs
+      return `${hours}:${minutes.toString().padStart(2, "0")}:${secs
         .toString()
-        .padStart(2, '0')}`;
+        .padStart(2, "0")}`;
     }
 
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    return `${minutes}:${secs.toString().padStart(2, "0")}`;
   }
 
   /**
    * Find peak engagement day
    */
   private findPeakDay(
-    engagementByDay: Array<{ day: string; engagement: number; views: number }>
+    engagementByDay: Array<{ day: string; engagement: number; views: number }>,
   ): { day: string; engagement: number; views: number } | null {
     if (!engagementByDay || engagementByDay.length === 0) return null;
 
     return engagementByDay.reduce((peak, current) =>
-      current.engagement > peak.engagement ? current : peak
+      current.engagement > peak.engagement ? current : peak,
     );
   }
 }

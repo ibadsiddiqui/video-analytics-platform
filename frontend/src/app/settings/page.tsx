@@ -1,59 +1,68 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useUser } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus, Lock, AlertCircle, Loader } from 'lucide-react';
-import Link from 'next/link';
-import { Toaster } from 'react-hot-toast';
-import Header from '@/components/Header';
-import ApiKeyCard from '@/components/ApiKeyCard';
-import ApiKeyModal from '@/components/ApiKeyModal';
-import DeleteConfirmation from '@/components/DeleteConfirmation';
-import { useApiKeys } from '@/hooks/useApiKeys';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { ROUTES } from '@/config/routes';
-import type { ApiKey, AddKeyRequest, UpdateKeyRequest } from '@/types/apiKey';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Plus, Lock, AlertCircle, Loader } from "lucide-react";
+import Link from "next/link";
+import { Toaster } from "react-hot-toast";
+import Header from "@/components/Header";
+import ApiKeyCard from "@/components/ApiKeyCard";
+import ApiKeyModal from "@/components/ApiKeyModal";
+import DeleteConfirmation from "@/components/DeleteConfirmation";
+import { useApiKeys } from "@/hooks/useApiKeys";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { ROUTES } from "@/config/routes";
+import type { ApiKey, AddKeyRequest, UpdateKeyRequest } from "@/types/apiKey";
 
 const TIER_CONFIG = {
   FREE: {
-    name: 'FREE',
+    name: "FREE",
     limit: 5,
-    color: 'slate',
-    icon: 'Sparkles',
-    features: ['5 analyses/day', 'Basic sentiment'],
+    color: "slate",
+    icon: "Sparkles",
+    features: ["5 analyses/day", "Basic sentiment"],
   },
   CREATOR: {
-    name: 'CREATOR',
+    name: "CREATOR",
     limit: 100,
-    color: 'primary',
-    icon: 'Zap',
-    features: ['100 analyses/day', 'API key management'],
+    color: "primary",
+    icon: "Zap",
+    features: ["100 analyses/day", "API key management"],
   },
   PRO: {
-    name: 'PRO',
+    name: "PRO",
     limit: 500,
-    color: 'amber',
-    icon: 'Crown',
-    features: ['500 analyses/day', 'Unlimited API keys'],
+    color: "amber",
+    icon: "Crown",
+    features: ["500 analyses/day", "Unlimited API keys"],
   },
   AGENCY: {
-    name: 'AGENCY',
+    name: "AGENCY",
     limit: 2000,
-    color: 'purple',
-    icon: 'Building2',
-    features: ['2,000 analyses/day', 'Unlimited API keys'],
+    color: "purple",
+    icon: "Building2",
+    features: ["2,000 analyses/day", "Unlimited API keys"],
   },
 } as const;
 
 export default function SettingsPage(): React.JSX.Element {
   const { user, isLoaded, isSignedIn } = useUser();
   const router = useRouter();
-  const { keys, loading, error, addKey, updateKey, deleteKey, testKey, refetch } = useApiKeys();
+  const {
+    keys,
+    loading,
+    error,
+    addKey,
+    updateKey,
+    deleteKey,
+    testKey,
+    refetch,
+  } = useApiKeys();
   const { profile, loading: profileLoading } = useUserProfile();
   const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+  const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [selectedKey, setSelectedKey] = useState<ApiKey | undefined>(undefined);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<boolean>(false);
   const [keyToDelete, setKeyToDelete] = useState<ApiKey | undefined>(undefined);
@@ -76,13 +85,13 @@ export default function SettingsPage(): React.JSX.Element {
   }, [isSignedIn]);
 
   const handleOpenAddModal = (): void => {
-    setModalMode('add');
+    setModalMode("add");
     setSelectedKey(undefined);
     setModalOpen(true);
   };
 
   const handleOpenEditModal = (apiKey: ApiKey): void => {
-    setModalMode('edit');
+    setModalMode("edit");
     setSelectedKey(apiKey);
     setModalOpen(true);
   };
@@ -92,10 +101,12 @@ export default function SettingsPage(): React.JSX.Element {
     setSelectedKey(undefined);
   };
 
-  const handleModalSubmit = async (data: AddKeyRequest | UpdateKeyRequest): Promise<void> => {
+  const handleModalSubmit = async (
+    data: AddKeyRequest | UpdateKeyRequest,
+  ): Promise<void> => {
     setIsSubmitting(true);
     try {
-      if (modalMode === 'add') {
+      if (modalMode === "add") {
         await addKey(data as AddKeyRequest);
       } else if (selectedKey) {
         await updateKey(selectedKey.id, data as UpdateKeyRequest);
@@ -157,17 +168,18 @@ export default function SettingsPage(): React.JSX.Element {
   }
 
   // Get user tier from profile, default to FREE
-  const userTier: keyof typeof TIER_CONFIG = (profile?.tier as keyof typeof TIER_CONFIG) || 'FREE';
+  const userTier: keyof typeof TIER_CONFIG =
+    (profile?.tier as keyof typeof TIER_CONFIG) || "FREE";
   const tierConfig = TIER_CONFIG[userTier];
   const requestsUsedToday = profile?.dailyRequests || 0;
   const requestsLimit = profile?.dailyLimit || tierConfig.limit;
 
   // Helper to get tier badge color
   const getTierBadgeColor = (tier: string): string => {
-    if (tier === 'FREE') return 'bg-slate-100 text-slate-700';
-    if (tier === 'CREATOR') return 'bg-primary-100 text-primary-700';
-    if (tier === 'PRO') return 'bg-amber-100 text-amber-700';
-    return 'bg-purple-100 text-purple-700';
+    if (tier === "FREE") return "bg-slate-100 text-slate-700";
+    if (tier === "CREATOR") return "bg-primary-100 text-primary-700";
+    if (tier === "PRO") return "bg-amber-100 text-amber-700";
+    return "bg-purple-100 text-purple-700";
   };
 
   return (
@@ -217,7 +229,9 @@ export default function SettingsPage(): React.JSX.Element {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="bg-white rounded-2xl shadow-soft border-2 border-slate-100 p-6 sm:p-8 mb-6"
           >
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Account Information</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">
+              Account Information
+            </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Email */}
@@ -225,7 +239,9 @@ export default function SettingsPage(): React.JSX.Element {
                 <p className="text-sm font-semibold text-slate-600 uppercase tracking-wide mb-2">
                   Email
                 </p>
-                <p className="text-lg text-slate-900 font-medium">{user.primaryEmailAddress?.emailAddress}</p>
+                <p className="text-lg text-slate-900 font-medium">
+                  {user.primaryEmailAddress?.emailAddress}
+                </p>
               </div>
 
               {/* Tier */}
@@ -234,10 +250,12 @@ export default function SettingsPage(): React.JSX.Element {
                   Current Plan
                 </p>
                 <div className="flex items-center gap-2">
-                  <span className={`
+                  <span
+                    className={`
                     inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold
                     ${getTierBadgeColor(userTier)}
-                  `}>
+                  `}
+                  >
                     {tierConfig.name}
                   </span>
                 </div>
@@ -246,12 +264,18 @@ export default function SettingsPage(): React.JSX.Element {
 
             {/* Rate Limit Display */}
             <div className="mt-8 pt-8 border-t border-slate-200">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">Daily Request Limit</h3>
+              <h3 className="text-lg font-bold text-slate-900 mb-4">
+                Daily Request Limit
+              </h3>
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-600 font-medium">Requests used today</span>
-                  <span className="text-slate-900 font-bold">{requestsUsedToday} / {requestsLimit}</span>
+                  <span className="text-slate-600 font-medium">
+                    Requests used today
+                  </span>
+                  <span className="text-slate-900 font-bold">
+                    {requestsUsedToday} / {requestsLimit}
+                  </span>
                 </div>
 
                 {/* Progress bar */}
@@ -259,13 +283,15 @@ export default function SettingsPage(): React.JSX.Element {
                   <motion.div
                     className={`
                       h-full rounded-full transition-all duration-500
-                      ${requestsUsedToday >= requestsLimit * 0.9 && 'bg-gradient-to-r from-red-500 to-red-600'}
-                      ${requestsUsedToday >= requestsLimit * 0.7 && requestsUsedToday < requestsLimit * 0.9 && 'bg-gradient-to-r from-amber-500 to-amber-600'}
-                      ${requestsUsedToday < requestsLimit * 0.7 && 'bg-gradient-to-r from-green-500 to-green-600'}
+                      ${requestsUsedToday >= requestsLimit * 0.9 && "bg-gradient-to-r from-red-500 to-red-600"}
+                      ${requestsUsedToday >= requestsLimit * 0.7 && requestsUsedToday < requestsLimit * 0.9 && "bg-gradient-to-r from-amber-500 to-amber-600"}
+                      ${requestsUsedToday < requestsLimit * 0.7 && "bg-gradient-to-r from-green-500 to-green-600"}
                     `}
                     initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, (requestsUsedToday / requestsLimit) * 100)}%` }}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                    animate={{
+                      width: `${Math.min(100, (requestsUsedToday / requestsLimit) * 100)}%`,
+                    }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
                   />
                 </div>
 
@@ -275,7 +301,7 @@ export default function SettingsPage(): React.JSX.Element {
               </div>
 
               {/* Upgrade prompt */}
-              {(userTier as string) === 'FREE' && (
+              {(userTier as string) === "FREE" && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -283,7 +309,9 @@ export default function SettingsPage(): React.JSX.Element {
                 >
                   <AlertCircle className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-primary-900 mb-2">Upgrade to Creator Plan</p>
+                    <p className="font-semibold text-primary-900 mb-2">
+                      Upgrade to Creator Plan
+                    </p>
                     <p className="text-sm text-primary-800 mb-3">
                       Get 100 requests per day, API key management, and more!
                     </p>
@@ -300,7 +328,7 @@ export default function SettingsPage(): React.JSX.Element {
           </motion.div>
 
           {/* API Keys Section */}
-          {(userTier as string) !== 'FREE' && (
+          {(userTier as string) !== "FREE" && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -309,7 +337,9 @@ export default function SettingsPage(): React.JSX.Element {
             >
               <div className="flex items-center justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900">API Keys</h2>
+                  <h2 className="text-2xl font-bold text-slate-900">
+                    API Keys
+                  </h2>
                   <p className="text-sm text-slate-600 mt-1">
                     Manage your YouTube and Instagram API keys
                   </p>
@@ -352,7 +382,9 @@ export default function SettingsPage(): React.JSX.Element {
                 <div className="flex items-center justify-center py-12">
                   <div className="text-center">
                     <Loader className="w-8 h-8 animate-spin mx-auto text-primary-600 mb-3" />
-                    <p className="text-slate-600 font-medium">Loading API keys...</p>
+                    <p className="text-slate-600 font-medium">
+                      Loading API keys...
+                    </p>
                   </div>
                 </div>
               )}
@@ -367,9 +399,12 @@ export default function SettingsPage(): React.JSX.Element {
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-100 rounded-2xl mb-4">
                     <Lock className="w-8 h-8 text-slate-400" />
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-2">No API Keys Added Yet</h3>
+                  <h3 className="text-lg font-bold text-slate-900 mb-2">
+                    No API Keys Added Yet
+                  </h3>
                   <p className="text-slate-600 mb-6 max-w-sm mx-auto">
-                    Add your first API key to start using custom credentials for video analysis.
+                    Add your first API key to start using custom credentials for
+                    video analysis.
                   </p>
                   <button
                     onClick={handleOpenAddModal}
@@ -411,12 +446,12 @@ export default function SettingsPage(): React.JSX.Element {
               >
                 <Lock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-blue-700 font-medium">
-                  Your API keys are encrypted and stored securely. Never share your keys with anyone.
+                  Your API keys are encrypted and stored securely. Never share
+                  your keys with anyone.
                 </p>
               </motion.div>
             </motion.div>
           )}
-
         </div>
       </div>
 

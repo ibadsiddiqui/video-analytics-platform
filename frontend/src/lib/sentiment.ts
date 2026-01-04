@@ -3,12 +3,12 @@
  * Provides sentiment analysis, keyword extraction, and text processing
  */
 
-import Sentiment from 'sentiment';
-import natural from 'natural';
+import Sentiment from "sentiment";
+import natural from "natural";
 
 const { TfIdf } = natural;
 
-export type SentimentType = 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE';
+export type SentimentType = "POSITIVE" | "NEUTRAL" | "NEGATIVE";
 
 export interface TextSentimentResult {
   score: number;
@@ -62,18 +62,18 @@ export class SentimentService {
    * Analyze sentiment of a single text
    */
   analyzeText(text: string): TextSentimentResult {
-    if (!text || typeof text !== 'string') {
+    if (!text || typeof text !== "string") {
       return {
         score: 0,
         comparative: 0,
-        sentiment: 'NEUTRAL',
+        sentiment: "NEUTRAL",
         positive: [],
         negative: [],
       };
     }
 
     // Clean HTML tags if present
-    const cleanText = text.replace(/<[^>]*>/g, ' ').trim();
+    const cleanText = text.replace(/<[^>]*>/g, " ").trim();
 
     const result = this.sentiment.analyze(cleanText);
 
@@ -81,9 +81,9 @@ export class SentimentService {
     const normalizedScore = Math.max(-1, Math.min(1, result.comparative));
 
     // Classify sentiment
-    let sentimentLabel: SentimentType = 'NEUTRAL';
-    if (normalizedScore > 0.1) sentimentLabel = 'POSITIVE';
-    else if (normalizedScore < -0.1) sentimentLabel = 'NEGATIVE';
+    let sentimentLabel: SentimentType = "NEUTRAL";
+    if (normalizedScore > 0.1) sentimentLabel = "POSITIVE";
+    else if (normalizedScore < -0.1) sentimentLabel = "NEGATIVE";
 
     return {
       score: result.score,
@@ -104,7 +104,7 @@ export class SentimentService {
       content?: string;
       likeCount?: number;
       publishedAt?: string;
-    }>
+    }>,
   ): {
     overall: { score: number; sentiment: SentimentType };
     distribution: { positive: number; neutral: number; negative: number };
@@ -113,7 +113,7 @@ export class SentimentService {
   } {
     if (!comments || comments.length === 0) {
       return {
-        overall: { score: 0, sentiment: 'NEUTRAL' },
+        overall: { score: 0, sentiment: "NEUTRAL" },
         distribution: { positive: 0, neutral: 100, negative: 0 },
         totalAnalyzed: 0,
         analyzed: [],
@@ -121,12 +121,12 @@ export class SentimentService {
     }
 
     const analyzed: CommentWithSentiment[] = comments.map((comment) => {
-      const text = comment.content || '';
+      const text = comment.content || "";
       const analysis = this.analyzeText(text);
 
       return {
-        id: comment.id || '',
-        authorName: comment.authorName || 'Unknown',
+        id: comment.id || "",
+        authorName: comment.authorName || "Unknown",
         content: text,
         likeCount: comment.likeCount || 0,
         publishedAt: comment.publishedAt,
@@ -139,8 +139,8 @@ export class SentimentService {
 
     // Calculate distribution
     const total = analyzed.length;
-    const positive = analyzed.filter((c) => c.sentiment === 'POSITIVE').length;
-    const negative = analyzed.filter((c) => c.sentiment === 'NEGATIVE').length;
+    const positive = analyzed.filter((c) => c.sentiment === "POSITIVE").length;
+    const negative = analyzed.filter((c) => c.sentiment === "NEGATIVE").length;
     const neutral = total - positive - negative;
 
     // Calculate overall score (weighted by likes if available)
@@ -155,9 +155,9 @@ export class SentimentService {
 
     const overallScore = weightTotal > 0 ? weightedSum / weightTotal : 0;
 
-    let overallSentiment: SentimentType = 'NEUTRAL';
-    if (overallScore > 0.1) overallSentiment = 'POSITIVE';
-    else if (overallScore < -0.1) overallSentiment = 'NEGATIVE';
+    let overallSentiment: SentimentType = "NEUTRAL";
+    if (overallScore > 0.1) overallSentiment = "POSITIVE";
+    else if (overallScore < -0.1) overallSentiment = "NEGATIVE";
 
     return {
       overall: {
@@ -186,10 +186,10 @@ export class SentimentService {
 
     // Add all texts to corpus
     texts.forEach((text) => {
-      const cleanText = (text || '')
-        .replace(/<[^>]*>/g, ' ')
+      const cleanText = (text || "")
+        .replace(/<[^>]*>/g, " ")
         .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, ' ');
+        .replace(/[^a-z0-9\s]/g, " ");
       tfidf.addDocument(cleanText);
     });
 
@@ -227,8 +227,8 @@ export class SentimentService {
     const hashtagCounts: Record<string, number> = {};
 
     texts.forEach((text) => {
-      const hashtags = (text || '').match(/#\w+/g) || [];
-      hashtags.forEach((tag) => {
+      const hashtags = (text || "").match(/#\w+/g) || [];
+      hashtags.forEach((tag: string) => {
         const normalized = tag.toLowerCase();
         hashtagCounts[normalized] = (hashtagCounts[normalized] || 0) + 1;
       });
@@ -248,16 +248,88 @@ export class SentimentService {
    */
   private isStopword(word: string): boolean {
     const stopwords = new Set([
-      'the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have',
-      'i', 'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you',
-      'do', 'at', 'this', 'but', 'his', 'by', 'from', 'they', 'we',
-      'say', 'her', 'she', 'or', 'an', 'will', 'my', 'one', 'all',
-      'would', 'there', 'their', 'what', 'so', 'up', 'out', 'if',
-      'about', 'who', 'get', 'which', 'go', 'me', 'video', 'like',
-      'just', 'can', 'its', 'your', 'was', 'are', 'been', 'has',
-      'had', 'did', 'does', 'is', 'am', 'http', 'https', 'www',
-      'com', 'youtube', 'watch', 'really', 'very', 'much', 'how',
-      'why', 'when', 'where', 'than', 'then', 'now', 'here',
+      "the",
+      "be",
+      "to",
+      "of",
+      "and",
+      "a",
+      "in",
+      "that",
+      "have",
+      "i",
+      "it",
+      "for",
+      "not",
+      "on",
+      "with",
+      "he",
+      "as",
+      "you",
+      "do",
+      "at",
+      "this",
+      "but",
+      "his",
+      "by",
+      "from",
+      "they",
+      "we",
+      "say",
+      "her",
+      "she",
+      "or",
+      "an",
+      "will",
+      "my",
+      "one",
+      "all",
+      "would",
+      "there",
+      "their",
+      "what",
+      "so",
+      "up",
+      "out",
+      "if",
+      "about",
+      "who",
+      "get",
+      "which",
+      "go",
+      "me",
+      "video",
+      "like",
+      "just",
+      "can",
+      "its",
+      "your",
+      "was",
+      "are",
+      "been",
+      "has",
+      "had",
+      "did",
+      "does",
+      "is",
+      "am",
+      "http",
+      "https",
+      "www",
+      "com",
+      "youtube",
+      "watch",
+      "really",
+      "very",
+      "much",
+      "how",
+      "why",
+      "when",
+      "where",
+      "than",
+      "then",
+      "now",
+      "here",
     ]);
 
     return stopwords.has(word.toLowerCase());
@@ -268,22 +340,22 @@ export class SentimentService {
    */
   createSentimentAnalysis(comments: CommentWithSentiment[]): {
     overallScore: number;
-    overallSentiment: 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE';
+    overallSentiment: "POSITIVE" | "NEUTRAL" | "NEGATIVE";
     distribution: { positive: number; neutral: number; negative: number };
     totalAnalyzed: number;
   } {
     if (!comments || comments.length === 0) {
       return {
         overallScore: 0,
-        overallSentiment: 'NEUTRAL',
+        overallSentiment: "NEUTRAL",
         distribution: { positive: 0, neutral: 100, negative: 0 },
         totalAnalyzed: 0,
       };
     }
 
     const total = comments.length;
-    const positive = comments.filter((c) => c.sentiment === 'POSITIVE').length;
-    const negative = comments.filter((c) => c.sentiment === 'NEGATIVE').length;
+    const positive = comments.filter((c) => c.sentiment === "POSITIVE").length;
+    const negative = comments.filter((c) => c.sentiment === "NEGATIVE").length;
     const neutral = total - positive - negative;
 
     // Calculate weighted overall score
@@ -298,9 +370,9 @@ export class SentimentService {
 
     const overallScore = weightTotal > 0 ? weightedSum / weightTotal : 0;
 
-    let overallSentiment: 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE' = 'NEUTRAL';
-    if (overallScore > 0.1) overallSentiment = 'POSITIVE';
-    else if (overallScore < -0.1) overallSentiment = 'NEGATIVE';
+    let overallSentiment: "POSITIVE" | "NEUTRAL" | "NEGATIVE" = "NEUTRAL";
+    if (overallScore > 0.1) overallSentiment = "POSITIVE";
+    else if (overallScore < -0.1) overallSentiment = "NEGATIVE";
 
     return {
       overallScore: parseFloat(overallScore.toFixed(4)),
@@ -321,9 +393,9 @@ export class SentimentService {
     viewCount: number,
     likeCount: number,
     commentCount: number,
-    publishedAt?: string
+    publishedAt?: string,
   ): EngagementByDay[] {
-    const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
     // Generate realistic engagement patterns
     // Weekdays typically see more engagement, with peaks on Wed-Thu
@@ -339,8 +411,12 @@ export class SentimentService {
       }
       return {
         day,
-        engagement: Math.round(avgDaily * pattern * (0.8 + Math.random() * 0.4)),
-        views: Math.round((viewCount / 7) * pattern * (0.8 + Math.random() * 0.4)),
+        engagement: Math.round(
+          avgDaily * pattern * (0.8 + Math.random() * 0.4),
+        ),
+        views: Math.round(
+          (viewCount / 7) * pattern * (0.8 + Math.random() * 0.4),
+        ),
       };
     });
   }
@@ -349,7 +425,7 @@ export class SentimentService {
    * Generate simulated audience demographics
    */
   generateAudienceDemographics(
-    channelType: 'general' | 'tech' | 'gaming' | 'education' = 'general'
+    channelType: "general" | "tech" | "gaming" | "education" = "general",
   ): AudienceDemographics {
     const ageDistributions = {
       general: [5, 18, 30, 25, 15, 7],
@@ -370,12 +446,12 @@ export class SentimentService {
 
     return {
       ageDistribution: [
-        { range: '13-17', percentage: ages[0] || 0 },
-        { range: '18-24', percentage: ages[1] || 0 },
-        { range: '25-34', percentage: ages[2] || 0 },
-        { range: '35-44', percentage: ages[3] || 0 },
-        { range: '45-54', percentage: ages[4] || 0 },
-        { range: '55+', percentage: ages[5] || 0 },
+        { range: "13-17", percentage: ages[0] || 0 },
+        { range: "18-24", percentage: ages[1] || 0 },
+        { range: "25-34", percentage: ages[2] || 0 },
+        { range: "35-44", percentage: ages[3] || 0 },
+        { range: "45-54", percentage: ages[4] || 0 },
+        { range: "55+", percentage: ages[5] || 0 },
       ],
       genderSplit: {
         male: genders.male,

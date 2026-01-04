@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
 
 function LoadingState() {
   return (
@@ -33,7 +33,10 @@ function LoadingState() {
       {/* Metrics skeleton */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-white rounded-2xl p-6 shadow-card border border-slate-100">
+          <div
+            key={i}
+            className="bg-white rounded-2xl p-6 shadow-card border border-slate-100"
+          >
             <div className="flex items-start justify-between mb-4">
               <div className="w-12 h-12 skeleton rounded-xl" />
             </div>
@@ -57,7 +60,7 @@ function LoadingState() {
           </div>
           <div className="h-64 skeleton rounded-xl" />
         </div>
-        
+
         <div className="bg-white rounded-2xl p-6 shadow-card border border-slate-100">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 skeleton rounded-xl" />
@@ -76,7 +79,9 @@ function LoadingState() {
       <div className="flex flex-col items-center justify-center py-8">
         <div className="loader mb-4" />
         <p className="text-slate-600 font-medium">Analyzing video...</p>
-        <p className="text-sm text-slate-400 mt-1">This may take a few seconds</p>
+        <p className="text-sm text-slate-400 mt-1">
+          This may take a few seconds
+        </p>
       </div>
     </motion.div>
   );

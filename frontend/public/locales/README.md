@@ -24,6 +24,7 @@ To add support for a new language:
 4. The language code should follow ISO 639-1 standard
 
 Example:
+
 ```bash
 mkdir public/locales/es
 cp public/locales/en/*.json public/locales/es/
@@ -35,13 +36,16 @@ cp public/locales/en/*.json public/locales/es/
 Once an i18n library is integrated (e.g., next-intl or react-i18next), use translations like:
 
 ```tsx
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 
 function Header() {
-  const t = useTranslations('common.header');
+  const t = useTranslations("common.header");
 
   return (
-    <h1>{t('title')}{t('titleHighlight')}</h1>
+    <h1>
+      {t("title")}
+      {t("titleHighlight")}
+    </h1>
   );
 }
 ```

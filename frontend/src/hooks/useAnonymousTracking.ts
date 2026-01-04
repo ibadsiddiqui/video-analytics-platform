@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 
 const DAILY_LIMIT = 5; // Default daily limit for anonymous users
-const STORAGE_PREFIX = 'anonymous_requests';
+const STORAGE_PREFIX = "anonymous_requests";
 
 /**
  * Anonymous request tracking data structure
@@ -31,7 +31,7 @@ export interface UseAnonymousTrackingReturn {
  */
 function getTodayString(): string {
   const now = new Date();
-  return now.toISOString().split('T')[0];
+  return now.toISOString().split("T")[0];
 }
 
 /**
@@ -48,7 +48,7 @@ function getTomorrowMidnight(): string {
  * Get tracking data from localStorage for today
  */
 function getTrackingData(): TrackingData {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return {
       count: 0,
       resetAt: getTomorrowMidnight(),
@@ -64,7 +64,7 @@ function getTrackingData(): TrackingData {
       return JSON.parse(stored);
     }
   } catch (error) {
-    console.error('Error reading tracking data from localStorage:', error);
+    console.error("Error reading tracking data from localStorage:", error);
   }
 
   return {
@@ -77,7 +77,7 @@ function getTrackingData(): TrackingData {
  * Save tracking data to localStorage
  */
 function saveTrackingData(data: TrackingData): void {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
 
@@ -86,7 +86,7 @@ function saveTrackingData(data: TrackingData): void {
     const key = `${STORAGE_PREFIX}_${today}`;
     localStorage.setItem(key, JSON.stringify(data));
   } catch (error) {
-    console.error('Error saving tracking data to localStorage:', error);
+    console.error("Error saving tracking data to localStorage:", error);
   }
 }
 
@@ -94,7 +94,7 @@ function saveTrackingData(data: TrackingData): void {
  * Clean up old tracking data from localStorage
  */
 function cleanupOldData(): void {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
 
@@ -106,7 +106,7 @@ function cleanupOldData(): void {
       const key = localStorage.key(i);
       if (key && key.startsWith(STORAGE_PREFIX)) {
         // Extract date from key (format: anonymous_requests_YYYY-MM-DD)
-        const datePart = key.replace(`${STORAGE_PREFIX}_`, '');
+        const datePart = key.replace(`${STORAGE_PREFIX}_`, "");
         // Delete if not today's date
         if (datePart !== today && /^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
           keysToDelete.push(key);
@@ -118,7 +118,7 @@ function cleanupOldData(): void {
       localStorage.removeItem(key);
     });
   } catch (error) {
-    console.error('Error cleaning up old tracking data:', error);
+    console.error("Error cleaning up old tracking data:", error);
   }
 }
 
@@ -128,8 +128,12 @@ function cleanupOldData(): void {
  * @param limit - Optional custom daily limit (defaults to DAILY_LIMIT)
  * @returns Tracking information and control functions
  */
-export function useAnonymousTracking(limit: number = DAILY_LIMIT): UseAnonymousTrackingReturn {
-  const [trackingData, setTrackingData] = useState<TrackingData>(() => getTrackingData());
+export function useAnonymousTracking(
+  limit: number = DAILY_LIMIT,
+): UseAnonymousTrackingReturn {
+  const [trackingData, setTrackingData] = useState<TrackingData>(() =>
+    getTrackingData(),
+  );
   const [mounted, setMounted] = useState(false);
 
   // Initialize on client-side mount
@@ -179,7 +183,11 @@ export function useAnonymousTracking(limit: number = DAILY_LIMIT): UseAnonymousT
  * @param limit - Value from X-RateLimit-Limit header
  * @param reset - Value from X-RateLimit-Reset header (ISO date string)
  */
-export function syncTrackingWithHeaders(remaining?: string, limit?: string, reset?: string): void {
+export function syncTrackingWithHeaders(
+  remaining?: string,
+  limit?: string,
+  reset?: string,
+): void {
   if (!remaining || !limit) {
     return;
   }
@@ -195,7 +203,7 @@ export function syncTrackingWithHeaders(remaining?: string, limit?: string, rese
 
     saveTrackingData(data);
   } catch (error) {
-    console.error('Error syncing tracking with headers:', error);
+    console.error("Error syncing tracking with headers:", error);
   }
 }
 
@@ -203,7 +211,7 @@ export function syncTrackingWithHeaders(remaining?: string, limit?: string, rese
  * Reset tracking data (useful for testing or manual reset)
  */
 export function resetTrackingData(): void {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
 
@@ -212,6 +220,6 @@ export function resetTrackingData(): void {
     const key = `${STORAGE_PREFIX}_${today}`;
     localStorage.removeItem(key);
   } catch (error) {
-    console.error('Error resetting tracking data:', error);
+    console.error("Error resetting tracking data:", error);
   }
 }

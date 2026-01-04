@@ -11,18 +11,19 @@ export interface DetectPlatformResult {
 }
 
 export class DetectPlatformUseCase {
-  private readonly supportedPlatforms = ['youtube', 'instagram'];
+  private readonly supportedPlatforms = ["youtube", "instagram"];
 
   /**
    * Execute - detect platform from URL
    */
   execute(url: string): DetectPlatformResult {
-    if (!url || typeof url !== 'string') {
-      throw new Error('Valid URL is required');
+    if (!url || typeof url !== "string") {
+      throw new Error("Valid URL is required");
     }
 
     const platform = this.detectPlatform(url);
-    const supported = platform !== null && this.supportedPlatforms.includes(platform);
+    const supported =
+      platform !== null && this.supportedPlatforms.includes(platform);
 
     return {
       url,
@@ -38,17 +39,17 @@ export class DetectPlatformUseCase {
   private detectPlatform(url: string): string | null {
     const normalized = url.toLowerCase();
 
-    if (normalized.includes('youtube.com') || normalized.includes('youtu.be')) {
-      return 'youtube';
+    if (normalized.includes("youtube.com") || normalized.includes("youtu.be")) {
+      return "youtube";
     }
-    if (normalized.includes('instagram.com')) {
-      return 'instagram';
+    if (normalized.includes("instagram.com")) {
+      return "instagram";
     }
-    if (normalized.includes('tiktok.com')) {
-      return 'tiktok';
+    if (normalized.includes("tiktok.com")) {
+      return "tiktok";
     }
-    if (normalized.includes('vimeo.com')) {
-      return 'vimeo';
+    if (normalized.includes("vimeo.com")) {
+      return "vimeo";
     }
 
     return null;

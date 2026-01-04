@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useEffect } from 'react';
-import { useAuth } from '@clerk/nextjs';
-import axios from 'axios';
+import { useState, useCallback, useEffect } from "react";
+import { useAuth } from "@clerk/nextjs";
+import axios from "axios";
 
-export type UserTier = 'FREE' | 'CREATOR' | 'PRO' | 'AGENCY';
+export type UserTier = "FREE" | "CREATOR" | "PRO" | "AGENCY";
 
 export interface UserProfile {
   email: string;
@@ -23,7 +23,7 @@ interface UseUserProfileReturn {
   refetch: () => Promise<void>;
 }
 
-const API_URL = '/api';
+const API_URL = "/api";
 
 export function useUserProfile(): UseUserProfileReturn {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -40,7 +40,7 @@ export function useUserProfile(): UseUserProfileReturn {
 
       const response = await axios.get(`${API_URL}/auth/me`, {
         headers: {
-          ...(token && { 'Authorization': `Bearer ${token}` }),
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
       });
 
@@ -59,12 +59,12 @@ export function useUserProfile(): UseUserProfileReturn {
     } catch (err: any) {
       const errorMessage = axios.isAxiosError(err)
         ? err.response?.status === 401
-          ? 'Unauthorized. Please sign in again.'
-          : err.message || 'Failed to fetch user profile'
-        : err.message || 'Failed to fetch user profile';
+          ? "Unauthorized. Please sign in again."
+          : err.message || "Failed to fetch user profile"
+        : err.message || "Failed to fetch user profile";
 
       setError(errorMessage);
-      console.error('Error fetching user profile:', errorMessage);
+      console.error("Error fetching user profile:", errorMessage);
     } finally {
       setLoading(false);
     }

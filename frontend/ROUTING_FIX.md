@@ -1,9 +1,11 @@
 # Frontend API Routing Fix ✅
 
 ## Problem
+
 The frontend was still making API requests to `http://localhost:3001/api` (the old NestJS backend) instead of using the newly created Next.js API routes at `/api`.
 
 ## Solution
+
 Updated all frontend hooks to use the Next.js API routes.
 
 ## Changes Made
@@ -11,39 +13,49 @@ Updated all frontend hooks to use the Next.js API routes.
 ### 1. Updated Hook Files
 
 #### `src/hooks/useApiKeys.ts` (Line 15)
+
 **Before:**
+
 ```typescript
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 ```
 
 **After:**
+
 ```typescript
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 ```
 
 #### `src/hooks/useUserProfile.ts` (Line 26)
+
 **Before:**
+
 ```typescript
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 ```
 
 **After:**
+
 ```typescript
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 ```
 
 #### `src/hooks/useAnalytics.ts` (Line 7)
+
 ✅ **Already correct** - was using `/api`
 
 ### 2. Updated Environment Configuration
 
 #### `.env` file
+
 **Before:**
+
 ```env
 VITE_API_URL=http://localhost:3001/api
 ```
 
 **After:**
+
 ```env
 # Now using Next.js API routes (no separate backend needed!)
 # NEXT_PUBLIC_API_URL=/api (commented out - uses default)
@@ -52,6 +64,7 @@ VITE_API_URL=http://localhost:3001/api
 ## Verification
 
 ### Test Results
+
 ```bash
 # Health Check
 curl http://localhost:3000/api/health
@@ -68,15 +81,16 @@ Response: {"success":true,"data":{...}}
 
 All frontend API calls now go through Next.js API routes:
 
-| Hook | Endpoint | Status |
-|------|----------|--------|
-| `useAnalytics` | `/api/analyze` | ✅ Working |
-| `useApiKeys` | `/api/keys`, `/api/keys/:id`, `/api/keys/:id/test` | ✅ Working |
-| `useUserProfile` | `/api/auth/me` | ✅ Working |
+| Hook             | Endpoint                                           | Status     |
+| ---------------- | -------------------------------------------------- | ---------- |
+| `useAnalytics`   | `/api/analyze`                                     | ✅ Working |
+| `useApiKeys`     | `/api/keys`, `/api/keys/:id`, `/api/keys/:id/test` | ✅ Working |
+| `useUserProfile` | `/api/auth/me`                                     | ✅ Working |
 
 ## Request Flow
 
 **Old Flow (Before Fix):**
+
 ```
 Frontend Component
     ↓
@@ -88,6 +102,7 @@ Response
 ```
 
 **New Flow (After Fix):**
+
 ```
 Frontend Component
     ↓
@@ -144,6 +159,7 @@ GET /api/auth/me 200 in 100ms
 The frontend is now fully self-contained!
 
 To use it:
+
 1. ✅ Start only the frontend: `yarn dev`
 2. ✅ All API calls work through Next.js routes
 3. ✅ No separate backend server needed

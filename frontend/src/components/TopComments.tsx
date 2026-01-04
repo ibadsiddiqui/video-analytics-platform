@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { MessageSquare, ThumbsUp, Smile, Meh, Frown } from 'lucide-react';
+import React from "react";
+import { motion } from "framer-motion";
+import { MessageSquare, ThumbsUp, Smile, Meh, Frown } from "lucide-react";
 
 function TopComments({ comments }) {
   if (!comments || comments.length === 0) return null;
 
   const getSentimentIcon = (sentiment) => {
     switch (sentiment) {
-      case 'POSITIVE':
+      case "POSITIVE":
         return <Smile className="w-4 h-4 text-emerald-500" />;
-      case 'NEGATIVE':
+      case "NEGATIVE":
         return <Frown className="w-4 h-4 text-red-500" />;
       default:
         return <Meh className="w-4 h-4 text-primary-500" />;
@@ -20,31 +20,52 @@ function TopComments({ comments }) {
 
   const getSentimentBg = (sentiment) => {
     switch (sentiment) {
-      case 'POSITIVE':
-        return 'bg-emerald-50 border-emerald-100';
-      case 'NEGATIVE':
-        return 'bg-red-50 border-red-100';
+      case "POSITIVE":
+        return "bg-emerald-50 border-emerald-100";
+      case "NEGATIVE":
+        return "bg-red-50 border-red-100";
       default:
-        return 'bg-primary-50 border-primary-100';
+        return "bg-primary-50 border-primary-100";
     }
   };
 
   // Calculate overall sentiment
-  const sentimentCounts = comments.reduce((acc, comment) => {
-    acc[comment.sentiment] = (acc[comment.sentiment] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const sentimentCounts = comments.reduce(
+    (acc, comment) => {
+      acc[comment.sentiment] = (acc[comment.sentiment] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
-  const dominantSentiment = Object.entries(sentimentCounts).sort((a, b) => (b[1] as number) - (a[1] as number))[0]?.[0] || 'NEUTRAL';
+  const dominantSentiment =
+    Object.entries(sentimentCounts).sort(
+      (a, b) => (b[1] as number) - (a[1] as number),
+    )[0]?.[0] || "NEUTRAL";
 
   const getSentimentLabel = (sentiment) => {
     switch (sentiment) {
-      case 'POSITIVE':
-        return { text: 'Positive', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' };
-      case 'NEGATIVE':
-        return { text: 'Negative', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' };
+      case "POSITIVE":
+        return {
+          text: "Positive",
+          color: "text-emerald-600",
+          bg: "bg-emerald-50",
+          border: "border-emerald-200",
+        };
+      case "NEGATIVE":
+        return {
+          text: "Negative",
+          color: "text-red-600",
+          bg: "bg-red-50",
+          border: "border-red-200",
+        };
       default:
-        return { text: 'Neutral', color: 'text-primary-600', bg: 'bg-primary-50', border: 'border-primary-200' };
+        return {
+          text: "Neutral",
+          color: "text-primary-600",
+          bg: "bg-primary-50",
+          border: "border-primary-200",
+        };
     }
   };
 
@@ -65,12 +86,16 @@ function TopComments({ comments }) {
           </div>
           <div>
             <h3 className="font-semibold text-slate-900">Top Comments</h3>
-            <p className="text-sm text-slate-500">Most relevant comments with sentiment</p>
+            <p className="text-sm text-slate-500">
+              Most relevant comments with sentiment
+            </p>
           </div>
         </div>
 
         {/* Overall Sentiment Label */}
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${sentimentLabel.bg} ${sentimentLabel.border}`}>
+        <div
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${sentimentLabel.bg} ${sentimentLabel.border}`}
+        >
           {getSentimentIcon(dominantSentiment)}
           <span className={`text-sm font-medium ${sentimentLabel.color}`}>
             {sentimentLabel.text} Center
@@ -93,16 +118,16 @@ function TopComments({ comments }) {
                 {/* Author */}
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-400 to-slate-500 flex items-center justify-center text-white text-sm font-medium">
-                    {comment.authorName?.[0]?.toUpperCase() || '?'}
+                    {comment.authorName?.[0]?.toUpperCase() || "?"}
                   </div>
                   <span className="font-medium text-slate-700 text-sm">
-                    {comment.authorName || 'Anonymous'}
+                    {comment.authorName || "Anonymous"}
                   </span>
                 </div>
 
                 {/* Content */}
                 <p className="text-slate-600 text-sm leading-relaxed line-clamp-3">
-                  {comment.content?.replace(/<[^>]*>/g, '') || 'No content'}
+                  {comment.content?.replace(/<[^>]*>/g, "") || "No content"}
                 </p>
 
                 {/* Meta */}
@@ -116,10 +141,15 @@ function TopComments({ comments }) {
 
               {/* Sentiment indicator */}
               <div className="flex-shrink-0">
-                <div className={`p-2 rounded-lg ${
-                  comment.sentiment === 'POSITIVE' ? 'bg-emerald-100' :
-                  comment.sentiment === 'NEGATIVE' ? 'bg-red-100' : 'bg-primary-100'
-                }`}>
+                <div
+                  className={`p-2 rounded-lg ${
+                    comment.sentiment === "POSITIVE"
+                      ? "bg-emerald-100"
+                      : comment.sentiment === "NEGATIVE"
+                        ? "bg-red-100"
+                        : "bg-primary-100"
+                  }`}
+                >
                   {getSentimentIcon(comment.sentiment)}
                 </div>
               </div>

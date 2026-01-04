@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+@import url("https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -10,10 +10,10 @@
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
     @apply bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 min-h-screen antialiased;
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   }
 
   /* Better focus styles */
@@ -116,7 +116,8 @@
 
 /* Custom animations */
 @keyframes gradient {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -134,7 +135,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {

@@ -1,12 +1,22 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Youtube, Instagram, Loader2, Link2, Key, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
-import Link from 'next/link';
-import { ROUTES } from '@/config/routes';
-import { useAnonymousTracking } from '@/hooks/useAnonymousTracking';
-import { useUser } from '@clerk/nextjs';
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  Search,
+  Youtube,
+  Instagram,
+  Loader2,
+  Link2,
+  Key,
+  ChevronDown,
+  ChevronUp,
+  AlertCircle,
+} from "lucide-react";
+import Link from "next/link";
+import { ROUTES } from "@/config/routes";
+import { useAnonymousTracking } from "@/hooks/useAnonymousTracking";
+import { useUser } from "@clerk/nextjs";
 
 interface SearchBarProps {
   url: string;
@@ -17,7 +27,14 @@ interface SearchBarProps {
   setApiKey: (key: string) => void;
 }
 
-function SearchBar({ url, setUrl, onAnalyze, loading, apiKey, setApiKey }: SearchBarProps): React.JSX.Element {
+function SearchBar({
+  url,
+  setUrl,
+  onAnalyze,
+  loading,
+  apiKey,
+  setApiKey,
+}: SearchBarProps): React.JSX.Element {
   const [focused, setFocused] = useState<boolean>(false);
   const [showApiKey, setShowApiKey] = useState<boolean>(false);
   const { user } = useUser();
@@ -25,7 +42,7 @@ function SearchBar({ url, setUrl, onAnalyze, loading, apiKey, setApiKey }: Searc
 
   // Load API key from localStorage on mount
   useEffect(() => {
-    const savedApiKey = localStorage.getItem('youtube_api_key');
+    const savedApiKey = localStorage.getItem("youtube_api_key");
     if (savedApiKey && setApiKey) {
       setApiKey(savedApiKey);
     }
@@ -34,7 +51,7 @@ function SearchBar({ url, setUrl, onAnalyze, loading, apiKey, setApiKey }: Searc
   // Save API key to localStorage whenever it changes
   useEffect(() => {
     if (apiKey) {
-      localStorage.setItem('youtube_api_key', apiKey);
+      localStorage.setItem("youtube_api_key", apiKey);
     }
   }, [apiKey]);
 
@@ -43,12 +60,12 @@ function SearchBar({ url, setUrl, onAnalyze, loading, apiKey, setApiKey }: Searc
     onAnalyze(url);
   };
 
-  const detectPlatform = (inputUrl: string): 'youtube' | 'instagram' | null => {
-    if (inputUrl.includes('youtube.com') || inputUrl.includes('youtu.be')) {
-      return 'youtube';
+  const detectPlatform = (inputUrl: string): "youtube" | "instagram" | null => {
+    if (inputUrl.includes("youtube.com") || inputUrl.includes("youtu.be")) {
+      return "youtube";
     }
-    if (inputUrl.includes('instagram.com')) {
-      return 'instagram';
+    if (inputUrl.includes("instagram.com")) {
+      return "instagram";
     }
     return null;
   };
@@ -67,8 +84,9 @@ function SearchBar({ url, setUrl, onAnalyze, loading, apiKey, setApiKey }: Searc
           <span className="gradient-text"> Instantly</span>
         </h2>
         <p className="text-slate-600 max-w-xl mx-auto mb-8">
-          Paste a YouTube or Instagram video URL to get comprehensive analytics including 
-          views, engagement, sentiment analysis, and audience insights.
+          Paste a YouTube or Instagram video URL to get comprehensive analytics
+          including views, engagement, sentiment analysis, and audience
+          insights.
         </p>
       </motion.div>
 
@@ -82,14 +100,14 @@ function SearchBar({ url, setUrl, onAnalyze, loading, apiKey, setApiKey }: Searc
         <div
           className={`
             relative flex items-center gap-3 p-2 bg-white rounded-2xl border-2 transition-all duration-300
-            ${focused ? 'border-primary-500 shadow-lg shadow-primary-500/20' : 'border-slate-200 shadow-soft'}
+            ${focused ? "border-primary-500 shadow-lg shadow-primary-500/20" : "border-slate-200 shadow-soft"}
           `}
         >
           {/* Platform icon */}
           <div className="pl-4">
-            {platform === 'youtube' ? (
+            {platform === "youtube" ? (
               <Youtube className="w-6 h-6 text-red-500" />
-            ) : platform === 'instagram' ? (
+            ) : platform === "instagram" ? (
               <Instagram className="w-6 h-6 text-pink-500" />
             ) : (
               <Link2 className="w-6 h-6 text-slate-400" />
@@ -115,13 +133,22 @@ function SearchBar({ url, setUrl, onAnalyze, loading, apiKey, setApiKey }: Searc
             className={`
               flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white
               transition-all duration-300
-              ${loading || !url.trim() || (isLimitReached && !user)
-                ? 'bg-slate-300 cursor-not-allowed'
-                : 'bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg shadow-primary-500/25'
+              ${
+                loading || !url.trim() || (isLimitReached && !user)
+                  ? "bg-slate-300 cursor-not-allowed"
+                  : "bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg shadow-primary-500/25"
               }
             `}
-            whileHover={!loading && url.trim() && !(isLimitReached && !user) ? { scale: 1.02 } : {}}
-            whileTap={!loading && url.trim() && !(isLimitReached && !user) ? { scale: 0.98 } : {}}
+            whileHover={
+              !loading && url.trim() && !(isLimitReached && !user)
+                ? { scale: 1.02 }
+                : {}
+            }
+            whileTap={
+              !loading && url.trim() && !(isLimitReached && !user)
+                ? { scale: 0.98 }
+                : {}
+            }
           >
             {loading ? (
               <>
@@ -178,7 +205,7 @@ function SearchBar({ url, setUrl, onAnalyze, loading, apiKey, setApiKey }: Searc
           {showApiKey && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200"
             >
@@ -187,20 +214,21 @@ function SearchBar({ url, setUrl, onAnalyze, loading, apiKey, setApiKey }: Searc
               </label>
               <input
                 type="text"
-                value={apiKey || ''}
+                value={apiKey || ""}
                 onChange={(e) => setApiKey && setApiKey(e.target.value)}
                 placeholder="AIzaSy..."
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
               />
               <p className="mt-2 text-xs text-slate-500">
-                Don't have an API key?{' '}
+                Don't have an API key?{" "}
                 <Link
                   href={ROUTES.GUIDE.YOUTUBE_API_KEY}
                   className="text-primary-600 hover:text-primary-700 underline font-medium"
                 >
                   Follow our step-by-step guide
-                </Link>
-                {' '}to get one from Google Cloud Platform. Your key is stored locally and used instead of the shared API key.
+                </Link>{" "}
+                to get one from Google Cloud Platform. Your key is stored
+                locally and used instead of the shared API key.
               </p>
             </motion.div>
           )}

@@ -1,20 +1,28 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import React from "react";
+import { motion } from "framer-motion";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
-  Cell 
-} from 'recharts';
-import { TrendingUp, Calendar } from 'lucide-react';
+  Cell,
+} from "recharts";
+import { TrendingUp, Calendar } from "lucide-react";
 
-const COLORS = ['#818cf8', '#a78bfa', '#c084fc', '#e879f9', '#f472b6', '#fb7185', '#fb923c'];
+const COLORS = [
+  "#818cf8",
+  "#a78bfa",
+  "#c084fc",
+  "#e879f9",
+  "#f472b6",
+  "#fb7185",
+  "#fb923c",
+];
 
 interface CustomTooltipProps {
   active?: boolean;
@@ -65,11 +73,15 @@ function EngagementChart({ data }: EngagementChartProps) {
             <TrendingUp className="w-5 h-5 text-primary-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-slate-900">Engagement Overview</h3>
-            <p className="text-sm text-slate-500">Daily engagement distribution</p>
+            <h3 className="font-semibold text-slate-900">
+              Engagement Overview
+            </h3>
+            <p className="text-sm text-slate-500">
+              Daily engagement distribution
+            </p>
           </div>
         </div>
-        
+
         {peakDay && (
           <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-full">
             <Calendar className="w-4 h-4 text-emerald-600" />
@@ -84,28 +96,30 @@ function EngagementChart({ data }: EngagementChartProps) {
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} barCategoryGap="20%">
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-            <XAxis 
-              dataKey="day" 
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="#f1f5f9"
+              vertical={false}
+            />
+            <XAxis
+              dataKey="day"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#64748b', fontSize: 12 }}
+              tick={{ fill: "#64748b", fontSize: 12 }}
             />
-            <YAxis 
+            <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#64748b', fontSize: 12 }}
-              tickFormatter={(value) => value >= 1000 ? `${(value/1000).toFixed(0)}K` : value}
+              tick={{ fill: "#64748b", fontSize: 12 }}
+              tickFormatter={(value) =>
+                value >= 1000 ? `${(value / 1000).toFixed(0)}K` : value
+              }
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
-            <Bar 
-              dataKey="engagement" 
-              radius={[8, 8, 0, 0]}
-              maxBarSize={50}
-            >
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: "#f8fafc" }} />
+            <Bar dataKey="engagement" radius={[8, 8, 0, 0]} maxBarSize={50}>
               {chartData.map((entry, index) => (
-                <Cell 
-                  key={`cell-${index}`} 
+                <Cell
+                  key={`cell-${index}`}
                   fill={COLORS[index % COLORS.length]}
                   opacity={entry.day === peakDay?.day ? 1 : 0.7}
                 />
@@ -119,7 +133,9 @@ function EngagementChart({ data }: EngagementChartProps) {
       <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-slate-100">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-gradient-to-r from-primary-500 to-accent-purple" />
-          <span className="text-sm text-slate-600">Engagement (likes + comments)</span>
+          <span className="text-sm text-slate-600">
+            Engagement (likes + comments)
+          </span>
         </div>
       </div>
     </motion.div>

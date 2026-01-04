@@ -1,11 +1,20 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Check, Sparkles, Zap, Crown, Building2, UserPlus, Mail } from 'lucide-react';
-import Link from 'next/link';
-import Header from '@/components/Header';
-import { ROUTES } from '@/config/routes';
+import React from "react";
+import { motion } from "framer-motion";
+import {
+  ArrowLeft,
+  Check,
+  Sparkles,
+  Zap,
+  Crown,
+  Building2,
+  UserPlus,
+  Mail,
+} from "lucide-react";
+import Link from "next/link";
+import Header from "@/components/Header";
+import { ROUTES } from "@/config/routes";
 
 interface TierFeature {
   name: string;
@@ -29,99 +38,99 @@ interface PricingTier {
 export default function ProFeaturesPage(): React.JSX.Element {
   const tiers: PricingTier[] = [
     {
-      name: 'FREE',
+      name: "FREE",
       icon: <Sparkles className="w-6 h-6" />,
-      price: '$0',
-      period: 'forever',
-      description: 'Perfect for trying out the platform',
+      price: "$0",
+      period: "forever",
+      description: "Perfect for trying out the platform",
       dailyRequests: 5,
-      gradient: 'from-slate-500 to-slate-600',
-      iconBg: 'bg-slate-100',
-      cta: 'Get Started',
+      gradient: "from-slate-500 to-slate-600",
+      iconBg: "bg-slate-100",
+      cta: "Get Started",
       features: [
-        { name: '5 video analyses per day', included: true },
-        { name: 'Basic sentiment analysis', included: true },
-        { name: 'Top 10 comments display', included: true },
-        { name: 'Engagement metrics', included: true },
-        { name: 'YouTube support', included: true },
-        { name: 'Instagram support', included: false },
-        { name: 'API key management', included: false },
-        { name: 'Historical analytics', included: false },
-        { name: 'Priority support', included: false },
+        { name: "5 video analyses per day", included: true },
+        { name: "Basic sentiment analysis", included: true },
+        { name: "Top 10 comments display", included: true },
+        { name: "Engagement metrics", included: true },
+        { name: "YouTube support", included: true },
+        { name: "Instagram support", included: false },
+        { name: "API key management", included: false },
+        { name: "Historical analytics", included: false },
+        { name: "Priority support", included: false },
       ],
     },
     {
-      name: 'CREATOR',
+      name: "CREATOR",
       icon: <Zap className="w-6 h-6" />,
-      price: '$9',
-      period: 'per month',
-      description: 'For content creators analyzing their videos',
+      price: "$9",
+      period: "per month",
+      description: "For content creators analyzing their videos",
       dailyRequests: 100,
-      gradient: 'from-primary-500 to-primary-600',
-      iconBg: 'bg-primary-100',
-      cta: 'Start Creating',
+      gradient: "from-primary-500 to-primary-600",
+      iconBg: "bg-primary-100",
+      cta: "Start Creating",
       popular: true,
       features: [
-        { name: '100 video analyses per day', included: true },
-        { name: 'Advanced sentiment analysis', included: true },
-        { name: 'Top 50 comments display', included: true },
-        { name: 'Detailed engagement metrics', included: true },
-        { name: 'YouTube support', included: true },
-        { name: 'Instagram support', included: true },
-        { name: 'API key management', included: true },
-        { name: '7-day historical analytics', included: true },
-        { name: 'Email support', included: true },
+        { name: "100 video analyses per day", included: true },
+        { name: "Advanced sentiment analysis", included: true },
+        { name: "Top 50 comments display", included: true },
+        { name: "Detailed engagement metrics", included: true },
+        { name: "YouTube support", included: true },
+        { name: "Instagram support", included: true },
+        { name: "API key management", included: true },
+        { name: "7-day historical analytics", included: true },
+        { name: "Email support", included: true },
       ],
     },
     {
-      name: 'PRO',
+      name: "PRO",
       icon: <Crown className="w-6 h-6" />,
-      price: '$29',
-      period: 'per month',
-      description: 'For professionals and small teams',
+      price: "$29",
+      period: "per month",
+      description: "For professionals and small teams",
       dailyRequests: 500,
-      gradient: 'from-amber-500 to-amber-600',
-      iconBg: 'bg-amber-100',
-      cta: 'Go Pro',
+      gradient: "from-amber-500 to-amber-600",
+      iconBg: "bg-amber-100",
+      cta: "Go Pro",
       features: [
-        { name: '500 video analyses per day', included: true },
-        { name: 'Advanced sentiment analysis', included: true },
-        { name: 'Unlimited comments display', included: true },
-        { name: 'Comprehensive analytics dashboard', included: true },
-        { name: 'YouTube support', included: true },
-        { name: 'Instagram support', included: true },
-        { name: 'API key management', included: true },
-        { name: '30-day historical analytics', included: true },
-        { name: 'Priority email support', included: true },
-        { name: 'Competitor analysis', included: true },
-        { name: 'Export to CSV/PDF', included: true },
+        { name: "500 video analyses per day", included: true },
+        { name: "Advanced sentiment analysis", included: true },
+        { name: "Unlimited comments display", included: true },
+        { name: "Comprehensive analytics dashboard", included: true },
+        { name: "YouTube support", included: true },
+        { name: "Instagram support", included: true },
+        { name: "API key management", included: true },
+        { name: "30-day historical analytics", included: true },
+        { name: "Priority email support", included: true },
+        { name: "Competitor analysis", included: true },
+        { name: "Export to CSV/PDF", included: true },
       ],
     },
     {
-      name: 'AGENCY',
+      name: "AGENCY",
       icon: <Building2 className="w-6 h-6" />,
-      price: '$99',
-      period: 'per month',
-      description: 'For agencies managing multiple clients',
+      price: "$99",
+      period: "per month",
+      description: "For agencies managing multiple clients",
       dailyRequests: 2000,
-      gradient: 'from-purple-500 to-purple-600',
-      iconBg: 'bg-purple-100',
-      cta: 'Contact Sales',
+      gradient: "from-purple-500 to-purple-600",
+      iconBg: "bg-purple-100",
+      cta: "Contact Sales",
       features: [
-        { name: '2,000 video analyses per day', included: true },
-        { name: 'Advanced sentiment analysis', included: true },
-        { name: 'Unlimited comments display', included: true },
-        { name: 'Custom analytics dashboard', included: true },
-        { name: 'YouTube support', included: true },
-        { name: 'Instagram support', included: true },
-        { name: 'Unlimited API key management', included: true },
-        { name: 'Unlimited historical analytics', included: true },
-        { name: '24/7 priority support', included: true },
-        { name: 'Competitor analysis', included: true },
-        { name: 'Export to CSV/PDF', included: true },
-        { name: 'White-label reports', included: true },
-        { name: 'Dedicated account manager', included: true },
-        { name: 'Custom integrations', included: true },
+        { name: "2,000 video analyses per day", included: true },
+        { name: "Advanced sentiment analysis", included: true },
+        { name: "Unlimited comments display", included: true },
+        { name: "Custom analytics dashboard", included: true },
+        { name: "YouTube support", included: true },
+        { name: "Instagram support", included: true },
+        { name: "Unlimited API key management", included: true },
+        { name: "Unlimited historical analytics", included: true },
+        { name: "24/7 priority support", included: true },
+        { name: "Competitor analysis", included: true },
+        { name: "Export to CSV/PDF", included: true },
+        { name: "White-label reports", included: true },
+        { name: "Dedicated account manager", included: true },
+        { name: "Custom integrations", included: true },
       ],
     },
   ];
@@ -164,7 +173,9 @@ export default function ProFeaturesPage(): React.JSX.Element {
             </div>
 
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Choose the perfect plan for your video analytics needs. All plans include core features with increasing limits and advanced capabilities.
+              Choose the perfect plan for your video analytics needs. All plans
+              include core features with increasing limits and advanced
+              capabilities.
             </p>
           </motion.div>
 
@@ -178,7 +189,7 @@ export default function ProFeaturesPage(): React.JSX.Element {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className={`
                   relative bg-white rounded-2xl shadow-soft border-2 p-6 hover:shadow-lg transition-all duration-300
-                  ${tier.popular ? 'border-primary-500 scale-105' : 'border-slate-100'}
+                  ${tier.popular ? "border-primary-500 scale-105" : "border-slate-100"}
                 `}
               >
                 {/* Popular Badge */}
@@ -192,17 +203,23 @@ export default function ProFeaturesPage(): React.JSX.Element {
 
                 {/* Tier Header */}
                 <div className="text-center mb-6">
-                  <div className={`inline-flex items-center justify-center w-12 h-12 ${tier.iconBg} rounded-xl mb-3`}>
+                  <div
+                    className={`inline-flex items-center justify-center w-12 h-12 ${tier.iconBg} rounded-xl mb-3`}
+                  >
                     {tier.icon}
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-1">{tier.name}</h3>
+                  <h3 className="text-xl font-bold text-slate-900 mb-1">
+                    {tier.name}
+                  </h3>
                   <p className="text-sm text-slate-600">{tier.description}</p>
                 </div>
 
                 {/* Price */}
                 <div className="text-center mb-6">
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-4xl font-bold text-slate-900">{tier.price}</span>
+                    <span className="text-4xl font-bold text-slate-900">
+                      {tier.price}
+                    </span>
                     <span className="text-slate-600">/{tier.period}</span>
                   </div>
                   <div className="mt-2 text-sm font-semibold text-primary-600">
@@ -216,12 +233,12 @@ export default function ProFeaturesPage(): React.JSX.Element {
                     <li key={featureIndex} className="flex items-start gap-2">
                       <Check
                         className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
-                          feature.included ? 'text-green-500' : 'text-slate-300'
+                          feature.included ? "text-green-500" : "text-slate-300"
                         }`}
                       />
                       <span
                         className={`text-sm ${
-                          feature.included ? 'text-slate-700' : 'text-slate-400'
+                          feature.included ? "text-slate-700" : "text-slate-400"
                         }`}
                       >
                         {feature.name}
@@ -235,7 +252,7 @@ export default function ProFeaturesPage(): React.JSX.Element {
                   className={`
                     w-full py-3 rounded-xl font-semibold text-white transition-all duration-300
                     bg-gradient-to-r ${tier.gradient} hover:shadow-lg
-                    ${tier.popular ? 'shadow-md' : ''}
+                    ${tier.popular ? "shadow-md" : ""}
                   `}
                 >
                   {tier.cta}
@@ -258,11 +275,21 @@ export default function ProFeaturesPage(): React.JSX.Element {
             <table className="w-full">
               <thead>
                 <tr className="border-b-2 border-slate-200">
-                  <th className="text-left py-4 px-4 font-semibold text-slate-900">Feature</th>
-                  <th className="text-center py-4 px-4 font-semibold text-slate-900">FREE</th>
-                  <th className="text-center py-4 px-4 font-semibold text-primary-600">CREATOR</th>
-                  <th className="text-center py-4 px-4 font-semibold text-amber-600">PRO</th>
-                  <th className="text-center py-4 px-4 font-semibold text-purple-600">AGENCY</th>
+                  <th className="text-left py-4 px-4 font-semibold text-slate-900">
+                    Feature
+                  </th>
+                  <th className="text-center py-4 px-4 font-semibold text-slate-900">
+                    FREE
+                  </th>
+                  <th className="text-center py-4 px-4 font-semibold text-primary-600">
+                    CREATOR
+                  </th>
+                  <th className="text-center py-4 px-4 font-semibold text-amber-600">
+                    PRO
+                  </th>
+                  <th className="text-center py-4 px-4 font-semibold text-purple-600">
+                    AGENCY
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -271,56 +298,108 @@ export default function ProFeaturesPage(): React.JSX.Element {
                   <td className="text-center py-4 px-4 text-slate-600">5</td>
                   <td className="text-center py-4 px-4 text-slate-600">100</td>
                   <td className="text-center py-4 px-4 text-slate-600">500</td>
-                  <td className="text-center py-4 px-4 text-slate-600">2,000</td>
+                  <td className="text-center py-4 px-4 text-slate-600">
+                    2,000
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-4 px-4 text-slate-700">YouTube Support</td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="text-center py-4 px-4">
+                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                  </td>
+                  <td className="text-center py-4 px-4">
+                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                  </td>
+                  <td className="text-center py-4 px-4">
+                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                  </td>
+                  <td className="text-center py-4 px-4">
+                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-100">
-                  <td className="py-4 px-4 text-slate-700">Instagram Support</td>
+                  <td className="py-4 px-4 text-slate-700">
+                    Instagram Support
+                  </td>
                   <td className="text-center py-4 px-4 text-slate-400">—</td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="text-center py-4 px-4">
+                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                  </td>
+                  <td className="text-center py-4 px-4">
+                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                  </td>
+                  <td className="text-center py-4 px-4">
+                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-100">
-                  <td className="py-4 px-4 text-slate-700">API Key Management</td>
+                  <td className="py-4 px-4 text-slate-700">
+                    API Key Management
+                  </td>
                   <td className="text-center py-4 px-4 text-slate-400">—</td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
-                  <td className="text-center py-4 px-4 text-slate-600">Unlimited</td>
+                  <td className="text-center py-4 px-4">
+                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                  </td>
+                  <td className="text-center py-4 px-4">
+                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                  </td>
+                  <td className="text-center py-4 px-4 text-slate-600">
+                    Unlimited
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-100">
-                  <td className="py-4 px-4 text-slate-700">Historical Analytics</td>
+                  <td className="py-4 px-4 text-slate-700">
+                    Historical Analytics
+                  </td>
                   <td className="text-center py-4 px-4 text-slate-400">—</td>
-                  <td className="text-center py-4 px-4 text-slate-600">7 days</td>
-                  <td className="text-center py-4 px-4 text-slate-600">30 days</td>
-                  <td className="text-center py-4 px-4 text-slate-600">Unlimited</td>
+                  <td className="text-center py-4 px-4 text-slate-600">
+                    7 days
+                  </td>
+                  <td className="text-center py-4 px-4 text-slate-600">
+                    30 days
+                  </td>
+                  <td className="text-center py-4 px-4 text-slate-600">
+                    Unlimited
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-100">
-                  <td className="py-4 px-4 text-slate-700">Competitor Analysis</td>
+                  <td className="py-4 px-4 text-slate-700">
+                    Competitor Analysis
+                  </td>
                   <td className="text-center py-4 px-4 text-slate-400">—</td>
                   <td className="text-center py-4 px-4 text-slate-400">—</td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="text-center py-4 px-4">
+                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                  </td>
+                  <td className="text-center py-4 px-4">
+                    <Check className="w-5 h-5 text-green-500 mx-auto" />
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-4 px-4 text-slate-700">Export Reports</td>
                   <td className="text-center py-4 px-4 text-slate-400">—</td>
                   <td className="text-center py-4 px-4 text-slate-400">—</td>
-                  <td className="text-center py-4 px-4 text-slate-600">CSV/PDF</td>
-                  <td className="text-center py-4 px-4 text-slate-600">CSV/PDF + White-label</td>
+                  <td className="text-center py-4 px-4 text-slate-600">
+                    CSV/PDF
+                  </td>
+                  <td className="text-center py-4 px-4 text-slate-600">
+                    CSV/PDF + White-label
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-4 px-4 text-slate-700">Support</td>
-                  <td className="text-center py-4 px-4 text-slate-600">Community</td>
-                  <td className="text-center py-4 px-4 text-slate-600">Email</td>
-                  <td className="text-center py-4 px-4 text-slate-600">Priority Email</td>
-                  <td className="text-center py-4 px-4 text-slate-600">24/7 + Manager</td>
+                  <td className="text-center py-4 px-4 text-slate-600">
+                    Community
+                  </td>
+                  <td className="text-center py-4 px-4 text-slate-600">
+                    Email
+                  </td>
+                  <td className="text-center py-4 px-4 text-slate-600">
+                    Priority Email
+                  </td>
+                  <td className="text-center py-4 px-4 text-slate-600">
+                    24/7 + Manager
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -338,7 +417,8 @@ export default function ProFeaturesPage(): React.JSX.Element {
                 Not sure which plan is right for you?
               </h3>
               <p className="text-slate-600 mb-6">
-                Start with our FREE tier and upgrade anytime as your needs grow. All plans can be changed or cancelled at any time.
+                Start with our FREE tier and upgrade anytime as your needs grow.
+                All plans can be changed or cancelled at any time.
               </p>
               <div className="flex items-center justify-center gap-4">
                 <Link

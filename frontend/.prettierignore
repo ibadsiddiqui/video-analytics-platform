@@ -1,0 +1,11 @@
+# Ignore artifacts:
+build
+coverage
+dist
+.next
+
+# Ignore all HTML files:
+*.html
+
+# opennext
+.open-next

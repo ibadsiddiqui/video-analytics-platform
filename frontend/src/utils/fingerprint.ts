@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Browser Fingerprinting Utility
@@ -16,9 +16,9 @@ async function hashString(str: string): Promise<string> {
   try {
     const encoder = new TextEncoder();
     const data = encoder.encode(str);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   } catch {
     // Fallback for environments without crypto.subtle
     return simpleHash(str);
@@ -44,28 +44,28 @@ function simpleHash(str: string): string {
  */
 function getCanvasFingerprint(): string {
   try {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
-    if (!ctx) return 'canvas-unavailable';
+    if (!ctx) return "canvas-unavailable";
 
     canvas.width = 200;
     canvas.height = 50;
 
-    ctx.textBaseline = 'top';
-    ctx.font = '14px Arial';
-    ctx.fillStyle = '#f60';
+    ctx.textBaseline = "top";
+    ctx.font = "14px Arial";
+    ctx.fillStyle = "#f60";
     ctx.fillRect(125, 1, 62, 20);
-    ctx.fillStyle = '#069';
-    ctx.fillText('Browser Fingerprint', 2, 15);
+    ctx.fillStyle = "#069";
+    ctx.fillText("Browser Fingerprint", 2, 15);
 
     try {
       return canvas.toDataURL();
     } catch {
-      return 'canvas-blocked';
+      return "canvas-blocked";
     }
   } catch {
-    return 'canvas-error';
+    return "canvas-error";
   }
 }
 
@@ -74,20 +74,23 @@ function getCanvasFingerprint(): string {
  */
 function getWebGLFingerprint(): string {
   try {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    const canvas = document.createElement("canvas");
+    const gl =
+      canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
 
-    if (!gl) return 'webgl-unavailable';
+    if (!gl) return "webgl-unavailable";
 
-    const debugInfo = (gl as any).getExtension('WEBGL_debug_renderer_info');
-    if (!debugInfo) return 'webgl-no-debug';
+    const debugInfo = (gl as any).getExtension("WEBGL_debug_renderer_info");
+    if (!debugInfo) return "webgl-no-debug";
 
     const vendor = (gl as any).getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
-    const renderer = (gl as any).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+    const renderer = (gl as any).getParameter(
+      debugInfo.UNMASKED_RENDERER_WEBGL,
+    );
 
     return `${vendor}|${renderer}`;
   } catch {
-    return 'webgl-error';
+    return "webgl-error";
   }
 }
 
@@ -108,7 +111,7 @@ function getTimezoneFingerprint(): string {
     const offset = new Date().getTimezoneOffset();
     return `${timezone}|${offset}`;
   } catch {
-    return 'timezone-error';
+    return "timezone-error";
   }
 }
 
@@ -117,8 +120,8 @@ function getTimezoneFingerprint(): string {
  */
 function getLanguageFingerprint(): string {
   const languages = navigator.languages
-    ? Array.from(navigator.languages).join(',')
-    : navigator.language || 'unknown';
+    ? Array.from(navigator.languages).join(",")
+    : navigator.language || "unknown";
   return languages;
 }
 
@@ -126,7 +129,7 @@ function getLanguageFingerprint(): string {
  * Get platform fingerprint
  */
 function getPlatformFingerprint(): string {
-  return navigator.platform || 'unknown';
+  return navigator.platform || "unknown";
 }
 
 /**
@@ -139,14 +142,14 @@ function getUserAgentFingerprint(): string {
   if (match) {
     return `${match[1]}${match[2]}`;
   }
-  return 'unknown-ua';
+  return "unknown-ua";
 }
 
 /**
  * Get hardware concurrency (number of processor cores)
  */
 function getHardwareConcurrency(): string {
-  return `cpu-${navigator.hardwareConcurrency || 'unknown'}`;
+  return `cpu-${navigator.hardwareConcurrency || "unknown"}`;
 }
 
 /**
@@ -154,7 +157,7 @@ function getHardwareConcurrency(): string {
  */
 function getDeviceMemory(): string {
   const deviceMemory = (navigator as any).deviceMemory;
-  return deviceMemory ? `mem-${deviceMemory}gb` : 'mem-unknown';
+  return deviceMemory ? `mem-${deviceMemory}gb` : "mem-unknown";
 }
 
 /**
@@ -182,7 +185,7 @@ export async function getBrowserFingerprint(): Promise<string> {
     ];
 
     // Combine all components
-    const combined = components.join('|');
+    const combined = components.join("|");
 
     // Hash the combined string
     const fingerprint = await hashString(combined);
@@ -192,7 +195,7 @@ export async function getBrowserFingerprint(): Promise<string> {
 
     return fingerprint;
   } catch (error) {
-    console.error('Error generating browser fingerprint:', error);
+    console.error("Error generating browser fingerprint:", error);
     // Return a pseudo-random fallback if fingerprinting fails
     return `fallback-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
