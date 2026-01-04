@@ -3,22 +3,22 @@
  * Get historical analytics data for tracking growth
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getVideoHistoryUseCase } from '@/lib/use-cases';
+import { NextRequest, NextResponse } from "next/server";
+import { getVideoHistoryUseCase } from "@/lib/use-cases";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { videoId: string } }
+  { params }: { params: Promise<{ videoId: string }> },
 ) {
   try {
-    const { videoId } = params;
+    const { videoId } = await params;
     const { searchParams } = new URL(request.url);
-    const days = parseInt(searchParams.get('days') || '7');
+    const days = parseInt(searchParams.get("days") || "7");
 
     if (!videoId) {
       return NextResponse.json(
-        { success: false, error: 'Video ID is required' },
-        { status: 400 }
+        { success: false, error: "Video ID is required" },
+        { status: 400 },
       );
     }
 
@@ -29,13 +29,16 @@ export async function GET(
       data: result,
     });
   } catch (error) {
-    console.error('Get video history error:', error);
+    console.error("Get video history error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get video history',
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to get video history",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
