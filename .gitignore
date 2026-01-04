@@ -30,8 +30,7 @@ dist/
 .env.development.local
 .env.test
 .env.test.local
-.env.production
-.env.production.local
+.env.prod*
 
 # IDE
 .vscode/
