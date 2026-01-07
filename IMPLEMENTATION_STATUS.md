@@ -1,7 +1,13 @@
 # 📊 Implementation Status - Video Analytics Platform
 
-**Last Updated:** 2026-01-02
+**Last Updated:** 2026-01-08
 **Current Phase:** Phase 1.3 ✅ COMPLETED
+**Architecture:** Full-stack Next.js with API Routes (Serverless)
+
+> **⚠️ ARCHITECTURAL CHANGE (2026-01-08):**
+> The application was migrated from a separate NestJS backend to a unified Next.js full-stack application.
+> All backend functionality is now implemented as Next.js API routes (serverless functions).
+> File paths and patterns in this document have been updated to reflect the new architecture.
 
 ---
 
@@ -9,9 +15,9 @@
 
 | Phase | Feature | Status | Progress | Notes |
 |-------|---------|--------|----------|-------|
-| 1.1 | Clerk Authentication | ✅ **COMPLETED** | 100% | Backend + Frontend + Tests |
-| 1.2 | User API Key Management | ✅ **COMPLETED** | 100% | Backend + Frontend + Tests |
-| 1.3 | Anonymous Rate Limiting | ✅ **COMPLETED** | 100% | Backend + Frontend + Tests |
+| 1.1 | Clerk Authentication | ✅ **COMPLETED** | 100% | API Routes + Frontend + Tests |
+| 1.2 | User API Key Management | ✅ **COMPLETED** | 100% | API Routes + Frontend + Tests |
+| 1.3 | Anonymous Rate Limiting | ✅ **COMPLETED** | 100% | API Routes + Frontend + Tests |
 | 2.x | Competitive Intelligence | ⏸️ **NOT STARTED** | 0% | Requires Phase 1 |
 | 3.x | Predictive Analytics | ⏸️ **NOT STARTED** | 0% | Requires Phase 1 |
 
@@ -20,78 +26,62 @@
 ## ✅ Phase 1.1: Clerk Authentication System - COMPLETED
 
 **Completion Date:** 2026-01-02
-**Test Coverage:** 100% statements, 95%+ branches
+**Architecture:** Next.js API Routes (Serverless Functions)
 
 ### What Was Implemented
 
-#### Backend Components (/backend)
+#### Server-Side Components (/frontend)
 
 **1. Database Schema** ✅
-- Location: `prisma/schema.prisma`
+- Location: `frontend/prisma/schema.prisma`
 - Added models:
   - `User` model with Clerk integration (clerkId, email, tier, etc.)
   - `UserTier` enum (FREE, CREATOR, PRO, AGENCY)
   - `UserApiKey` model (placeholder for Phase 1.2)
 - Indexes: clerkId, email for performance
-- Database synced via `npx prisma db push`
+- Database synced via `npm run prisma:push`
 
 **2. Authentication Middleware** ✅
-- Location: `src/presentation/middleware/AuthMiddleware.ts`
-- Exports:
-  - `requireAuth` - Enforces authentication (returns 401 if not authenticated)
-  - `withAuth` - Optional authentication (adds user info if token present)
-  - `checkRateLimit` - Tier-based rate limiting (FREE: 5, CREATOR: 100, PRO: 500, AGENCY: 2000 requests/day)
-  - `getUserId` - Utility to extract user ID from request
-  - `isAuthenticated` - Boolean check for authentication status
-  - `AuthRequest` - Extended Request interface with auth data
+- Location: `frontend/src/middleware.ts`
+- Next.js middleware for request interception
 - Features:
-  - JWT token validation via Clerk SDK
-  - Daily request tracking with automatic midnight reset
-  - Rate limit enforcement with upgrade suggestions
+  - Clerk authentication using `@clerk/nextjs`
+  - Automatic JWT validation on protected routes
+  - Public routes: `/`, `/api/analyze`, `/api/compare`, `/api/detect-platform`
+  - Protected routes: `/api/keys/*`, `/api/auth/me`, `/settings`
+  - Clerk's built-in session management
 
-**3. Authentication Controller** ✅
-- Location: `src/presentation/controllers/AuthController.ts`
-- Routes:
+**3. Authentication API Routes** ✅
+- **Webhook Route:** `frontend/src/app/api/auth/webhook/route.ts`
   - `POST /api/auth/webhook` - Handles Clerk webhook events (user.created, user.updated, user.deleted)
-  - `GET /api/auth/me` - Returns current user profile with rate limit info
-- Features:
   - Svix webhook signature verification
-  - User lifecycle synchronization with database
-  - Tier-based rate limit calculation
+  - User lifecycle synchronization with PostgreSQL database
+  - Raw body parsing for signature validation
 
-**4. Application Integration** ✅
-- Location: `src/App.ts`
-- Changes:
-  - Added `withAuth` middleware globally (optional auth for all routes)
-  - Integrated AuthController into routing
-  - Added raw body parsing for webhook endpoint (`express.raw()` before JSON middleware)
-  - Updated Swagger documentation with auth endpoints
+- **User Profile Route:** `frontend/src/app/api/auth/me/route.ts`
+  - `GET /api/auth/me` - Returns current user profile with rate limit info
+  - Clerk authentication check via `auth()` helper
+  - Tier-based rate limit calculation
+  - Prisma database queries
+
+**4. Rate Limiting Utilities** ✅
+- Location: `frontend/src/lib/utils/rate-limiter.ts`
+- Tier-based rate limiting (FREE: 5, CREATOR: 100, PRO: 500, AGENCY: 2000 requests/day)
+- Redis-based tracking with daily reset
+- Used across multiple API routes
 
 **5. Dependencies Installed** ✅
-- `@clerk/clerk-sdk-node@^5.1.6` - Clerk authentication SDK
-- `svix@^1.84.1` - Webhook verification library
+- `@clerk/nextjs` - Clerk Next.js SDK with App Router support
+- `svix` - Webhook verification library
+- `@prisma/client` - Type-safe database client
+- `@upstash/redis` - Serverless Redis for caching and rate limiting
 
-**6. Unit Tests** ✅
-- Location: `src/__tests__/presentation/middleware/AuthMiddleware.test.ts` (25 tests)
-- Coverage:
-  - All middleware functions tested
-  - All user tiers tested
-  - Rate limit scenarios (exceeded, reset, new day)
-  - Error handling paths
-- Location: `src/__tests__/presentation/controllers/AuthController.test.ts` (22 tests)
-- Coverage:
-  - Webhook event handling (created, updated, deleted)
-  - Signature verification
-  - User profile retrieval
-  - Rate limit calculations
-- **Test Results:** 47 tests passed, 100% statement coverage, 95.12% branch coverage
-
-**7. Environment Variables** ✅
-- Location: `backend/.env.local` (documentation)
+**6. Environment Variables** ✅
+- Location: `frontend/.env.example`
 - Required variables:
-  - `CLERK_SECRET_KEY` - Clerk authentication secret
+  - `CLERK_SECRET_KEY` - Clerk authentication secret (server-side only)
   - `CLERK_WEBHOOK_SECRET` - Webhook signature verification
-  - `CLERK_PUBLISHABLE_KEY` - Public Clerk key (optional on backend)
+  - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Public Clerk key (exposed to browser)
 
 #### Frontend Components (/frontend)
 
@@ -146,35 +136,32 @@
 
 ### Files Created/Modified
 
-#### Backend Files
+#### API Routes & Server-Side Logic
 **Created:**
-- `/backend/src/presentation/middleware/AuthMiddleware.ts` (211 lines)
-- `/backend/src/presentation/controllers/AuthController.ts` (203 lines)
-- `/backend/src/__tests__/presentation/middleware/AuthMiddleware.test.ts` (455 lines)
-- `/backend/src/__tests__/presentation/controllers/AuthController.test.ts` (543 lines)
-- `/backend/SETUP_PHASE_1.1.md` (237 lines - setup documentation)
+- `/frontend/src/app/api/auth/webhook/route.ts` - Clerk webhook handler (POST)
+- `/frontend/src/app/api/auth/me/route.ts` - User profile endpoint (GET)
+- `/frontend/src/middleware.ts` - Next.js authentication middleware
+- `/frontend/src/lib/utils/rate-limiter.ts` - Rate limiting utilities
+- `/frontend/src/lib/prisma.ts` - Prisma client singleton
 
 **Modified:**
-- `/backend/prisma/schema.prisma` - Added User, UserTier, UserApiKey models
-- `/backend/src/App.ts` - Integrated auth middleware and controller
-- `/backend/src/presentation/middleware/index.ts` - Exported auth middleware
-- `/backend/src/presentation/controllers/index.ts` - Exported AuthController
-- `/backend/.env.local` - Documented Clerk environment variables
-- `/backend/package.json` - Added Clerk and Svix dependencies
+- `/frontend/prisma/schema.prisma` - Added User, UserTier, UserApiKey models
+- `/frontend/.env.example` - Documented Clerk environment variables
+- `/frontend/package.json` - Added @clerk/nextjs, svix, @prisma/client
+- `/frontend/next.config.js` - Added Clerk configuration
 
-#### Frontend Files
+#### Frontend Components & UI
 **Created:**
-- `/frontend/src/components/AuthButton.tsx` (42 lines)
-- `/frontend/src/app/sign-in/[[...sign-in]]/page.tsx` (19 lines)
-- `/frontend/src/app/sign-up/[[...sign-up]]/page.tsx` (19 lines)
-- `/frontend/src/config/routes.ts` (31 lines)
+- `/frontend/src/components/AuthButton.tsx` - Sign in/out button with UserButton
+- `/frontend/src/app/sign-in/[[...sign-in]]/page.tsx` - Sign-in page with Clerk component
+- `/frontend/src/app/sign-up/[[...sign-up]]/page.tsx` - Sign-up page with Clerk component
+- `/frontend/src/config/routes.ts` - Centralized route configuration
 
 **Modified:**
 - `/frontend/src/app/layout.tsx` - Added ClerkProvider wrapper
-- `/frontend/src/components/Header.tsx` - Integrated AuthButton, used EXTERNAL_LINKS
+- `/frontend/src/components/Header.tsx` - Integrated AuthButton
 - `/frontend/src/components/SearchBar.tsx` - Used ROUTES configuration
 - `/frontend/src/app/guide/youtube-api-key/page.tsx` - Used ROUTES and EXTERNAL_LINKS
-- `/frontend/package.json` - Added @clerk/nextjs dependency
 
 ### Known Issues & TODOs
 
@@ -183,8 +170,8 @@
 - [ ] Add webhook events: user.created, user.updated, user.deleted
 - [ ] Test webhook synchronization in production environment
 
-**Architectural Notes from Review:**
-- ⚠️ **Database Rate Limiting**: Current implementation writes to database on every request. Consider moving to Redis for better performance (noted in architect review, can be addressed in future optimization)
+**Architectural Notes:**
+- ✅ **Rate Limiting**: Implemented using Redis for better performance (Phase 1.3)
 - ⚠️ **Cache Key Collision**: Current cache keys don't include user context. May need `user:{userId}:video:{id}` pattern in future
 
 ---
@@ -192,61 +179,61 @@
 ## ✅ Phase 1.2: User API Key Management - COMPLETED
 
 **Completion Date:** 2026-01-02
-**Test Coverage:** 100% (EncryptionService), 80%+ overall
+**Architecture:** Next.js API Routes with Server-Side Services
 
 ### What Was Implemented
 
-#### Backend Components (/backend)
+#### Server-Side Services (/frontend/src/lib)
 
-**1. EncryptionService** ✅
-- Location: `src/infrastructure/encryption/EncryptionService.ts`
+**1. Encryption Service** ✅
+- Location: `frontend/src/lib/services/encryption.ts`
 - AES-256-GCM encryption implementation:
   - Random IV (initialization vector) per encryption
   - Authentication tag for integrity verification
   - Secure key derivation using crypto.scrypt with random salt per key
   - **SECURITY:** No hardcoded salts - each encryption uses unique random salt
-- Methods:
-  - `encrypt(apiKey: string)` - Returns `{ encryptedKey, iv, authTag, salt }`
-  - `decrypt(encryptedData)` - Decrypts and returns original API key
-  - `maskKey(apiKey: string)` - Returns masked display (e.g., "AIza...k7x9")
+- Functions:
+  - `encryptApiKey(apiKey: string)` - Returns `{ encryptedKey, iv, authTag, salt }`
+  - `decryptApiKey(encryptedData)` - Decrypts and returns original API key
+  - `maskApiKey(apiKey: string)` - Returns masked display (e.g., "AIza...k7x9")
 - Environment: `ENCRYPTION_KEY` (32-byte base64 encoded)
-- Unit tests: 33 passing tests, 100% coverage
 
-**2. ApiKeyResolverService** ✅
-- Location: `src/application/services/ApiKeyResolverService.ts`
+**2. API Key Resolver** ✅
+- Location: `frontend/src/lib/services/api-key-resolver.ts`
 - Smart API key resolution:
   - Priority: User's custom key > System key from environment
   - Checks if user has active key for platform
   - Tracks lastUsedAt when user key is accessed
-- Methods:
-  - `getApiKey(userId, platform)` - Returns appropriate API key
-  - `hasUserKey(userId, platform)` - Boolean check for user key
-  - `getKeySource(userId, platform)` - Returns key source info
-- Integration with YouTubeService and InstagramService
+- Functions:
+  - `resolveApiKey(userId, platform)` - Returns appropriate API key
+  - `hasUserApiKey(userId, platform)` - Boolean check for user key
+- Integration with YouTube and Instagram services
 
-**3. ApiKeyController** ✅
-- Location: `src/presentation/controllers/ApiKeyController.ts`
-- Complete CRUD API with routing-controllers decorators:
+**3. API Key Routes** ✅
+- **Keys Route:** `frontend/src/app/api/keys/route.ts`
   - `POST /api/keys` - Add new encrypted API key
   - `GET /api/keys` - List user's keys (masked)
+
+- **Individual Key Route:** `frontend/src/app/api/keys/[id]/route.ts`
+  - `GET /api/keys/:id` - Get single API key
   - `PUT /api/keys/:id` - Update label or isActive status
   - `DELETE /api/keys/:id` - Delete API key
+
+- **Test Key Route:** `frontend/src/app/api/keys/[id]/test/route.ts`
   - `POST /api/keys/:id/test` - Test key validity (rate limited: 5 tests/hour)
-- Security features:
-  - All endpoints require authentication (`@UseBefore(requireAuth)`)
+
+**Security features:**
+  - All endpoints require authentication (Clerk's `auth()` helper)
   - Ownership validation on all operations
   - Never returns decrypted keys in responses
   - Rate limiting on testing endpoint
-- OpenAPI/Swagger documentation with proper decorators
 
-**4. DTOs and Validation** ✅
-- Location: `src/application/dtos/`
-- Created:
-  - `CreateApiKeyRequest.ts` - Validation for creating keys
-  - `UpdateApiKeyRequest.ts` - Validation for updates
-  - `ApiKeyResponse.ts` - Response format with masked keys
-  - `TestApiKeyResponse.ts` - Test result format
-- Uses class-validator for request validation
+**4. Request Validation** ✅
+- Location: Inline validation in API route handlers
+- Zod schema validation for:
+  - Create API key requests
+  - Update API key requests
+  - Platform type validation (YOUTUBE, INSTAGRAM)
 
 **5. Database Integration** ✅
 - Updated UserApiKey model in Prisma schema:
@@ -271,12 +258,12 @@
     @@index([platform])
   }
   ```
-- Ran `npx prisma db push` and `npx prisma generate`
+- Ran `npm run prisma:push` and `npm run prisma:generate`
 
 **6. Integration with Analytics Services** ✅
-- Updated AnalyzeVideoUseCase to use ApiKeyResolverService
+- Updated `/api/analyze` route to use API key resolver
 - Passes userId to resolve appropriate API key
-- YouTube/Instagram services now accept optional apiKey parameter
+- YouTube/Instagram services accept optional apiKey parameter
 - Seamless fallback to system keys when user hasn't provided custom keys
 
 #### Frontend Components (/frontend)
@@ -346,35 +333,30 @@
 
 ### Files Created/Modified
 
-#### Backend Files
+#### API Routes & Server-Side Services
 **Created:**
-- `/backend/src/infrastructure/encryption/EncryptionService.ts` (213 lines)
-- `/backend/src/application/services/ApiKeyResolverService.ts` (166 lines)
-- `/backend/src/presentation/controllers/ApiKeyController.ts` (469 lines)
-- `/backend/src/application/dtos/CreateApiKeyRequest.ts`
-- `/backend/src/application/dtos/UpdateApiKeyRequest.ts`
-- `/backend/src/application/dtos/ApiKeyResponse.ts`
-- `/backend/src/application/dtos/TestApiKeyResponse.ts`
-- `/backend/src/__tests__/infrastructure/encryption/EncryptionService.test.ts` (360 lines, 33 tests)
-- `/backend/src/__tests__/presentation/controllers/ApiKeyController.test.ts` (472 lines)
-- `/backend/.env.example` - Added ENCRYPTION_KEY documentation
+- `/frontend/src/app/api/keys/route.ts` - List/create API keys (GET, POST)
+- `/frontend/src/app/api/keys/[id]/route.ts` - Get/update/delete individual key (GET, PUT, DELETE)
+- `/frontend/src/app/api/keys/[id]/test/route.ts` - Test API key validity (POST)
+- `/frontend/src/lib/services/encryption.ts` - AES-256-GCM encryption utilities
+- `/frontend/src/lib/services/api-key-resolver.ts` - API key resolution logic
+- `/frontend/.env.example` - Added ENCRYPTION_KEY documentation
 
 **Modified:**
-- `/backend/prisma/schema.prisma` - Updated UserApiKey model with encryption fields
-- `/backend/src/App.ts` - Registered ApiKeyController
-- `/backend/src/application/use-cases/AnalyzeVideoUseCase.ts` - Integrated ApiKeyResolverService
-- `/backend/src/presentation/controllers/AnalyticsController.ts` - Added withAuth middleware
-- `/backend/src/shared/config/ConfigService.ts` - Added encryptionKey field
+- `/frontend/prisma/schema.prisma` - Updated UserApiKey model with encryption fields
+- `/frontend/src/app/api/analyze/route.ts` - Integrated API key resolver
+- `/frontend/src/lib/services/youtube.ts` - Accept optional apiKey parameter
+- `/frontend/src/lib/services/instagram.ts` - Accept optional apiKey parameter
 
-#### Frontend Files
+#### Frontend Components & UI
 **Created:**
-- `/frontend/src/app/settings/page.tsx` (475 lines)
-- `/frontend/src/components/ApiKeyCard.tsx` (262 lines)
-- `/frontend/src/components/ApiKeyModal.tsx` (362 lines)
-- `/frontend/src/components/DeleteConfirmation.tsx` (127 lines)
-- `/frontend/src/hooks/useApiKeys.ts` (256 lines)
-- `/frontend/src/hooks/useUserProfile.ts` (95 lines)
-- `/frontend/src/types/apiKey.ts` (63 lines)
+- `/frontend/src/app/settings/page.tsx` - Settings page with API key management
+- `/frontend/src/components/ApiKeyCard.tsx` - Individual API key card component
+- `/frontend/src/components/ApiKeyModal.tsx` - Add/edit API key modal
+- `/frontend/src/components/DeleteConfirmation.tsx` - Delete confirmation dialog
+- `/frontend/src/hooks/useApiKeys.ts` - API key CRUD operations hook
+- `/frontend/src/hooks/useUserProfile.ts` - User profile data hook
+- `/frontend/src/types/apiKey.ts` - TypeScript type definitions
 
 **Modified:**
 - `/frontend/src/config/routes.ts` - Added SETTINGS route
@@ -434,11 +416,16 @@
 
 ### Environment Variables
 
-**Backend (.env):**
+**Required (.env):**
 ```env
 # Generate encryption key with:
 # node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ENCRYPTION_KEY=<base64-encoded-32-byte-key>
+
+# Existing environment variables
+DATABASE_URL=postgresql://...
+CLERK_SECRET_KEY=sk_test_xxxxx
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
 ```
 
 ### Known Issues & Future Enhancements
@@ -463,50 +450,39 @@ ENCRYPTION_KEY=<base64-encoded-32-byte-key>
 ## ✅ Phase 1.3: Anonymous User Rate Limiting - COMPLETED
 
 **Completion Date:** 2026-01-02
-**Test Coverage:** 92.3% statements, 100% branches (Backend)
+**Architecture:** Next.js API Routes with Redis Rate Limiting
 
 ### What Was Implemented
 
-#### Backend Components (/backend)
+#### Server-Side Rate Limiting (/frontend)
 
-**1. Anonymous Rate Limiting Middleware** ✅
-- Location: `src/presentation/middleware/AnonymousRateLimitMiddleware.ts`
+**1. Anonymous Rate Limiting Utility** ✅
+- Location: `frontend/src/lib/utils/rate-limiter.ts`
 - Hybrid tracking approach:
-  - Primary: IP address (handles X-Forwarded-For, X-Real-IP for proxies)
+  - Primary: IP address (handles X-Forwarded-For, X-Real-IP for proxies via Next.js Request)
   - Secondary: Browser fingerprint (from X-Fingerprint header)
   - Combined: SHA-256 hash of IP:fingerprint for unique identification
 - Daily limit: 5 requests per day for anonymous users
 - Redis storage: `ratelimit:anon:{identifier}:{date}` with automatic midnight expiry
 - Response headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
-- Authenticated users bypass this middleware (use tier-based limits)
+- Authenticated users bypass this (use tier-based limits)
 - Graceful failure: allows requests if Redis unavailable (fail-open)
 
-**2. Redis Cache Service Extensions** ✅
-- Location: `src/infrastructure/cache/RedisCacheService.ts`
-- New methods:
+**2. Redis Integration** ✅
+- Location: `frontend/src/lib/redis.ts`
+- Upstash Redis client singleton
+- Rate limiting methods:
   - `incrementAnonymousRequests()` - Increments counter and returns count/remaining
   - `getAnonymousRequestCount()` - Retrieves current count for identifier
 - Daily reset logic with TTL expiring at midnight
 
-**3. Application Integration** ✅
-- Location: `src/App.ts`
-- Added `X-Fingerprint` to CORS allowed headers
-- Integrated `anonymousRateLimit` middleware after `withAuth`
-- Applied to `/api/analyze` and `/api/compare` endpoints
-
-**4. Unit Tests** ✅
-- Location: `src/__tests__/presentation/middleware/AnonymousRateLimitMiddleware.test.ts` (18 tests)
-- Coverage:
-  - Authenticated user bypass
-  - Redis disabled handling
-  - IP-based tracking (including proxy scenarios)
-  - Fingerprint-based tracking
-  - Hybrid tracking (IP + fingerprint)
-  - Rate limit enforcement (allows 5, blocks 6th)
-  - Response headers verification
-  - Daily reset logic
-  - Error handling
-- **Test Results:** 18 tests passed, 92.3% statement coverage, 100% branch coverage
+**3. API Route Integration** ✅
+- Applied to analytics endpoints:
+  - `frontend/src/app/api/analyze/route.ts`
+  - `frontend/src/app/api/compare/route.ts`
+- Rate limiting logic integrated directly in route handlers
+- Returns proper HTTP 429 status on limit exceeded
+- Sets rate limit headers in responses
 
 **5. Error Response Format** ✅
 ```json
@@ -584,22 +560,22 @@ HTTP Status: `429 Too Many Requests`
 
 ### Files Created/Modified
 
-#### Backend Files
+#### Server-Side Rate Limiting
 **Created:**
-- `/backend/src/presentation/middleware/AnonymousRateLimitMiddleware.ts` (267 lines)
-- `/backend/src/__tests__/presentation/middleware/AnonymousRateLimitMiddleware.test.ts` (378 lines)
+- `/frontend/src/lib/utils/rate-limiter.ts` - Anonymous rate limiting logic
+- `/frontend/src/lib/redis.ts` - Upstash Redis client with rate limit methods
 
 **Modified:**
-- `/backend/src/infrastructure/cache/RedisCacheService.ts` - Added anonymous tracking methods
-- `/backend/src/App.ts` - Integrated middleware, added CORS headers
-- `/backend/src/presentation/middleware/index.ts` - Exported new middleware
+- `/frontend/src/app/api/analyze/route.ts` - Integrated rate limiting
+- `/frontend/src/app/api/compare/route.ts` - Integrated rate limiting
+- `/frontend/next.config.js` - Added headers configuration for CORS
 
-#### Frontend Files
+#### Client-Side UI & Tracking
 **Created:**
-- `/frontend/src/utils/fingerprint.ts` (172 lines)
-- `/frontend/src/hooks/useAnonymousTracking.ts` (151 lines)
-- `/frontend/src/components/UpgradePrompt.tsx` (204 lines)
-- `/frontend/src/components/RateLimitDisplay.tsx` (115 lines)
+- `/frontend/src/utils/fingerprint.ts` - Browser fingerprinting utility
+- `/frontend/src/hooks/useAnonymousTracking.ts` - Client-side request tracking
+- `/frontend/src/components/UpgradePrompt.tsx` - Upgrade modal when limit reached
+- `/frontend/src/components/RateLimitDisplay.tsx` - Rate limit status banner
 
 **Modified:**
 - `/frontend/src/hooks/useAnalytics.ts` - Added fingerprint headers, rate limit parsing
@@ -653,87 +629,119 @@ HTTP Status: `429 Too Many Requests`
 **When starting new phases, agents should:**
 
 1. Read this IMPLEMENTATION_STATUS.md file first
-2. Reference AGENT_REVIEW_SUMMARY.md for architectural decisions
+2. Reference CLAUDE.md for current architectural patterns
 3. Check FEATURE_ROADMAP.md for detailed implementation specs
 4. Review existing code patterns in completed phases
-5. Follow established testing patterns (Jest, mocking, coverage targets)
+5. Understand the full-stack Next.js architecture (single app, not microservices)
 
 ### Code Patterns to Follow
 
-**Backend (TypeScript):**
-- Clean Architecture: domain → application → infrastructure → presentation
-- TypeDI for dependency injection
-- routing-controllers with decorators (@JsonController, @Get, @Post)
-- Prisma for database access
-- Jest for testing with comprehensive mocks
+**Architecture (Full-Stack Next.js):**
+- Single Next.js application with API routes as serverless functions
+- Server-side logic in `/src/lib/services/` (YouTube, Instagram, encryption, etc.)
+- API routes in `/src/app/api/` using Next.js App Router pattern
+- Prisma for database access with singleton pattern
+- Upstash Redis for caching and rate limiting
+
+**API Routes (Next.js 15):**
+- File-based routing: `app/api/[route]/route.ts`
+- Export HTTP method handlers: `GET`, `POST`, `PUT`, `DELETE`
+- Use `NextRequest` and `NextResponse` from `next/server`
+- Authentication via Clerk's `auth()` helper
+- Example pattern:
+  ```typescript
+  import { NextRequest, NextResponse } from 'next/server';
+  import { auth } from '@clerk/nextjs';
+
+  export async function GET(request: NextRequest) {
+    const { userId } = auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    // ... route logic
+  }
+  ```
 
 **Frontend (Next.js 15 + React 19):**
 - App Router pattern (not Pages Router)
-- 'use client' directive for client components
+- `'use client'` directive for client components with interactivity
+- Server components by default (no directive needed)
 - Centralized routes in `src/config/routes.ts`
 - Tailwind CSS for styling
 - Framer Motion for animations
 - Clerk hooks: `useUser()`, `useAuth()`
 
-**Testing Standards:**
-- Unit tests for all business logic
-- Mock external dependencies (Clerk, Prisma, Svix)
-- Target: 80%+ coverage (statement, branch, function, line)
-- Test file naming: `*.test.ts` in `__tests__` directory
+**Database & Caching:**
+- Prisma client singleton in `src/lib/prisma.ts`
+- Redis client singleton in `src/lib/redis.ts`
+- Connection pooling for PostgreSQL (serverless compatibility)
 
 ### Environment Setup
 
-**Backend:**
+**All environment variables in `/frontend/.env.local`:**
+
 ```env
-# Authentication
-CLERK_SECRET_KEY=sk_test_xxxxx
-CLERK_WEBHOOK_SECRET=whsec_xxxxx
-CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
+# Authentication (Clerk)
+CLERK_SECRET_KEY=sk_test_xxxxx                      # Server-side only
+CLERK_WEBHOOK_SECRET=whsec_xxxxx                    # Server-side only
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx    # Exposed to browser
 
-# Database
-DATABASE_URL=postgresql://...
+# Database (PostgreSQL)
+DATABASE_URL=postgresql://user:pass@host:5432/db?connection_limit=1&pool_timeout=0
 
-# Redis Cache
-UPSTASH_REDIS_REST_URL=https://...
-UPSTASH_REDIS_REST_TOKEN=...
+# Redis Cache (Upstash)
+UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your-token-here
 
-# APIs
-YOUTUBE_API_KEY=AIza...
-RAPIDAPI_KEY=... (optional)
+# External APIs
+YOUTUBE_API_KEY=AIza...                             # YouTube Data API v3
+RAPIDAPI_KEY=...                                    # Instagram API (optional)
+
+# Encryption
+ENCRYPTION_KEY=<base64-encoded-32-byte-key>         # For API key encryption
 
 # App Config
 NODE_ENV=development
-PORT=3001
-FRONTEND_URL=http://localhost:3000
+CACHE_TTL_SECONDS=3600                              # 1 hour cache
 ```
 
-**Frontend:**
-```env
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-NEXT_PUBLIC_API_URL=http://localhost:3001 (optional)
-```
+**Important Notes:**
+- Variables with `NEXT_PUBLIC_` prefix are exposed to the browser
+- All other variables are server-side only (API routes, middleware)
+- Use connection pooling for PostgreSQL in production (Vercel Postgres, Neon, Supabase)
+- Generate `ENCRYPTION_KEY` with: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
 
 ### Development Commands
 
-**Backend:**
-```bash
-cd backend
-yarn dev          # Start dev server (port 3001)
-yarn build        # Build TypeScript
-yarn type-check   # Type checking without build
-yarn test         # Run all tests
-yarn test:watch   # Watch mode
-yarn test:coverage # Generate coverage report
-npx prisma generate # Generate Prisma client
-npx prisma db push  # Sync schema to DB
-```
+**All commands run from `/frontend` directory:**
 
-**Frontend:**
 ```bash
 cd frontend
-npm run dev    # Start dev server (port 3000)
-npm run build  # Production build
-npm run lint   # ESLint check
+
+# Development
+npm run dev              # Start dev server (http://localhost:3000)
+npm run build            # Production build
+npm start                # Start production server
+npm run lint             # ESLint check
+
+# Database (Prisma)
+npm run prisma:generate  # Generate Prisma client (auto-runs on postinstall)
+npm run prisma:push      # Push schema changes without migrations
+npm run prisma:migrate   # Create and apply migrations
+npm run prisma:studio    # Open Prisma Studio GUI
+
+# Testing (if implemented)
+npm test                 # Run tests
+npm run test:watch       # Watch mode
+npm run test:coverage    # Coverage report
+```
+
+**Quick Start:**
+```bash
+cd frontend
+npm install              # Install dependencies (auto-runs prisma generate)
+npm run prisma:push      # Sync database schema
+npm run dev              # Start development server
 ```
 
 ---
@@ -741,25 +749,39 @@ npm run lint   # ESLint check
 ## 🚀 Deployment Status
 
 **Current Environment:** Development
+**Target Platform:** Vercel (Next.js Serverless)
 
-**Production Checklist (Before deploying Phase 1.1):**
-- [ ] Configure Clerk webhook in production dashboard
-- [ ] Set all environment variables in Vercel
-- [ ] Enable database connection pooling (Prisma Data Proxy or PgBouncer)
-- [ ] Test authentication flow in staging
-- [ ] Verify webhook events trigger correctly
-- [ ] Monitor rate limiting behavior
-- [ ] Set up error tracking (Sentry)
-- [ ] Configure CORS for production domain
+**Production Checklist:**
+- [ ] Configure Clerk webhook in production dashboard (point to `https://yourdomain.com/api/auth/webhook`)
+- [ ] Set all environment variables in Vercel dashboard (Production, Preview, Development)
+- [ ] Enable database connection pooling for PostgreSQL
+  - Use Vercel Postgres with built-in pooling, OR
+  - Use Neon with connection pooling enabled, OR
+  - Use Supabase in transaction mode
+- [ ] Add `?connection_limit=1&pool_timeout=0` to DATABASE_URL for serverless compatibility
+- [ ] Test authentication flow in preview deployment
+- [ ] Verify webhook events trigger correctly (user.created, user.updated, user.deleted)
+- [ ] Monitor rate limiting behavior with Redis
+- [ ] Set up error tracking (Sentry or LogRocket)
+- [ ] Configure Clerk allowed origins with production domain
+- [ ] Restrict YouTube API key to production domain in Google Cloud Console
+- [ ] Enable Vercel Analytics for performance monitoring
+
+**Deployment Notes:**
+- Single Next.js app deployed to Vercel (root: `frontend/`)
+- API routes automatically deployed as serverless functions
+- Build command: `npm run build` (auto-runs `prisma generate` via postinstall)
+- Environment variables must be set in Vercel dashboard (not committed to repo)
+- Use `NEXT_PUBLIC_` prefix for client-side variables only
 
 ---
 
 ## 📚 Documentation References
 
-- **Setup Guide:** `/backend/SETUP_PHASE_1.1.md`
-- **Architecture Review:** `AGENT_REVIEW_SUMMARY.md`
+- **Project Guide:** `CLAUDE.md` - Architecture and development patterns
 - **Feature Specifications:** `FEATURE_ROADMAP.md`
-- **Test Coverage:** Run `yarn test:coverage` in `/backend`
+- **Deployment Guide:** `frontend/VERCEL_DEPLOYMENT.md` (if exists)
+- **API Documentation:** See API route files in `/frontend/src/app/api/`
 
 ---
 
