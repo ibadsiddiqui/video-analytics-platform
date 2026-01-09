@@ -160,7 +160,7 @@ export default function RapidApiKeyGuide(): React.JSX.Element {
                   </li>
                   <li>
                     • Instagram data is accessed through third-party APIs
-                    (Instagram's official API has restrictions)
+                    (Instagram&apos;s official API has restrictions)
                   </li>
                   <li>
                     • Keep your API key secure and never share it publicly
@@ -334,32 +334,32 @@ export default function RapidApiKeyGuide(): React.JSX.Element {
             <div className="space-y-4 text-sm text-slate-700">
               <div>
                 <h4 className="font-semibold text-slate-900 mb-1">
-                  "403 Forbidden" or "401 Unauthorized" error
+                  &quot;403 Forbidden&quot; or &quot;401 Unauthorized&quot; error
                 </h4>
                 <p>
-                  This usually means your API key is invalid or you haven't
-                  subscribed to the Instagram Scraper API 2. Make sure you've
+                  This usually means your API key is invalid or you haven&apos;t
+                  subscribed to the Instagram Scraper API 2. Make sure you&apos;ve
                   completed the subscription process and copied the correct API
                   key.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold text-slate-900 mb-1">
-                  "You have exceeded the rate limit"
+                  &quot;You have exceeded the rate limit&quot;
                 </h4>
                 <p>
-                  You've used all your monthly requests for your current plan.
+                  You&apos;ve used all your monthly requests for your current plan.
                   You can either wait until next month or upgrade to a higher
                   tier plan in the RapidAPI dashboard.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold text-slate-900 mb-1">
-                  "Invalid shortcode" error
+                  &quot;Invalid shortcode&quot; error
                 </h4>
                 <p>
                   The Instagram post URL might be incorrectly formatted. Make
-                  sure you're using a valid Instagram post, reel, or TV URL
+                  sure you&apos;re using a valid Instagram post, reel, or TV URL
                   (e.g., instagram.com/p/ABC123 or instagram.com/reel/XYZ789).
                 </p>
               </div>

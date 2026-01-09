@@ -119,7 +119,7 @@ function UpgradePrompt({
                   </motion.div>
 
                   <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
-                    You've reached your daily limit
+                    You&apos;ve reached your daily limit
                   </h2>
 
                   <p className="text-slate-600 text-sm sm:text-base">

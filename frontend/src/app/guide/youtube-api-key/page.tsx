@@ -323,37 +323,37 @@ export default function YouTubeApiKeyGuide(): React.JSX.Element {
             <div className="space-y-4 text-sm text-slate-700">
               <div>
                 <h4 className="font-semibold text-slate-900 mb-1">
-                  "API has not been used in project before or it is disabled"
+                  &quot;API has not been used in project before or it is disabled&quot;
                 </h4>
                 <p>
-                  Make sure you've enabled the YouTube Data API v3 in your
+                  Make sure you&apos;ve enabled the YouTube Data API v3 in your
                   Google Cloud project (Step 3). Wait a few minutes after
                   enabling for the changes to propagate.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold text-slate-900 mb-1">
-                  "The request cannot be completed because you have exceeded
-                  your quota"
+                  &quot;The request cannot be completed because you have exceeded
+                  your quota&quot;
                 </h4>
                 <p>
-                  You've reached your daily quota limit. You can either wait
+                  You&apos;ve reached your daily quota limit. You can either wait
                   until the quota resets (midnight Pacific Time) or request a
                   quota increase in the Google Cloud Console.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold text-slate-900 mb-1">
-                  "API key not valid. Please pass a valid API key"
+                  &quot;API key not valid. Please pass a valid API key&quot;
                 </h4>
                 <p>
-                  Double-check that you've copied the entire API key correctly.
+                  Double-check that you&apos;ve copied the entire API key correctly.
                   Make sure there are no extra spaces or characters.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold text-slate-900 mb-1">
-                  "Requests to this API method are blocked"
+                  &quot;Requests to this API method are blocked&quot;
                 </h4>
                 <p>
                   Your API key restrictions might be too restrictive. Check your

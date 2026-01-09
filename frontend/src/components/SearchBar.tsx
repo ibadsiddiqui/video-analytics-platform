@@ -227,7 +227,7 @@ function SearchBar({
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <p className="text-xs text-blue-800">
                   <strong>ℹ️ How it works:</strong> Each API key is used for its
-                  specific platform. Add one or both keys - they won't conflict
+                  specific platform. Add one or both keys - they won&apos;t conflict
                   with each other.
                 </p>
               </div>
@@ -251,7 +251,7 @@ function SearchBar({
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
                 />
                 <p className="mt-2 text-xs text-slate-500">
-                  Don't have an API key?{" "}
+                  Don&apos;t have an API key?{" "}
                   <Link
                     href={ROUTES.GUIDE.YOUTUBE_API_KEY}
                     className="text-primary-600 hover:text-primary-700 underline font-medium"
@@ -281,7 +281,7 @@ function SearchBar({
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none transition-all"
                 />
                 <p className="mt-2 text-xs text-slate-500">
-                  Don't have an API key?{" "}
+                  Don&apos;t have an API key?{" "}
                   <Link
                     href={ROUTES.GUIDE.RAPIDAPI_KEY}
                     className="text-primary-600 hover:text-primary-700 underline font-medium"
