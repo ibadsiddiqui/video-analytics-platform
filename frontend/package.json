@@ -2,6 +2,11 @@
   "name": "video-analytics-frontend",
   "private": true,
   "version": "1.0.0",
+  "author": {
+    "name": "ibad siddiqui",
+    "email": "ibadsiddiqui01@outlook.com",
+    "url": "https://ibadsiddiqui.dev"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
