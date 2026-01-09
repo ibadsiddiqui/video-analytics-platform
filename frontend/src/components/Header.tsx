@@ -61,14 +61,14 @@ function Header() {
             >
               <Sparkles className="w-4 h-4 text-amber-500" />
               <span className="text-sm font-medium text-amber-700">
-                Pro Features
+                {isSignedIn ? "Upgrade" : "Pro Features"}
               </span>
             </Link>
 
             {/* Settings Link (authenticated users only) */}
             {isSignedIn && (
               <Link
-                href={ROUTES.SETTINGS}
+                href={ROUTES.SETTINGS.HOME}
                 className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 hover:border-slate-300 transition-all duration-300 cursor-pointer"
                 title="Settings"
               >

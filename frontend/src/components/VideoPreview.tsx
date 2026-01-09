@@ -102,7 +102,10 @@ function VideoPreview({ video, channel }) {
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold relative overflow-hidden">
                   {channel.thumbnail ? (
                     <Image
-                      src={getProxiedImageUrl(channel.thumbnail, video.platform)}
+                      src={getProxiedImageUrl(
+                        channel.thumbnail,
+                        video.platform,
+                      )}
                       alt={channel.name}
                       fill
                       className="rounded-full object-cover"
