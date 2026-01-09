@@ -14,7 +14,14 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth();
 
     const body = await request.json();
-    const { url, skipCache, includeSentiment, includeKeywords, apiKey } = body;
+    const {
+      url,
+      skipCache,
+      includeSentiment,
+      includeKeywords,
+      youtubeApiKey,
+      rapidApiKey,
+    } = body;
 
     if (!url) {
       return NextResponse.json(
@@ -27,7 +34,8 @@ export async function POST(request: NextRequest) {
       skipCache: skipCache || false,
       includeSentiment: includeSentiment !== false,
       includeKeywords: includeKeywords !== false,
-      apiKey,
+      youtubeApiKey,
+      rapidApiKey,
       userId: userId || undefined,
     });
 

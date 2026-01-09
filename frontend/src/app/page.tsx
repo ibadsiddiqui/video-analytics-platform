@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Toaster, toast } from "react-hot-toast";
 import { useUser } from "@clerk/nextjs";
@@ -22,7 +22,8 @@ import { useAnonymousTracking } from "@/hooks/useAnonymousTracking";
 
 export default function Home(): React.JSX.Element {
   const [url, setUrl] = useState<string>("");
-  const [apiKey, setApiKey] = useState<string>("");
+  const [youtubeApiKey, setYoutubeApiKey] = useState<string>("");
+  const [rapidApiKey, setRapidApiKey] = useState<string>("");
   const [showUpgradePrompt, setShowUpgradePrompt] = useState<boolean>(false);
   const { user } = useUser();
   const { data, loading, error, analyze, isCached } = useAnalytics();
@@ -51,7 +52,10 @@ export default function Home(): React.JSX.Element {
       }
 
       try {
-        const result = await analyze(videoUrl, { apiKey: apiKey || undefined });
+        await analyze(videoUrl, {
+          youtubeApiKey: youtubeApiKey || undefined,
+          rapidApiKey: rapidApiKey || undefined,
+        });
 
         // Only increment rate limit for new requests (not cached results)
         // Only count for anonymous users
@@ -73,7 +77,15 @@ export default function Home(): React.JSX.Element {
         }
       }
     },
-    [analyze, apiKey, user, isLimitReached, incrementRequest, isCached],
+    [
+      analyze,
+      youtubeApiKey,
+      rapidApiKey,
+      user,
+      isLimitReached,
+      incrementRequest,
+      isCached,
+    ],
   );
 
   return (
@@ -136,8 +148,10 @@ export default function Home(): React.JSX.Element {
               setUrl={setUrl}
               onAnalyze={handleAnalyze}
               loading={loading}
-              apiKey={apiKey}
-              setApiKey={setApiKey}
+              youtubeApiKey={youtubeApiKey}
+              setYoutubeApiKey={setYoutubeApiKey}
+              rapidApiKey={rapidApiKey}
+              setRapidApiKey={setRapidApiKey}
             />
           </motion.div>
 

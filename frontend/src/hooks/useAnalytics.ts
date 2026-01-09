@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
+import axios from "axios";
 import { getBrowserFingerprint } from "@/utils/fingerprint";
 import { syncTrackingWithHeaders } from "@/hooks/useAnonymousTracking";
 
 const API_URL = "/api";
 
 interface AnalyzeOptions {
-  apiKey?: string;
+  youtubeApiKey?: string;
+  rapidApiKey?: string;
   skipCache?: boolean;
   includeSentiment?: boolean;
   includeKeywords?: boolean;
@@ -133,26 +135,26 @@ export function useAnalytics(): UseAnalyticsReturn {
         // Get browser fingerprint for anonymous tracking
         const fingerprint = await getBrowserFingerprint();
 
-        const response = await fetch(`${API_URL}/analyze`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Fingerprint": fingerprint,
-          },
-          body: JSON.stringify({
+        const response = await axios.post(
+          `${API_URL}/analyze`,
+          {
             url: normalizedUrl,
             ...options,
-          }),
-        });
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "X-Fingerprint": fingerprint,
+            },
+          },
+        );
 
-        const result = await response.json();
+        const result = response.data;
 
         // Extract rate limit headers
-        const rateLimitRemaining = response.headers.get(
-          "X-RateLimit-Remaining",
-        );
-        const rateLimitLimit = response.headers.get("X-RateLimit-Limit");
-        const rateLimitReset = response.headers.get("X-RateLimit-Reset");
+        const rateLimitRemaining = response.headers["x-ratelimit-remaining"];
+        const rateLimitLimit = response.headers["x-ratelimit-limit"];
+        const rateLimitReset = response.headers["x-ratelimit-reset"];
 
         if (rateLimitRemaining && rateLimitLimit) {
           const rateLimitState: RateLimitInfo = {
@@ -170,16 +172,6 @@ export function useAnalytics(): UseAnalyticsReturn {
           );
         }
 
-        if (!response.ok) {
-          // Handle rate limit exceeded (429)
-          if (response.status === 429) {
-            throw new Error(
-              "Daily request limit reached. Please sign up for unlimited access.",
-            );
-          }
-          throw new Error(result.error || "Failed to analyze video");
-        }
-
         if (!result.success) {
           throw new Error(result.error || "Analysis failed");
         }
@@ -195,7 +187,23 @@ export function useAnalytics(): UseAnalyticsReturn {
         setIsCached(false);
         return result.data;
       } catch (err: any) {
-        const errorMessage = err.message || "An unexpected error occurred";
+        let errorMessage = "An unexpected error occurred";
+
+        if (axios.isAxiosError(err)) {
+          // Handle rate limit exceeded (429)
+          if (err.response?.status === 429) {
+            errorMessage =
+              "Daily request limit reached. Please sign up for unlimited access.";
+          } else {
+            errorMessage =
+              err.response?.data?.error ||
+              err.message ||
+              "Failed to analyze video";
+          }
+        } else {
+          errorMessage = err.message || errorMessage;
+        }
+
         setError(errorMessage);
         throw new Error(errorMessage);
       } finally {

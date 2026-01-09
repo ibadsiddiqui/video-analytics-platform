@@ -160,12 +160,15 @@ async function testYouTubeKey(apiKey: string) {
 async function testInstagramKey(apiKey: string) {
   try {
     const response = await axios.get(
-      "https://instagram-scraper-api2.p.rapidapi.com/v1/info",
+      "https://instagram-scraper-stable-api.p.rapidapi.com/get_media_data.php",
       {
-        params: { username_or_id_or_url: "instagram" },
+        params: {
+          reel_post_code_or_url: "https://www.instagram.com/p/DLQAXzKN33c/",
+          type: "reel",
+        },
         headers: {
-          "X-RapidAPI-Key": apiKey,
-          "X-RapidAPI-Host": "instagram-scraper-api2.p.rapidapi.com",
+          "x-rapidapi-key": apiKey,
+          "x-rapidapi-host": "instagram-scraper-stable-api.p.rapidapi.com",
         },
       },
     );

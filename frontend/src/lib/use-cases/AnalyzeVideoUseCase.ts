@@ -13,7 +13,8 @@ export interface AnalyzeVideoOptions {
   skipCache?: boolean;
   includeSentiment?: boolean;
   includeKeywords?: boolean;
-  apiKey?: string;
+  youtubeApiKey?: string;
+  rapidApiKey?: string;
   userId?: string;
 }
 
@@ -170,7 +171,12 @@ export class AnalyzeVideoUseCase {
     // NOTE: In a real frontend implementation, you would call your backend API here
     // Example: const videoData = await fetch('/api/analyze', { method: 'POST', body: JSON.stringify({ url }) })
     // For now, this will throw an error as platform services aren't available client-side
-    const videoData = await this.fetchVideoData(url, platform, options.apiKey);
+    const videoData = await this.fetchVideoData(
+      url,
+      platform,
+      options.youtubeApiKey,
+      options.rapidApiKey,
+    );
 
     // Perform sentiment analysis on comments
     let sentimentAnalysis: ReturnType<
@@ -309,13 +315,14 @@ export class AnalyzeVideoUseCase {
   private async fetchVideoData(
     url: string,
     platform: string,
-    apiKey?: string,
+    youtubeApiKey?: string,
+    rapidApiKey?: string,
   ): Promise<VideoAnalyticsData> {
     switch (platform.toLowerCase()) {
       case "youtube":
-        return await youtubeService.getVideoAnalytics(url, apiKey);
+        return await youtubeService.getVideoAnalytics(url, youtubeApiKey);
       case "instagram":
-        return await instagramService.getVideoAnalytics(url);
+        return await instagramService.getVideoAnalytics(url, rapidApiKey);
       default:
         throw new Error(`Unsupported platform: ${platform}`);
     }
