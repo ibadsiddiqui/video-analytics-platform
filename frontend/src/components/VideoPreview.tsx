@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   Play,
@@ -13,6 +14,14 @@ import {
 
 function VideoPreview({ video, channel }) {
   if (!video) return null;
+
+  // Proxy Instagram images to bypass CORS restrictions
+  const getProxiedImageUrl = (url: string, platform: string) => {
+    if (platform === "INSTAGRAM" && url) {
+      return `/api/proxy-image?url=${encodeURIComponent(url)}`;
+    }
+    return url;
+  };
 
   const getPlatformIcon = () => {
     switch (video.platform) {
@@ -45,12 +54,14 @@ function VideoPreview({ video, channel }) {
       <div className="flex flex-col md:flex-row">
         {/* Thumbnail */}
         <div className="relative md:w-80 flex-shrink-0">
-          <div className="aspect-video md:aspect-auto md:h-full bg-slate-100">
+          <div className="aspect-video md:aspect-auto md:h-full bg-slate-100 relative">
             {video.thumbnail ? (
-              <img
-                src={video.thumbnail}
+              <Image
+                src={getProxiedImageUrl(video.thumbnail, video.platform)}
                 alt={video.title}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                unoptimized
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-200 to-slate-300">
@@ -88,12 +99,14 @@ function VideoPreview({ video, channel }) {
             {/* Channel info */}
             {channel && (
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold relative overflow-hidden">
                   {channel.thumbnail ? (
-                    <img
-                      src={channel.thumbnail}
+                    <Image
+                      src={getProxiedImageUrl(channel.thumbnail, video.platform)}
                       alt={channel.name}
-                      className="w-full h-full rounded-full object-cover"
+                      fill
+                      className="rounded-full object-cover"
+                      unoptimized
                     />
                   ) : (
                     channel.name?.[0]?.toUpperCase() || "C"

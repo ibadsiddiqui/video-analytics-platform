@@ -27,6 +27,8 @@ const nextConfig = {
         hostname: "via.placeholder.com",
       },
     ],
+    // Allow unoptimized images for better compatibility with proxied images
+    unoptimized: false,
   },
 };
 
