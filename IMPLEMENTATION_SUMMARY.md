@@ -292,11 +292,159 @@ frontend/src/
 
 5. All components use the new 'use client' directive since they require client-side features
 
-## Next Steps (Backend Integration)
+## Backend Integration ✅ COMPLETED
 
-1. Create API endpoints as documented in the hook
-2. Implement API key encryption/decryption
-3. Add API key usage tracking
-4. Integrate user tier fetching
-5. Implement rate limiting based on tier
-6. Add API key test endpoint with quota checking
+All backend integration has been completed:
+
+1. ✅ API endpoints created (`/api/keys`, `/api/keys/[id]`, `/api/keys/[id]/test`)
+2. ✅ API key encryption/decryption (AES-256-GCM with unique salt per key)
+3. ✅ API key usage tracking (`lastUsedAt` timestamp)
+4. ✅ User tier fetching from `/api/auth/me`
+5. ✅ Rate limiting based on tier
+6. ✅ API key test endpoint with quota checking
+
+---
+
+## Recent Update: API Key Selection Feature (2026-01-10)
+
+### Overview
+
+Added the ability for users to select which of their stored API keys to use for video analysis directly from the main page.
+
+### New Components
+
+#### ApiKeySelector (`/frontend/src/components/ApiKeySelector.tsx`)
+
+Dropdown component for selecting from user's stored API keys:
+
+**Features:**
+- Platform-specific styling (YouTube = red gradient, Instagram = pink gradient)
+- Shows "Use system key (default)" option
+- Lists user's active API keys with masked preview
+- "Manage" button linking to settings page
+- Empty state with "Add your first key" CTA
+- Displays key count and last used date
+
+**Props:**
+```typescript
+interface ApiKeySelectorProps {
+  platform: 'YOUTUBE' | 'INSTAGRAM';
+  selectedKeyId: string | null;
+  onSelect: (keyId: string | null) => void;
+  userKeys: ApiKey[];
+  onManageKeys: () => void;
+}
+```
+
+#### ApiKeyResolverService (`/frontend/src/lib/api-key-resolver.ts`)
+
+Server-side service for secure API key resolution:
+
+**Methods:**
+- `resolveYoutubeKey(keyId?, userId?)` - Resolves YouTube API key
+- `resolveInstagramKey(keyId?, userId?)` - Resolves Instagram/RapidAPI key
+- `resolveKey(platform, keyId?, userId?)` - Generic resolver
+
+**Features:**
+- Validates user ownership before decryption
+- Updates `lastUsedAt` timestamp when keys are used
+- Graceful fallback to system keys
+- Returns `ResolvedKey` with source indicator
+
+### Main Page Updates (`/frontend/src/app/page.tsx`)
+
+**New State:**
+```typescript
+const [selectedYoutubeKeyId, setSelectedYoutubeKeyId] = useState<string | null>(null);
+const [selectedInstagramKeyId, setSelectedInstagramKeyId] = useState<string | null>(null);
+```
+
+**localStorage Persistence:**
+- Saves selected key IDs to localStorage
+- Loads previously selected keys on mount
+- Keys: `selected_youtube_key_id`, `selected_instagram_key_id`
+
+### SearchBar Updates (`/frontend/src/components/SearchBar.tsx`)
+
+**Changes:**
+- Removed inline API key input fields (deprecated `youtubeApiKey`, `rapidApiKey`)
+- Added two `ApiKeySelector` components (YouTube and Instagram)
+- Only shows API key selection to authenticated users
+- Updated props to accept key IDs and user keys
+
+### Hook Updates (`/frontend/src/hooks/useAnalytics.ts`)
+
+**Updated Interface:**
+```typescript
+interface AnalyzeOptions {
+  youtubeKeyId?: string;     // NEW
+  instagramKeyId?: string;   // NEW
+  skipCache?: boolean;
+  includeSentiment?: boolean;
+  includeKeywords?: boolean;
+}
+```
+
+### API Route Updates (`/api/analyze`)
+
+- Now accepts `youtubeKeyId` and `instagramKeyId` in request body
+- Uses `ApiKeyResolverService` to resolve key IDs to actual keys
+- Validates ownership before decryption
+- Falls back to system keys if user key unavailable
+
+### Security Features
+
+✅ **Never exposes decrypted keys in frontend** - Only key IDs transmitted
+✅ **Validates user ownership** - Backend checks key belongs to user
+✅ **Secure storage** - Only key IDs stored in localStorage (not sensitive)
+✅ **Graceful fallback** - Falls back to system keys if user key deleted/invalid
+
+### User Flow
+
+1. User signs in → `useApiKeys` hook fetches their stored keys
+2. User opens "Use your own API keys" section → Sees two dropdowns
+3. User selects a YouTube key → Selection saved to localStorage + state
+4. User pastes video URL and clicks Analyze →
+   - Frontend sends `youtubeKeyId` (not raw key) to `/api/analyze`
+   - Backend calls `ApiKeyResolverService.resolveYoutubeKey(keyId, userId)`
+   - Resolver validates ownership, decrypts key, updates `lastUsedAt`
+   - Decrypted key passed to YouTube service
+5. User's selection persists → localStorage ensures same key used on next visit
+
+### File Structure Update
+
+```
+frontend/src/
+├── app/
+│   └── api/
+│       └── analyze/
+│           └── route.ts       # Updated to accept key IDs
+├── components/
+│   ├── ApiKeySelector.tsx    # NEW - Key selection dropdown
+│   └── SearchBar.tsx          # Updated - Integrated selectors
+├── hooks/
+│   └── useAnalytics.ts        # Updated - Accepts key IDs
+└── lib/
+    └── api-key-resolver.ts   # NEW - Server-side key resolution
+```
+
+### Testing Recommendations
+
+1. **Test with authenticated user:**
+   - Add API keys via Settings page
+   - Select keys in SearchBar dropdowns
+   - Verify analysis uses selected keys
+   - Check localStorage persistence after page refresh
+
+2. **Test with anonymous user:**
+   - Verify API key section is hidden
+   - Verify system keys are used
+
+3. **Test fallback scenarios:**
+   - Select a key, then delete it from Settings
+   - Verify graceful fallback to system key
+   - Check appropriate error messages
+
+4. **Test key resolution:**
+   - Verify `lastUsedAt` updates after analysis
+   - Verify ownership validation (try accessing another user's key)

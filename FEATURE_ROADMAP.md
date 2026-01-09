@@ -6,10 +6,14 @@ This document outlines the complete feature roadmap for the Video Analytics Plat
 
 **Current Stack:**
 - Frontend: Next.js 15, React 19, Tailwind CSS, Framer Motion, Recharts
-- Backend: TypeScript, Node.js, Express, Prisma ORM, PostgreSQL
+- Backend: Next.js 15 API Routes (Serverless Functions), Prisma ORM, PostgreSQL
 - Cache: Upstash Redis
 - APIs: YouTube Data API v3, RapidAPI (Instagram)
+- Authentication: Clerk (JWT-based auth)
 - Deployment: Vercel (Serverless)
+
+**Architecture Note:**
+This application uses a monolithic Next.js architecture where all backend functionality is implemented as API routes. All API routes are located in `/frontend/src/app/api/` and business logic services are in `/frontend/src/lib/services/`. The application no longer uses a separate Express/NestJS backend - everything runs as Next.js serverless functions.
 
 ---
 
@@ -50,13 +54,12 @@ Implement user authentication using Clerk (chosen for ease of setup, generous fr
 
 ```
 Dependencies to Install:
-- Frontend: @clerk/clerk-react
-- Backend: @clerk/clerk-sdk-node, svix (for webhooks)
+- Frontend (Next.js): @clerk/nextjs, svix (for webhooks)
 
 Environment Variables:
-- VITE_CLERK_PUBLISHABLE_KEY (frontend)
-- CLERK_SECRET_KEY (backend)
-- CLERK_WEBHOOK_SECRET (backend, for webhooks)
+- NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (exposed to browser)
+- CLERK_SECRET_KEY (server-side only)
+- CLERK_WEBHOOK_SECRET (server-side only, for webhooks)
 ```
 
 ### Database Schema Changes
@@ -104,80 +107,96 @@ enum UserTier {
 
 ### Implementation Steps for Claude Code
 
-#### Step 1: Backend Setup
+#### Step 1: Next.js API Routes Setup
 
 ```bash
-# Navigate to backend
-cd backend
+# Navigate to frontend
+cd frontend
 
-# Install dependencies
-npm install @clerk/clerk-sdk-node svix
+# Install dependencies (if not already installed)
+npm install @clerk/nextjs svix
 ```
 
-**Create file: `backend/src/middleware/auth.middleware.ts`**
+**Create file: `frontend/src/middleware.ts`**
 
 ```typescript
-// Clerk Authentication Middleware
-import { ClerkExpressRequireAuth, ClerkExpressWithAuth } from '@clerk/clerk-sdk-node';
-import { Request, Response, NextFunction } from 'express';
-import { PrismaClient, User, UserTier } from '@prisma/client';
+// Next.js Middleware for Clerk Authentication
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-const prisma = new PrismaClient();
+// Define public routes that don't require authentication
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/api/health',
+  '/api/analyze',
+  '/api/compare',
+  '/api/detect-platform',
+]);
 
-interface AuthRequest extends Request {
-  auth?: {
-    userId: string;
-  };
-  rateLimit?: {
-    limit: number;
-    remaining: number;
-  };
-  user?: User;
-}
-
-// Middleware that requires authentication (returns 401 if not authenticated)
-export const requireAuth = ClerkExpressRequireAuth({
-  // Optional: customize error handling
-  onError: (err: Error) => {
-    console.error('Auth error:', err);
+export default clerkMiddleware((auth, req) => {
+  // Protect all routes except public ones
+  if (!isPublicRoute(req)) {
+    auth().protect();
   }
 });
 
-// Middleware that adds auth info but doesn't require it
-export const withAuth = ClerkExpressWithAuth();
+export const config = {
+  matcher: [
+    // Skip Next.js internals and static files
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
+};
+```
 
-// Extract user ID from authenticated request
-export const getUserId = (req: AuthRequest): string | null => {
-  return req.auth?.userId || null;
+**Create utility file: `frontend/src/lib/utils/auth.ts`**
+
+```typescript
+// Authentication utilities for Next.js API routes
+import { auth } from '@clerk/nextjs/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { User, UserTier } from '@prisma/client';
+
+// Get user ID from authenticated request
+export const getUserId = async (): Promise<string | null> => {
+  const { userId } = await auth();
+  return userId;
 };
 
 // Check if user is authenticated
-export const isAuthenticated = (req: AuthRequest): boolean => {
-  return !!req.auth?.userId;
+export const isAuthenticated = async (): Promise<boolean> => {
+  const userId = await getUserId();
+  return !!userId;
+};
+
+// Get user from database by Clerk ID
+export const getUserByClerkId = async (clerkId: string): Promise<User | null> => {
+  return await prisma.user.findUnique({
+    where: { clerkId },
+  });
 };
 
 // Rate limit check based on user tier
 export const checkRateLimit = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  const userId = getUserId(req);
+  request: NextRequest
+): Promise<{ allowed: boolean; response?: NextResponse; user?: User }> => {
+  const { userId } = await auth();
 
   if (!userId) {
     // Unauthenticated users get very limited access
-    req.rateLimit = { limit: 5, remaining: 5 };
-    return next();
+    return { allowed: true }; // Let anonymous rate limiting handle this
   }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { clerkId: userId }
+      where: { clerkId: userId },
     });
 
     if (!user) {
-      req.rateLimit = { limit: 5, remaining: 5 };
-      return next();
+      return { allowed: true };
     }
 
     // Define limits by tier
@@ -185,7 +204,7 @@ export const checkRateLimit = async (
       FREE: 5,
       CREATOR: 100,
       PRO: 500,
-      AGENCY: 2000
+      AGENCY: 2000,
     };
 
     const dailyLimit = tierLimits[user.tier] || 5;
@@ -196,51 +215,50 @@ export const checkRateLimit = async (
     if (lastRequest !== today) {
       await prisma.user.update({
         where: { id: user.id },
-        data: { dailyRequests: 0, lastRequestDate: new Date() }
+        data: { dailyRequests: 0, lastRequestDate: new Date() },
       });
       user.dailyRequests = 0;
     }
 
     if (user.dailyRequests >= dailyLimit) {
-      res.status(429).json({
-        error: 'Daily request limit exceeded',
-        limit: dailyLimit,
-        tier: user.tier,
-        upgrade: user.tier === 'FREE' ? 'Upgrade to Creator for 100 requests/day' : null
-      });
-      return;
+      return {
+        allowed: false,
+        response: NextResponse.json(
+          {
+            error: 'Daily request limit exceeded',
+            limit: dailyLimit,
+            tier: user.tier,
+            upgrade:
+              user.tier === 'FREE'
+                ? 'Upgrade to Creator for 100 requests/day'
+                : null,
+          },
+          { status: 429 }
+        ),
+      };
     }
 
     // Increment counter
     await prisma.user.update({
       where: { id: user.id },
-      data: { dailyRequests: { increment: 1 } }
+      data: { dailyRequests: { increment: 1 } },
     });
 
-    req.rateLimit = {
-      limit: dailyLimit,
-      remaining: dailyLimit - user.dailyRequests - 1
-    };
-    req.user = user;
-
-    next();
+    return { allowed: true, user };
   } catch (error) {
     console.error('Rate limit check error:', error);
-    next();
+    return { allowed: true };
   }
 };
 ```
 
-**Create file: `backend/src/routes/auth.routes.ts`**
+**Create file: `frontend/src/app/api/auth/webhook/route.ts`**
 
 ```typescript
-// Authentication Routes - Webhook handler for Clerk events
-import express, { Request, Response, Router } from 'express';
+// Clerk Webhook Handler for User Sync
+import { NextRequest, NextResponse } from 'next/server';
 import { Webhook } from 'svix';
-import { PrismaClient } from '@prisma/client';
-
-const router: Router = express.Router();
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 interface ClerkWebhookEvent {
   type: string;
@@ -253,98 +271,120 @@ interface ClerkWebhookEvent {
   };
 }
 
-// Clerk webhook handler
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
+// POST handler for Clerk webhooks
+export async function POST(request: NextRequest) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
 
   if (!WEBHOOK_SECRET) {
     console.error('Missing CLERK_WEBHOOK_SECRET');
-    return res.status(500).json({ error: 'Server configuration error' });
+    return NextResponse.json(
+      { error: 'Server configuration error' },
+      { status: 500 }
+    );
   }
-
-  // Get headers
-  const svix_id = req.headers['svix-id'] as string;
-  const svix_timestamp = req.headers['svix-timestamp'] as string;
-  const svix_signature = req.headers['svix-signature'] as string;
-
-  if (!svix_id || !svix_timestamp || !svix_signature) {
-    return res.status(400).json({ error: 'Missing svix headers' });
-  }
-
-  // Verify webhook
-  const wh = new Webhook(WEBHOOK_SECRET);
-  let evt: ClerkWebhookEvent;
 
   try {
-    evt = wh.verify(req.body, {
-      'svix-id': svix_id,
-      'svix-timestamp': svix_timestamp,
-      'svix-signature': svix_signature,
-    }) as ClerkWebhookEvent;
-  } catch (err) {
-    console.error('Webhook verification failed:', (err as Error).message);
-    return res.status(400).json({ error: 'Invalid webhook signature' });
-  }
+    // Get raw body for signature verification
+    const body = await request.text();
 
-  // Handle events
-  const eventType = evt.type;
-  const { id, email_addresses, first_name, last_name, image_url } = evt.data;
-  
-  try {
+    // Get headers
+    const svix_id = request.headers.get('svix-id');
+    const svix_timestamp = request.headers.get('svix-timestamp');
+    const svix_signature = request.headers.get('svix-signature');
+
+    if (!svix_id || !svix_timestamp || !svix_signature) {
+      return NextResponse.json(
+        { error: 'Missing svix headers' },
+        { status: 400 }
+      );
+    }
+
+    // Verify webhook
+    const wh = new Webhook(WEBHOOK_SECRET);
+    let evt: ClerkWebhookEvent;
+
+    try {
+      evt = wh.verify(body, {
+        'svix-id': svix_id,
+        'svix-timestamp': svix_timestamp,
+        'svix-signature': svix_signature,
+      }) as ClerkWebhookEvent;
+    } catch (err) {
+      console.error('Webhook verification failed:', (err as Error).message);
+      return NextResponse.json(
+        { error: 'Invalid webhook signature' },
+        { status: 400 }
+      );
+    }
+
+    // Handle events
+    const eventType = evt.type;
+    const { id, email_addresses, first_name, last_name, image_url } = evt.data;
+
     switch (eventType) {
       case 'user.created':
         await prisma.user.create({
           data: {
             clerkId: id,
-            email: email_addresses[0]?.email_address,
+            email: email_addresses?.[0]?.email_address || '',
             firstName: first_name,
             lastName: last_name,
             imageUrl: image_url,
-            tier: 'FREE'
-          }
+            tier: 'FREE',
+          },
         });
         console.log(`User created: ${id}`);
         break;
-        
+
       case 'user.updated':
         await prisma.user.update({
           where: { clerkId: id },
           data: {
-            email: email_addresses[0]?.email_address,
+            email: email_addresses?.[0]?.email_address,
             firstName: first_name,
             lastName: last_name,
-            imageUrl: image_url
-          }
+            imageUrl: image_url,
+          },
         });
         console.log(`User updated: ${id}`);
         break;
-        
+
       case 'user.deleted':
         await prisma.user.delete({
-          where: { clerkId: id }
+          where: { clerkId: id },
         });
         console.log(`User deleted: ${id}`);
         break;
-        
+
       default:
         console.log(`Unhandled event type: ${eventType}`);
     }
-    
-    res.status(200).json({ received: true });
+
+    return NextResponse.json({ received: true });
   } catch (error) {
     console.error('Webhook handler error:', error);
-    res.status(500).json({ error: 'Webhook handler failed' });
+    return NextResponse.json(
+      { error: 'Webhook handler failed' },
+      { status: 500 }
+    );
   }
-});
+}
+```
 
-// Get current user profile
-router.get('/me', async (req: Request, res: Response) => {
-  const { getUserId } = await import('../middleware/auth.middleware');
+**Create file: `frontend/src/app/api/auth/me/route.ts`**
 
+```typescript
+// Get Current User Profile
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import { prisma } from '@/lib/prisma';
+
+export async function GET(request: NextRequest) {
   try {
-    const userId = getUserId(req as any);
+    const { userId } = await auth();
+
     if (!userId) {
-      return res.status(401).json({ error: 'Not authenticated' });
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -355,17 +395,17 @@ router.get('/me', async (req: Request, res: Response) => {
             id: true,
             platform: true,
             createdAt: true,
-            lastUsedAt: true
-          }
-        }
-      }
+            lastUsedAt: true,
+          },
+        },
+      },
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    res.json({
+    return NextResponse.json({
       id: user.id,
       email: user.email,
       firstName: user.firstName,
@@ -373,34 +413,16 @@ router.get('/me', async (req: Request, res: Response) => {
       imageUrl: user.imageUrl,
       tier: user.tier,
       dailyRequests: user.dailyRequests,
-      apiKeys: user.apiKeys
+      apiKeys: user.apiKeys,
     });
   } catch (error) {
     console.error('Get user error:', error);
-    res.status(500).json({ error: 'Failed to get user profile' });
+    return NextResponse.json(
+      { error: 'Failed to get user profile' },
+      { status: 500 }
+    );
   }
-});
-
-export default router;
-```
-
-**Update: `backend/src/index.ts`**
-
-Add the following to integrate auth routes:
-
-```typescript
-// Add after other imports
-import authRoutes from './routes/auth.routes';
-import { withAuth, checkRateLimit } from './middleware/auth.middleware';
-
-// Add after CORS middleware
-app.use(withAuth);
-
-// Add auth routes (before /api routes)
-app.use('/auth', authRoutes);
-
-// Update API routes to use rate limiting
-app.use('/api', checkRateLimit, validateUrl, analyticsRoutes);
+}
 ```
 
 #### Step 2: Frontend Setup
@@ -409,8 +431,8 @@ app.use('/api', checkRateLimit, validateUrl, analyticsRoutes);
 # Navigate to frontend
 cd frontend
 
-# Install Clerk
-npm install @clerk/clerk-react
+# Install Clerk (if not already installed)
+npm install @clerk/nextjs
 ```
 
 **Update: `frontend/src/app/layout.tsx` (Next.js 15 App Router)**
@@ -544,9 +566,10 @@ Add AuthButton to the header navigation.
 
 #### Step 3: Environment Variables
 
-**Backend `.env` additions:**
+**Frontend `.env.local` additions (or Vercel dashboard):**
 ```env
 # Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
 CLERK_SECRET_KEY=sk_test_xxxxx
 CLERK_WEBHOOK_SECRET=whsec_xxxxx
 
@@ -566,7 +589,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
 2. Create a new application
 3. Enable sign-in methods: Email, Google, GitHub
 4. Get Publishable Key and Secret Key
-5. Set up webhook endpoint: `https://your-backend.vercel.app/auth/webhook`
+5. Set up webhook endpoint: `https://your-app.vercel.app/api/auth/webhook`
 6. Subscribe to events: `user.created`, `user.updated`, `user.deleted`
 
 ### Acceptance Criteria
@@ -589,10 +612,10 @@ Allow users to save their own API keys for YouTube, Instagram, TikTok, etc. Keys
 
 ```
 Dependencies to Install:
-- Backend: crypto (built-in Node.js)
+- Frontend: crypto (built-in Node.js, available in API routes)
 
 Encryption: AES-256-GCM
-- Key derivation from ENCRYPTION_MASTER_KEY env var
+- Key derivation from ENCRYPTION_KEY env var
 - Unique IV per encryption
 - Auth tag for integrity verification
 ```
@@ -638,7 +661,7 @@ enum ApiPlatform {
 
 #### Step 1: Create Encryption Service
 
-**Create file: `backend/src/services/encryption.service.ts`**
+**Create file: `frontend/src/lib/services/encryption.ts`**
 
 ```typescript
 // AES-256-GCM Encryption Service for API Keys
@@ -655,12 +678,12 @@ class EncryptionService {
   private masterKey: Buffer;
 
   constructor() {
-    const envKey = process.env.ENCRYPTION_MASTER_KEY;
+    const envKey = process.env.ENCRYPTION_KEY;
 
     // SECURITY FIX: Fail fast if encryption key is not properly configured
     if (!envKey || envKey.length < 32) {
       throw new Error(
-        'CRITICAL: ENCRYPTION_MASTER_KEY must be set and at least 32 characters. ' +
+        'CRITICAL: ENCRYPTION_KEY must be set and at least 32 characters. ' +
         'Generate one with: openssl rand -hex 32'
       );
     }
@@ -743,18 +766,16 @@ export default new EncryptionService();
 
 #### Step 2: Create API Keys Routes
 
-**Create file: `backend/src/routes/apikeys.routes.ts`**
+**Create file: `frontend/src/app/api/keys/route.ts`**
 
 ```typescript
 // User API Keys Management Routes
-import express, { Request, Response, Router } from 'express';
-import { PrismaClient, ApiPlatform } from '@prisma/client';
-import { requireAuth, getUserId } from '../middleware/auth.middleware';
-import encryptionService from '../services/encryption.service';
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import { prisma } from '@/lib/prisma';
+import { ApiPlatform } from '@prisma/client';
+import encryptionService from '@/lib/services/encryption';
 import validator from 'validator';
-
-const router: Router = express.Router();
-const prisma = new PrismaClient();
 
 interface PlatformValidation {
   pattern: RegExp;
@@ -778,19 +799,23 @@ const platformValidation: Record<string, PlatformValidation> = {
   // Add more platform validations as needed
 };
 
-// Get all API keys for current user (masked)
-router.get('/', requireAuth, async (req: Request, res: Response) => {
+// GET - Get all API keys for current user (masked)
+export async function GET(request: NextRequest) {
   try {
-    const userId = getUserId(req as any);
-    
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId }
-    });
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+    const { userId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
+
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     const apiKeys = await prisma.userApiKey.findMany({
       where: { userId: user.id },
       select: {
@@ -801,16 +826,19 @@ router.get('/', requireAuth, async (req: Request, res: Response) => {
         lastUsedAt: true,
         usageCount: true,
         createdAt: true,
-        // Don't return encrypted data
         encryptedKey: true,
         iv: true,
-        authTag: true
-      }
+        authTag: true,
+      },
     });
-    
+
     // Mask the keys for display
-    const maskedKeys = apiKeys.map(key => {
-      const decrypted = encryptionService.decrypt(key.encryptedKey, key.iv, key.authTag);
+    const maskedKeys = apiKeys.map((key) => {
+      const decrypted = encryptionService.decrypt(
+        key.encryptedKey,
+        key.iv,
+        key.authTag
+      );
       return {
         id: key.id,
         platform: key.platform,
@@ -819,70 +847,89 @@ router.get('/', requireAuth, async (req: Request, res: Response) => {
         isActive: key.isActive,
         lastUsedAt: key.lastUsedAt,
         usageCount: key.usageCount,
-        createdAt: key.createdAt
+        createdAt: key.createdAt,
       };
     });
-    
-    res.json({ apiKeys: maskedKeys });
+
+    return NextResponse.json({ apiKeys: maskedKeys });
   } catch (error) {
     console.error('Get API keys error:', error);
-    res.status(500).json({ error: 'Failed to retrieve API keys' });
+    return NextResponse.json(
+      { error: 'Failed to retrieve API keys' },
+      { status: 500 }
+    );
   }
-});
+}
 
-// Add new API key
-router.post('/', requireAuth, async (req: Request, res: Response) => {
+// POST - Add new API key
+export async function POST(request: NextRequest) {
   try {
-    const userId = getUserId(req as any);
-    const { platform, apiKey, label }: { platform: ApiPlatform; apiKey: string; label?: string } = req.body;
-    
+    const { userId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { platform, apiKey, label } = body as {
+      platform: ApiPlatform;
+      apiKey: string;
+      label?: string;
+    };
+
     // Validate platform
     const validPlatforms = ['YOUTUBE', 'INSTAGRAM', 'TIKTOK', 'TWITTER', 'RAPIDAPI'];
     if (!validPlatforms.includes(platform)) {
-      return res.status(400).json({ 
-        error: 'Invalid platform',
-        validPlatforms 
-      });
+      return NextResponse.json(
+        {
+          error: 'Invalid platform',
+          validPlatforms,
+        },
+        { status: 400 }
+      );
     }
-    
+
     // Validate API key format (if validation exists for platform)
     if (platformValidation[platform]) {
       const { pattern, message } = platformValidation[platform];
       if (!pattern.test(apiKey)) {
-        return res.status(400).json({ 
-          error: 'Invalid API key format',
-          message 
-        });
+        return NextResponse.json(
+          {
+            error: 'Invalid API key format',
+            message,
+          },
+          { status: 400 }
+        );
       }
     }
-    
+
     // Sanitize label
     const sanitizedLabel = label ? validator.escape(label.slice(0, 100)) : null;
-    
+
     // Get user
     const user = await prisma.user.findUnique({
-      where: { clerkId: userId }
+      where: { clerkId: userId },
     });
-    
+
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    
+
     // Check if key already exists for this platform
     const existingKey = await prisma.userApiKey.findUnique({
       where: {
         userId_platform: {
           userId: user.id,
-          platform
-        }
-      }
+          platform,
+        },
+      },
     });
-    
+
     // Encrypt the API key
     const { encrypted, iv, authTag } = encryptionService.encrypt(apiKey);
-    
+
     let savedKey;
-    
+
     if (existingKey) {
       // Update existing key
       savedKey = await prisma.userApiKey.update({
@@ -892,8 +939,8 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
           iv,
           authTag,
           label: sanitizedLabel,
-          isActive: true
-        }
+          isActive: true,
+        },
       });
     } else {
       // Create new key
@@ -904,28 +951,145 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
           encryptedKey: encrypted,
           iv,
           authTag,
-          label: sanitizedLabel
-        }
+          label: sanitizedLabel,
+        },
       });
     }
-    
-    res.status(201).json({
-      success: true,
-      apiKey: {
-        id: savedKey.id,
-        platform: savedKey.platform,
-        label: savedKey.label,
-        maskedKey: encryptionService.maskKey(apiKey),
-        isActive: savedKey.isActive,
-        createdAt: savedKey.createdAt
-      }
-    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        apiKey: {
+          id: savedKey.id,
+          platform: savedKey.platform,
+          label: savedKey.label,
+          maskedKey: encryptionService.maskKey(apiKey),
+          isActive: savedKey.isActive,
+          createdAt: savedKey.createdAt,
+        },
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Add API key error:', error);
-    res.status(500).json({ error: 'Failed to save API key' });
+    return NextResponse.json(
+      { error: 'Failed to save API key' },
+      { status: 500 }
+    );
   }
-});
+}
+```
 
+**Note on Dynamic Routes:** The remaining API key operations (DELETE, PATCH, test) should be implemented in dynamic route files following Next.js App Router conventions:
+
+- **Delete/Update API Key:** `frontend/src/app/api/keys/[id]/route.ts`
+  - `DELETE` handler for deleting keys
+  - `PATCH` handler for toggling active status
+
+- **Test API Key:** `frontend/src/app/api/keys/[id]/test/route.ts`
+  - `POST` handler for testing key validity
+
+**Example Dynamic Route Pattern:**
+
+**Create file: `frontend/src/app/api/keys/[id]/route.ts`**
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import { prisma } from '@/lib/prisma';
+
+// DELETE - Delete API key
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const apiKey = await prisma.userApiKey.findFirst({
+      where: { id, userId: user.id },
+    });
+
+    if (!apiKey) {
+      return NextResponse.json({ error: 'API key not found' }, { status: 404 });
+    }
+
+    await prisma.userApiKey.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Delete API key error:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete API key' },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH - Toggle API key active status
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const apiKey = await prisma.userApiKey.findFirst({
+      where: { id, userId: user.id },
+    });
+
+    if (!apiKey) {
+      return NextResponse.json({ error: 'API key not found' }, { status: 404 });
+    }
+
+    const updatedKey = await prisma.userApiKey.update({
+      where: { id },
+      data: { isActive: !apiKey.isActive },
+    });
+
+    return NextResponse.json({
+      success: true,
+      isActive: updatedKey.isActive,
+    });
+  } catch (error) {
+    console.error('Toggle API key error:', error);
+    return NextResponse.json(
+      { error: 'Failed to toggle API key' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+**Old Express Implementation (for reference - DO NOT USE):**
+
+```typescript
 // Toggle API key active status
 router.patch('/:id/toggle', requireAuth, async (req: Request, res: Response) => {
   try {
@@ -1510,7 +1674,7 @@ export default function Settings() {
         <div className="mt-6 pt-6 border-t border-slate-100">
           <p className="text-sm text-slate-500">
             <span className="font-medium text-slate-700">Tip:</span> Using your own API keys gives you unlimited requests and faster response times. 
-            System keys are limited to {import.meta.env.VITE_SYSTEM_API_LIMIT || 5} requests per day.
+            System keys are limited to {process.env.NEXT_PUBLIC_SYSTEM_API_LIMIT || 5} requests per day.
           </p>
         </div>
       </div>
@@ -1828,9 +1992,9 @@ export class BrowserFingerprint {
 }
 ```
 
-#### Step 2: Create Rate Limit Service (Backend)
+#### Step 2: Create Rate Limit Utility (Server-side)
 
-**Create file: `backend/src/services/anonymous-ratelimit.service.ts`**
+**Create file: `frontend/src/lib/utils/rate-limiter.ts`**
 
 ```typescript
 // Anonymous User Rate Limiting Service
@@ -1997,134 +2161,133 @@ export class AnonymousRateLimitService {
 export default new AnonymousRateLimitService();
 ```
 
-#### Step 3: Create Rate Limit Middleware (Backend)
+#### Step 3: Apply Rate Limiting in API Routes
 
-**Create file: `backend/src/middleware/anonymous-ratelimit.middleware.ts`**
+Rate limiting should be applied inline in API route handlers. Here's an example pattern:
+
+**Example: Apply rate limiting in `frontend/src/app/api/analyze/route.ts`**
 
 ```typescript
-// Middleware for anonymous user rate limiting
-import { Request, Response, NextFunction } from 'express';
-import anonymousRateLimitService from '../services/anonymous-ratelimit.service';
-import { getUserId } from './auth.middleware';
-
-interface RateLimitRequest extends Request {
-  anonymousRateLimit?: {
-    allowed: boolean;
-    remaining: number;
-    limit: number;
-    resetAt: Date;
-  };
-}
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import rateLimiter from '@/lib/utils/rate-limiter';
 
 /**
  * Extract IP address from request (handles proxies)
  */
-function getClientIp(req: Request): string {
-  const forwarded = req.headers['x-forwarded-for'];
+function getClientIp(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for');
 
   if (forwarded) {
-    const ips = (typeof forwarded === 'string' ? forwarded : forwarded[0]).split(',');
+    const ips = forwarded.split(',');
     return ips[0].trim();
   }
 
-  return req.ip || req.socket.remoteAddress || 'unknown';
+  const realIp = request.headers.get('x-real-ip');
+  if (realIp) {
+    return realIp;
+  }
+
+  return 'unknown';
 }
 
-/**
- * Check rate limit for anonymous users
- * Authenticated users bypass this check (handled by auth middleware)
- */
-export const checkAnonymousRateLimit = async (
-  req: RateLimitRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+// POST handler for video analysis
+export async function POST(request: NextRequest) {
   try {
-    // Skip rate limit check for authenticated users
-    const userId = getUserId(req as any);
-    if (userId) {
-      // Authenticated users are handled by auth middleware
-      return next();
+    // Check authentication
+    const { userId } = await auth();
+
+    // Skip anonymous rate limiting for authenticated users
+    if (!userId) {
+      // Get IP address and fingerprint
+      const ipAddress = getClientIp(request);
+      const fingerprint = request.headers.get('x-fingerprint') || undefined;
+
+      // Check rate limit
+      const rateLimitResult = await rateLimiter.checkRateLimit(ipAddress, fingerprint);
+
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          {
+            error: 'Daily request limit exceeded',
+            message: `You have reached the limit of ${rateLimitResult.limit} free requests per day. Sign up for unlimited access!`,
+            limit: rateLimitResult.limit,
+            remaining: 0,
+            resetAt: rateLimitResult.resetAt,
+            signUpUrl: '/sign-up',
+          },
+          {
+            status: 429,
+            headers: {
+              'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+              'X-RateLimit-Remaining': '0',
+              'X-RateLimit-Reset': rateLimitResult.resetAt.toISOString(),
+            },
+          }
+        );
+      }
+
+      // Add rate limit headers to successful response
+      const headers = {
+        'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+        'X-RateLimit-Reset': rateLimitResult.resetAt.toISOString(),
+      };
+
+      // Continue with analysis logic...
+      // (Your existing video analysis code here)
+
+      return NextResponse.json({ /* your response data */ }, { headers });
     }
 
-    // Get IP address
-    const ipAddress = getClientIp(req);
+    // Authenticated users: proceed with analysis without rate limit
+    // (Your existing video analysis code here)
 
-    // Get fingerprint from header (sent by client)
-    const fingerprint = req.headers['x-fingerprint'] as string | undefined;
-
-    // Check rate limit
-    const result = await anonymousRateLimitService.checkRateLimit(ipAddress, fingerprint);
-
-    // Add rate limit headers
-    res.setHeader('X-RateLimit-Limit', result.limit.toString());
-    res.setHeader('X-RateLimit-Remaining', result.remaining.toString());
-    res.setHeader('X-RateLimit-Reset', result.resetAt.toISOString());
-
-    // Attach to request for use in controllers
-    req.anonymousRateLimit = result;
-
-    if (!result.allowed) {
-      res.status(429).json({
-        error: 'Daily request limit exceeded',
-        message: `You have reached the limit of ${result.limit} free requests per day. Sign up for unlimited access!`,
-        limit: result.limit,
-        remaining: 0,
-        resetAt: result.resetAt,
-        signUpUrl: '/sign-up'
-      });
-      return;
-    }
-
-    next();
+    return NextResponse.json({ /* your response data */ });
   } catch (error) {
-    console.error('Anonymous rate limit check error:', error);
-    // On error, allow the request (fail open)
-    next();
+    console.error('Analyze error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
-};
+}
+```
 
-/**
- * Get rate limit status without incrementing
- */
-export const getRateLimitStatus = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+**Create rate limit status endpoint: `frontend/src/app/api/ratelimit/status/route.ts`**
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import rateLimiter from '@/lib/utils/rate-limiter';
+
+function getClientIp(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  return request.headers.get('x-real-ip') || 'unknown';
+}
+
+export async function GET(request: NextRequest) {
   try {
-    const ipAddress = getClientIp(req);
-    const usage = await anonymousRateLimitService.getIpUsage(ipAddress);
+    const ipAddress = getClientIp(request);
+    const usage = await rateLimiter.getIpUsage(ipAddress);
     const limit = 5;
 
-    res.json({
+    return NextResponse.json({
       limit,
       remaining: Math.max(0, limit - usage),
       used: usage,
-      resetAt: new Date(new Date().setHours(24, 0, 0, 0))
+      resetAt: new Date(new Date().setHours(24, 0, 0, 0)),
     });
   } catch (error) {
     console.error('Get rate limit status error:', error);
-    res.status(500).json({ error: 'Failed to get rate limit status' });
+    return NextResponse.json(
+      { error: 'Failed to get rate limit status' },
+      { status: 500 }
+    );
   }
-};
-```
-
-#### Step 4: Update Analytics Routes to Use Rate Limit
-
-**Update: `backend/src/routes/analytics.routes.ts`**
-
-Add the anonymous rate limit middleware to the analyze endpoint:
-
-```typescript
-import { checkAnonymousRateLimit, getRateLimitStatus } from '../middleware/anonymous-ratelimit.middleware';
-
-// Add rate limit status endpoint
-router.get('/ratelimit/status', getRateLimitStatus);
-
-// Update analyze endpoint to use anonymous rate limiting
-router.post('/analyze', checkAnonymousRateLimit, async (req: Request, res: Response) => {
-  // Existing analyze logic...
-});
+}
 ```
 
 #### Step 5: Update Frontend SearchBar Component
@@ -2405,6 +2568,157 @@ UPSTASH_REDIS_REST_TOKEN=your-redis-token
 - Track analytics on limit-hit rate (conversion funnel)
 - A/B test different limit values (5 vs 3 vs 10)
 - Add CAPTCHA after limit to prevent bot abuse
+
+---
+
+# 🏗️ Architecture Migration Note for All Future Phases
+
+**CRITICAL:** This application has been migrated from a separate Express/NestJS backend to a **unified Next.js full-stack architecture**. All implementation instructions in Phases 2-11 that reference the old backend structure must be adapted to the new architecture.
+
+## Architecture Pattern Conversion Table
+
+| Old Pattern (Express/NestJS) | New Pattern (Next.js API Routes) |
+|------------------------------|----------------------------------|
+| `backend/src/services/*.ts` | `frontend/src/lib/services/*.ts` |
+| `backend/src/routes/*.ts` | `frontend/src/app/api/*/route.ts` |
+| `backend/src/middleware/*.ts` | `frontend/src/middleware.ts` or inline in routes |
+| `router.get('/', handler)` | `export async function GET(request: NextRequest)` |
+| `router.post('/', handler)` | `export async function POST(request: NextRequest)` |
+| `router.put('/:id', handler)` | `export async function PUT(request: NextRequest, { params })` in `[id]/route.ts` |
+| `router.delete('/:id', handler)` | `export async function DELETE(request: NextRequest, { params })` in `[id]/route.ts` |
+| `req.body` | `await request.json()` |
+| `req.params.id` | `const { id } = await params` |
+| `req.query` | `request.nextUrl.searchParams` |
+| `res.json(data)` | `NextResponse.json(data)` |
+| `res.status(400).json(error)` | `NextResponse.json(error, { status: 400 })` |
+| `ClerkExpressRequireAuth` middleware | `auth()` from `@clerk/nextjs/server` |
+| `next()` middleware pattern | Return `NextResponse` directly |
+
+## Next.js API Route Structure
+
+**Simple routes:** `frontend/src/app/api/{feature}/route.ts`
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+
+export async function GET(request: NextRequest) {
+  // Handler logic
+}
+
+export async function POST(request: NextRequest) {
+  // Handler logic
+}
+```
+
+**Dynamic routes:** `frontend/src/app/api/{feature}/[id]/route.ts`
+```typescript
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  // Handler logic
+}
+```
+
+**Nested dynamic routes:** `frontend/src/app/api/{feature}/[id]/subresource/route.ts`
+
+## Authentication Pattern
+
+**Old (Express):**
+```typescript
+router.get('/', requireAuth, async (req, res) => {
+  const userId = getUserId(req);
+  // ...
+});
+```
+
+**New (Next.js):**
+```typescript
+export async function GET(request: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  // ...
+}
+```
+
+## Environment Variables
+
+- **Old:** `backend/.env` and `frontend/.env` (Vite)
+- **New:** `frontend/.env.local` or Vercel dashboard
+- **Public vars:** Must use `NEXT_PUBLIC_` prefix (not `VITE_`)
+- **Private vars:** No prefix, only accessible in API routes
+
+## File Organization for Future Features
+
+When implementing features from Phases 2-11:
+
+1. **Services:** Create in `frontend/src/lib/services/`
+   - Example: `competitor.ts`, `viral-predictor.ts`, `report-generator.ts`
+
+2. **API Routes:** Create in `frontend/src/app/api/`
+   - Example: `api/competitors/route.ts`, `api/predictions/route.ts`
+
+3. **Types:** Create in `frontend/src/lib/types/`
+   - Example: `competitor.types.ts`, `prediction.types.ts`
+
+4. **Utilities:** Create in `frontend/src/lib/utils/`
+   - Example: `calculations.ts`, `formatters.ts`
+
+5. **Database:** Update `frontend/prisma/schema.prisma`
+   - Run migrations: `cd frontend && npx prisma migrate dev`
+
+## Example: Implementing a New Feature
+
+**Old approach (Express):**
+```
+backend/src/services/competitor.service.ts
+backend/src/routes/competitor.routes.ts
+backend/src/index.ts (register routes)
+```
+
+**New approach (Next.js):**
+```
+frontend/src/lib/services/competitor.ts
+frontend/src/app/api/competitors/route.ts
+frontend/src/app/api/competitors/[id]/route.ts
+```
+
+## Cron Jobs & Background Tasks
+
+**Old:** Separate cron jobs or background workers
+**New:** Vercel Cron (add to `vercel.json`)
+
+```json
+{
+  "crons": [
+    {
+      "path": "/api/cron/update-competitors",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}
+```
+
+Create: `frontend/src/app/api/cron/update-competitors/route.ts`
+
+## Database Access
+
+- Import from `@/lib/prisma` (singleton pattern)
+- Ensure connection pooling for serverless
+- Use BigInt for large numbers, convert to number before JSON
+
+## Key Differences to Remember
+
+1. **No Express middleware chain** - Handle auth/validation in route handler
+2. **No route registration** - File system defines routes
+3. **Async params in Next.js 15** - `await params` for dynamic routes
+4. **No res/req objects** - Use `NextRequest` and `NextResponse`
+5. **Serverless-first** - All routes are stateless serverless functions
+
+When implementing features from subsequent phases, always adapt the code examples to this new architecture. The core business logic and database schemas remain the same - only the routing and request/response handling patterns change.
 
 ---
 
