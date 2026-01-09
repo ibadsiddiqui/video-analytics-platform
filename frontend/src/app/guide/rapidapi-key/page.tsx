@@ -334,13 +334,14 @@ export default function RapidApiKeyGuide(): React.JSX.Element {
             <div className="space-y-4 text-sm text-slate-700">
               <div>
                 <h4 className="font-semibold text-slate-900 mb-1">
-                  &quot;403 Forbidden&quot; or &quot;401 Unauthorized&quot; error
+                  &quot;403 Forbidden&quot; or &quot;401 Unauthorized&quot;
+                  error
                 </h4>
                 <p>
                   This usually means your API key is invalid or you haven&apos;t
-                  subscribed to the Instagram Scraper API 2. Make sure you&apos;ve
-                  completed the subscription process and copied the correct API
-                  key.
+                  subscribed to the Instagram Scraper API 2. Make sure
+                  you&apos;ve completed the subscription process and copied the
+                  correct API key.
                 </p>
               </div>
               <div>
@@ -348,9 +349,9 @@ export default function RapidApiKeyGuide(): React.JSX.Element {
                   &quot;You have exceeded the rate limit&quot;
                 </h4>
                 <p>
-                  You&apos;ve used all your monthly requests for your current plan.
-                  You can either wait until next month or upgrade to a higher
-                  tier plan in the RapidAPI dashboard.
+                  You&apos;ve used all your monthly requests for your current
+                  plan. You can either wait until next month or upgrade to a
+                  higher tier plan in the RapidAPI dashboard.
                 </p>
               </div>
               <div>

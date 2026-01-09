@@ -323,7 +323,8 @@ export default function YouTubeApiKeyGuide(): React.JSX.Element {
             <div className="space-y-4 text-sm text-slate-700">
               <div>
                 <h4 className="font-semibold text-slate-900 mb-1">
-                  &quot;API has not been used in project before or it is disabled&quot;
+                  &quot;API has not been used in project before or it is
+                  disabled&quot;
                 </h4>
                 <p>
                   Make sure you&apos;ve enabled the YouTube Data API v3 in your
@@ -333,13 +334,13 @@ export default function YouTubeApiKeyGuide(): React.JSX.Element {
               </div>
               <div>
                 <h4 className="font-semibold text-slate-900 mb-1">
-                  &quot;The request cannot be completed because you have exceeded
-                  your quota&quot;
+                  &quot;The request cannot be completed because you have
+                  exceeded your quota&quot;
                 </h4>
                 <p>
-                  You&apos;ve reached your daily quota limit. You can either wait
-                  until the quota resets (midnight Pacific Time) or request a
-                  quota increase in the Google Cloud Console.
+                  You&apos;ve reached your daily quota limit. You can either
+                  wait until the quota resets (midnight Pacific Time) or request
+                  a quota increase in the Google Cloud Console.
                 </p>
               </div>
               <div>
@@ -347,8 +348,8 @@ export default function YouTubeApiKeyGuide(): React.JSX.Element {
                   &quot;API key not valid. Please pass a valid API key&quot;
                 </h4>
                 <p>
-                  Double-check that you&apos;ve copied the entire API key correctly.
-                  Make sure there are no extra spaces or characters.
+                  Double-check that you&apos;ve copied the entire API key
+                  correctly. Make sure there are no extra spaces or characters.
                 </p>
               </div>
               <div>
