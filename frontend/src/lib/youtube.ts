@@ -49,7 +49,7 @@ export class YouTubeService {
    * Initialize YouTube API client
    */
   private initialize(): void {
-    const apiKey = configService.getYouTubeConfig().apiKey;
+    const apiKey = configService.getYoutubeApiKey();
 
     if (apiKey) {
       this.youtube = google.youtube({

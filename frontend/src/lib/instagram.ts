@@ -91,7 +91,7 @@ export class InstagramService {
   private readonly apiHost = "instagram-scraper-stable-api.p.rapidapi.com";
 
   constructor() {
-    const apiKey = configService.getInstagramConfig().apiKey;
+    const apiKey = configService.getInstagramApiKey();
     this.enabled = !!apiKey;
 
     if (this.enabled) {
@@ -142,7 +142,7 @@ export class InstagramService {
     }
 
     // Use provided API key or default from config
-    const apiKey = userApiKey || configService.getInstagramConfig().apiKey;
+    const apiKey = userApiKey || configService.getInstagramApiKey();
     console.log(apiKey);
     if (!apiKey) {
       // Return mock structure for development

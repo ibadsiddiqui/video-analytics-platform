@@ -19,20 +19,6 @@ export class ConfigService {
     };
   }
 
-  // YouTube API
-  getYouTubeConfig() {
-    return {
-      apiKey: process.env.YOUTUBE_API_KEY || "",
-    };
-  }
-
-  // Instagram API (RapidAPI)
-  getInstagramConfig() {
-    return {
-      apiKey: process.env.RAPIDAPI_KEY || "",
-    };
-  }
-
   // Clerk Authentication
   getClerkConfig() {
     return {
@@ -60,6 +46,15 @@ export class ConfigService {
   // Encryption key
   getEncryptionKey(): string {
     return process.env.ENCRYPTION_KEY || "";
+  }
+
+  // Individual API key getters (for backward compatibility and resolver service)
+  getYoutubeApiKey(): string | undefined {
+    return process.env.YOUTUBE_API_KEY;
+  }
+
+  getInstagramApiKey(): string | undefined {
+    return process.env.RAPIDAPI_KEY;
   }
 }
 

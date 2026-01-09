@@ -10,7 +10,7 @@ export async function GET() {
   try {
     const dbConfig = configService.getDatabaseConfig();
     const cacheConfig = configService.getUpstashConfig();
-    const youtubeConfig = configService.getYouTubeConfig();
+    const youtubeConfig = configService.getYoutubeApiKey();
 
     return NextResponse.json({
       status: "healthy",
@@ -23,7 +23,7 @@ export async function GET() {
           cacheConfig.url && cacheConfig.token
             ? "✅ Configured"
             : "❌ Not configured",
-        youtube: youtubeConfig.apiKey ? "✅ Configured" : "❌ Not configured",
+        youtube: youtubeConfig ? "✅ Configured" : "❌ Not configured",
       },
     });
   } catch (error) {

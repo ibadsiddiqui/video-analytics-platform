@@ -16,7 +16,9 @@ export const ROUTES = {
   SIGN_UP: "/sign-up",
 
   // User pages
-  SETTINGS: "/settings",
+  SETTINGS: {
+    HOME: "/settings",
+  },
 
   // Guides
   GUIDE: {
