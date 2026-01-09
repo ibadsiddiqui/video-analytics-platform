@@ -21,6 +21,7 @@ export const ROUTES = {
   // Guides
   GUIDE: {
     YOUTUBE_API_KEY: "/guide/youtube-api-key",
+    RAPIDAPI_KEY: "/guide/rapidapi-key",
   },
 } as const;
 
@@ -33,6 +34,9 @@ export const EXTERNAL_LINKS = {
   GOOGLE_CLOUD_API_LIBRARY: "https://console.cloud.google.com/apis/library",
   YOUTUBE_API_QUOTAS:
     "https://console.cloud.google.com/apis/api/youtube.googleapis.com/quotas",
+  RAPIDAPI: "https://rapidapi.com",
+  RAPIDAPI_INSTAGRAM_API:
+    "https://rapidapi.com/thetechguy32744/api/instagram-scraper-stable-api",
 } as const;
 
 /**

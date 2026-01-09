@@ -23,8 +23,10 @@ interface SearchBarProps {
   setUrl: (url: string) => void;
   onAnalyze: (url: string) => void;
   loading: boolean;
-  apiKey: string;
-  setApiKey: (key: string) => void;
+  youtubeApiKey: string;
+  setYoutubeApiKey: (key: string) => void;
+  rapidApiKey: string;
+  setRapidApiKey: (key: string) => void;
 }
 
 function SearchBar({
@@ -32,28 +34,40 @@ function SearchBar({
   setUrl,
   onAnalyze,
   loading,
-  apiKey,
-  setApiKey,
+  youtubeApiKey,
+  setYoutubeApiKey,
+  rapidApiKey,
+  setRapidApiKey,
 }: SearchBarProps): React.JSX.Element {
   const [focused, setFocused] = useState<boolean>(false);
-  const [showApiKey, setShowApiKey] = useState<boolean>(false);
+  const [showApiKeys, setShowApiKeys] = useState<boolean>(false);
   const { user } = useUser();
   const { isLimitReached } = useAnonymousTracking();
 
-  // Load API key from localStorage on mount
+  // Load API keys from localStorage on mount
   useEffect(() => {
-    const savedApiKey = localStorage.getItem("youtube_api_key");
-    if (savedApiKey && setApiKey) {
-      setApiKey(savedApiKey);
+    const savedYoutubeKey = localStorage.getItem("youtube_api_key");
+    const savedRapidApiKey = localStorage.getItem("rapidapi_key");
+    if (savedYoutubeKey && setYoutubeApiKey) {
+      setYoutubeApiKey(savedYoutubeKey);
     }
-  }, [setApiKey]);
+    if (savedRapidApiKey && setRapidApiKey) {
+      setRapidApiKey(savedRapidApiKey);
+    }
+  }, [setYoutubeApiKey, setRapidApiKey]);
 
-  // Save API key to localStorage whenever it changes
+  // Save API keys to localStorage whenever they change
   useEffect(() => {
-    if (apiKey) {
-      localStorage.setItem("youtube_api_key", apiKey);
+    if (youtubeApiKey) {
+      localStorage.setItem("youtube_api_key", youtubeApiKey);
     }
-  }, [apiKey]);
+  }, [youtubeApiKey]);
+
+  useEffect(() => {
+    if (rapidApiKey) {
+      localStorage.setItem("rapidapi_key", rapidApiKey);
+    }
+  }, [rapidApiKey]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
@@ -181,7 +195,7 @@ function SearchBar({
           </span>
         </div>
 
-        {/* Optional YouTube API Key */}
+        {/* Optional API Keys */}
         <motion.div
           className="mt-4"
           initial={{ opacity: 0 }}
@@ -190,46 +204,103 @@ function SearchBar({
         >
           <button
             type="button"
-            onClick={() => setShowApiKey(!showApiKey)}
+            onClick={() => setShowApiKeys(!showApiKeys)}
             className="flex items-center gap-2 text-sm text-slate-600 hover:text-primary-600 transition-colors mx-auto"
           >
             <Key className="w-4 h-4" />
-            <span>Use your own YouTube API key (optional)</span>
-            {showApiKey ? (
+            <span>Use your own API keys (optional)</span>
+            {showApiKeys ? (
               <ChevronUp className="w-4 h-4" />
             ) : (
               <ChevronDown className="w-4 h-4" />
             )}
           </button>
 
-          {showApiKey && (
+          {showApiKeys && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200"
+              className="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4"
             >
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                YouTube Data API v3 Key
-              </label>
-              <input
-                type="text"
-                value={apiKey || ""}
-                onChange={(e) => setApiKey && setApiKey(e.target.value)}
-                placeholder="AIzaSy..."
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-              />
-              <p className="mt-2 text-xs text-slate-500">
-                Don't have an API key?{" "}
-                <Link
-                  href={ROUTES.GUIDE.YOUTUBE_API_KEY}
-                  className="text-primary-600 hover:text-primary-700 underline font-medium"
-                >
-                  Follow our step-by-step guide
-                </Link>{" "}
-                to get one from Google Cloud Platform. Your key is stored
-                locally and used instead of the shared API key.
-              </p>
+              {/* Info Banner */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-xs text-blue-800">
+                  <strong>ℹ️ How it works:</strong> Each API key is used for its
+                  specific platform. Add one or both keys - they won't conflict
+                  with each other.
+                </p>
+              </div>
+
+              {/* YouTube API Key */}
+              <div className="border-l-4 border-red-500 pl-4">
+                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
+                  <Youtube className="w-4 h-4 text-red-500" />
+                  YouTube Data API v3 Key
+                  <span className="text-xs text-slate-500 font-normal">
+                    (Only for YouTube videos)
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  value={youtubeApiKey || ""}
+                  onChange={(e) =>
+                    setYoutubeApiKey && setYoutubeApiKey(e.target.value)
+                  }
+                  placeholder="AIzaSy..."
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
+                />
+                <p className="mt-2 text-xs text-slate-500">
+                  Don't have an API key?{" "}
+                  <Link
+                    href={ROUTES.GUIDE.YOUTUBE_API_KEY}
+                    className="text-primary-600 hover:text-primary-700 underline font-medium"
+                  >
+                    Follow our step-by-step guide
+                  </Link>{" "}
+                  to get one from Google Cloud Platform.
+                </p>
+              </div>
+
+              {/* RapidAPI Key */}
+              <div className="border-l-4 border-pink-500 pl-4">
+                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
+                  <Instagram className="w-4 h-4 text-pink-500" />
+                  RapidAPI Key
+                  <span className="text-xs text-slate-500 font-normal">
+                    (Only for Instagram posts/reels)
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  value={rapidApiKey || ""}
+                  onChange={(e) =>
+                    setRapidApiKey && setRapidApiKey(e.target.value)
+                  }
+                  placeholder="7a1d5de239msh..."
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none transition-all"
+                />
+                <p className="mt-2 text-xs text-slate-500">
+                  Don't have an API key?{" "}
+                  <Link
+                    href={ROUTES.GUIDE.RAPIDAPI_KEY}
+                    className="text-primary-600 hover:text-primary-700 underline font-medium"
+                  >
+                    Follow our step-by-step guide
+                  </Link>{" "}
+                  to get one from RapidAPI and subscribe to Instagram Scraper
+                  Stable API.
+                </p>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-xs text-green-800">
+                  <strong>✅ Safe to use both:</strong> Your keys are stored
+                  locally and automatically used based on the video URL you
+                  analyze. YouTube key for YouTube videos, RapidAPI key for
+                  Instagram posts.
+                </p>
+              </div>
             </motion.div>
           )}
         </motion.div>
