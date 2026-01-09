@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Toaster, toast } from "react-hot-toast";
 import { useUser } from "@clerk/nextjs";
@@ -19,12 +19,20 @@ import UpgradePrompt from "@/components/UpgradePrompt";
 import RateLimitDisplay from "@/components/RateLimitDisplay";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useAnonymousTracking } from "@/hooks/useAnonymousTracking";
+import { useApiKeys } from "@/hooks/useApiKeys";
 
 export default function Home(): React.JSX.Element {
   const [url, setUrl] = useState<string>("");
-  const [youtubeApiKey, setYoutubeApiKey] = useState<string>("");
-  const [rapidApiKey, setRapidApiKey] = useState<string>("");
   const [showUpgradePrompt, setShowUpgradePrompt] = useState<boolean>(false);
+
+  // New: API key selection state
+  const [selectedYoutubeKeyId, setSelectedYoutubeKeyId] = useState<
+    string | null
+  >(null);
+  const [selectedInstagramKeyId, setSelectedInstagramKeyId] = useState<
+    string | null
+  >(null);
+
   const { user } = useUser();
   const { data, loading, error, analyze, isCached } = useAnalytics();
   const {
@@ -34,6 +42,52 @@ export default function Home(): React.JSX.Element {
     incrementRequest,
     isLimitReached,
   } = useAnonymousTracking();
+
+  // Fetch user's API keys if authenticated
+  const {
+    keys: userKeys,
+    loading: userKeysLoading,
+    refetch: refetchKeys,
+  } = useApiKeys();
+
+  // Load keys on mount for authenticated users
+  useEffect(() => {
+    if (user) {
+      refetchKeys();
+    }
+  }, [user, refetchKeys]);
+
+  // Load selected key IDs from localStorage on mount
+  useEffect(() => {
+    const savedYoutubeKeyId = localStorage.getItem("selected_youtube_key_id");
+    const savedInstagramKeyId = localStorage.getItem(
+      "selected_instagram_key_id",
+    );
+
+    if (savedYoutubeKeyId) {
+      setSelectedYoutubeKeyId(savedYoutubeKeyId);
+    }
+    if (savedInstagramKeyId) {
+      setSelectedInstagramKeyId(savedInstagramKeyId);
+    }
+  }, []);
+
+  // Save selected key IDs to localStorage whenever they change
+  useEffect(() => {
+    if (selectedYoutubeKeyId) {
+      localStorage.setItem("selected_youtube_key_id", selectedYoutubeKeyId);
+    } else {
+      localStorage.removeItem("selected_youtube_key_id");
+    }
+  }, [selectedYoutubeKeyId]);
+
+  useEffect(() => {
+    if (selectedInstagramKeyId) {
+      localStorage.setItem("selected_instagram_key_id", selectedInstagramKeyId);
+    } else {
+      localStorage.removeItem("selected_instagram_key_id");
+    }
+  }, [selectedInstagramKeyId]);
 
   const handleAnalyze = useCallback(
     async (videoUrl: string): Promise<void> => {
@@ -53,8 +107,8 @@ export default function Home(): React.JSX.Element {
 
       try {
         await analyze(videoUrl, {
-          youtubeApiKey: youtubeApiKey || undefined,
-          rapidApiKey: rapidApiKey || undefined,
+          youtubeKeyId: selectedYoutubeKeyId || undefined,
+          instagramKeyId: selectedInstagramKeyId || undefined,
         });
 
         // Only increment rate limit for new requests (not cached results)
@@ -79,8 +133,8 @@ export default function Home(): React.JSX.Element {
     },
     [
       analyze,
-      youtubeApiKey,
-      rapidApiKey,
+      selectedYoutubeKeyId,
+      selectedInstagramKeyId,
       user,
       isLimitReached,
       incrementRequest,
@@ -148,10 +202,12 @@ export default function Home(): React.JSX.Element {
               setUrl={setUrl}
               onAnalyze={handleAnalyze}
               loading={loading}
-              youtubeApiKey={youtubeApiKey}
-              setYoutubeApiKey={setYoutubeApiKey}
-              rapidApiKey={rapidApiKey}
-              setRapidApiKey={setRapidApiKey}
+              selectedYoutubeKeyId={selectedYoutubeKeyId}
+              setSelectedYoutubeKeyId={setSelectedYoutubeKeyId}
+              selectedInstagramKeyId={selectedInstagramKeyId}
+              setSelectedInstagramKeyId={setSelectedInstagramKeyId}
+              userKeys={userKeys}
+              userKeysLoading={userKeysLoading}
             />
           </motion.div>
 

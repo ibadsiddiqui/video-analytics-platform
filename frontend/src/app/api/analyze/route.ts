@@ -19,8 +19,8 @@ export async function POST(request: NextRequest) {
       skipCache,
       includeSentiment,
       includeKeywords,
-      youtubeApiKey,
-      rapidApiKey,
+      youtubeKeyId,
+      instagramKeyId,
     } = body;
 
     if (!url) {
@@ -34,8 +34,8 @@ export async function POST(request: NextRequest) {
       skipCache: skipCache || false,
       includeSentiment: includeSentiment !== false,
       includeKeywords: includeKeywords !== false,
-      youtubeApiKey,
-      rapidApiKey,
+      youtubeKeyId,
+      instagramKeyId,
       userId: userId || undefined,
     });
 

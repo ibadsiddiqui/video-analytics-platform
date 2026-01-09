@@ -8,8 +8,8 @@ import { syncTrackingWithHeaders } from "@/hooks/useAnonymousTracking";
 const API_URL = "/api";
 
 interface AnalyzeOptions {
-  youtubeApiKey?: string;
-  rapidApiKey?: string;
+  youtubeKeyId?: string;
+  instagramKeyId?: string;
   skipCache?: boolean;
   includeSentiment?: boolean;
   includeKeywords?: boolean;

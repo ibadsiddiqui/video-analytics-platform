@@ -8,13 +8,14 @@ import { sentimentService } from "@/lib/sentiment";
 import { VideoMetrics } from "@/lib/value-objects/VideoMetrics";
 import { youtubeService } from "@/lib/youtube";
 import { instagramService } from "@/lib/instagram";
+import { apiKeyResolverService } from "@/lib/api-key-resolver";
 
 export interface AnalyzeVideoOptions {
   skipCache?: boolean;
   includeSentiment?: boolean;
   includeKeywords?: boolean;
-  youtubeApiKey?: string;
-  rapidApiKey?: string;
+  youtubeKeyId?: string;
+  instagramKeyId?: string;
   userId?: string;
 }
 
@@ -171,12 +172,7 @@ export class AnalyzeVideoUseCase {
     // NOTE: In a real frontend implementation, you would call your backend API here
     // Example: const videoData = await fetch('/api/analyze', { method: 'POST', body: JSON.stringify({ url }) })
     // For now, this will throw an error as platform services aren't available client-side
-    const videoData = await this.fetchVideoData(
-      url,
-      platform,
-      options.youtubeApiKey,
-      options.rapidApiKey,
-    );
+    const videoData = await this.fetchVideoData(url, platform, options);
 
     // Perform sentiment analysis on comments
     let sentimentAnalysis: ReturnType<
@@ -311,18 +307,34 @@ export class AnalyzeVideoUseCase {
 
   /**
    * Fetch video data from platform
+   * Resolves API keys from user's stored keys using ApiKeyResolverService
    */
   private async fetchVideoData(
     url: string,
     platform: string,
-    youtubeApiKey?: string,
-    rapidApiKey?: string,
+    options: AnalyzeVideoOptions,
   ): Promise<VideoAnalyticsData> {
-    switch (platform.toLowerCase()) {
-      case "youtube":
-        return await youtubeService.getVideoAnalytics(url, youtubeApiKey);
-      case "instagram":
-        return await instagramService.getVideoAnalytics(url, rapidApiKey);
+    const normalizedPlatform = platform.toLowerCase();
+
+    switch (normalizedPlatform) {
+      case "youtube": {
+        // Resolve API key using key ID or fallback to system key
+        const resolved = await apiKeyResolverService.resolveYoutubeKey(
+          options.youtubeKeyId,
+          options.userId,
+        );
+        return await youtubeService.getVideoAnalytics(url, resolved.key);
+      }
+
+      case "instagram": {
+        // Resolve API key using key ID or fallback to system key
+        const resolved = await apiKeyResolverService.resolveInstagramKey(
+          options.instagramKeyId,
+          options.userId,
+        );
+        return await instagramService.getVideoAnalytics(url, resolved.key);
+      }
+
       default:
         throw new Error(`Unsupported platform: ${platform}`);
     }
