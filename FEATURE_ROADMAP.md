@@ -1246,132 +1246,9 @@ async function testRapidAPIKey(apiKey: string): Promise<boolean> {
 export default router;
 ```
 
-#### Step 3: Update API Key Resolution Service
+**Note:** The current implementation uses `frontend/src/lib/api-key-resolver.ts` which provides secure API key resolution with ownership validation. See IMPLEMENTATION_SUMMARY.md for details.
 
-**Create file: `backend/src/services/apikey-resolver.service.ts`**
-
-```typescript
-// API Key Resolver - Determines which API key to use for requests
-import { PrismaClient, ApiPlatform } from '@prisma/client';
-import encryptionService from './encryption.service';
-import config from '../config';
-
-const prisma = new PrismaClient();
-
-interface ApiKeyResult {
-  key: string;
-  source: 'user' | 'system';
-  userId: string | null;
-  unlimited: boolean;
-}
-
-class ApiKeyResolverService {
-  /**
-   * Get the appropriate API key for a platform
-   * Priority: User's own key > System key
-   *
-   * @param clerkUserId - The Clerk user ID
-   * @param platform - The platform (YOUTUBE, INSTAGRAM, etc.)
-   * @returns Object containing key, source, userId, and unlimited flag
-   */
-  async getApiKey(clerkUserId: string | null, platform: ApiPlatform): Promise<ApiKeyResult> {
-    // If user is authenticated, try to get their key first
-    if (clerkUserId) {
-      const user = await prisma.user.findUnique({
-        where: { clerkId: clerkUserId },
-        include: {
-          apiKeys: {
-            where: {
-              platform,
-              isActive: true
-            }
-          }
-        }
-      });
-      
-      if (user?.apiKeys?.length > 0) {
-        const userKey = user.apiKeys[0];
-        
-        // Decrypt the key
-        const decryptedKey = encryptionService.decrypt(
-          userKey.encryptedKey,
-          userKey.iv,
-          userKey.authTag
-        );
-        
-        // Update usage stats
-        await prisma.userApiKey.update({
-          where: { id: userKey.id },
-          data: {
-            lastUsedAt: new Date(),
-            usageCount: { increment: 1 }
-          }
-        });
-        
-        return {
-          key: decryptedKey,
-          source: 'user',
-          userId: user.id,
-          unlimited: true // User's own key has no platform-level rate limit from us
-        };
-      }
-    }
-    
-    // Fall back to system key
-    return this.getSystemKey(platform);
-  }
-  
-  /**
-   * Get the system API key for a platform
-   */
-  getSystemKey(platform: ApiPlatform): ApiKeyResult {
-    const keyMap: Partial<Record<ApiPlatform, string>> = {
-      YOUTUBE: config.youtube.apiKey,
-      RAPIDAPI: config.rapidApi.key,
-      INSTAGRAM: config.rapidApi.key, // Instagram uses RapidAPI
-      // Add more platforms as needed
-    };
-
-    const key = keyMap[platform];
-
-    if (!key) {
-      throw new Error(`No system API key configured for ${platform}`);
-    }
-
-    return {
-      key,
-      source: 'system',
-      userId: null,
-      unlimited: false // System key is rate limited
-    };
-  }
-
-  /**
-   * Check if user has configured their own key for a platform
-   */
-  async hasUserKey(clerkUserId: string | null, platform: ApiPlatform): Promise<boolean> {
-    if (!clerkUserId) return false;
-
-    const user = await prisma.user.findUnique({
-      where: { clerkId: clerkUserId },
-      include: {
-        apiKeys: {
-          where: {
-            platform,
-            isActive: true
-          }
-        }
-      }
-    });
-
-    return (user?.apiKeys?.length ?? 0) > 0;
-  }
-}
-
-export default new ApiKeyResolverService();
-```
-
-#### Step 4: Create Settings Page (Frontend)
+#### Step 3: Create Settings Page (Frontend)
 
 **Create file: `frontend/src/app/settings/page.tsx` (Next.js 15 App Router)**
 
@@ -2781,26 +2658,30 @@ model CompetitorSnapshot {
 
 ### Implementation Steps for Claude Code
 
-1. **Create `backend/src/services/competitor.service.js`**
+1. **Create `frontend/src/lib/services/competitor.ts`**
    - Methods: `addCompetitor`, `removeCompetitor`, `getCompetitors`, `updateMetrics`
    - Use YouTube Channels API to fetch channel data
    - Schedule daily updates via cron job or Vercel cron
 
-2. **Create `backend/src/routes/competitor.routes.js`**
-   - `POST /api/competitors` - Add competitor
-   - `GET /api/competitors` - List user's tracked competitors
-   - `DELETE /api/competitors/:id` - Remove competitor
-   - `GET /api/competitors/:id/history` - Get historical data
+2. **Create Next.js API Routes**
+   - **`frontend/src/app/api/competitors/route.ts`**
+     - `export async function POST(request: NextRequest)` - Add competitor
+     - `export async function GET(request: NextRequest)` - List user's tracked competitors
+   - **`frontend/src/app/api/competitors/[id]/route.ts`**
+     - `export async function DELETE(request: NextRequest, { params })` - Remove competitor
+   - **`frontend/src/app/api/competitors/[id]/history/route.ts`**
+     - `export async function GET(request: NextRequest, { params })` - Get historical data
 
-3. **Create `frontend/src/pages/Competitors.jsx`**
+3. **Create `frontend/src/app/competitors/page.tsx`**
    - Grid of competitor cards with metrics
    - Add competitor modal (search by channel name/URL)
    - Comparison charts (line charts showing growth over time)
    - Export comparison data
 
-4. **Create `backend/src/jobs/competitor-update.js`**
+4. **Create `frontend/src/app/api/cron/update-competitors/route.ts`**
    - Vercel cron job to update competitor metrics daily
    - Add to `vercel.json`: `"crons": [{ "path": "/api/cron/update-competitors", "schedule": "0 0 * * *" }]`
+   - Implement as `export async function GET(request: NextRequest)` handler
 
 ### Acceptance Criteria
 
@@ -2868,11 +2749,11 @@ Features:
    - Extract features using NLP and image analysis
 
 2. **Train model** (can use Python microservice or TensorFlow.js)
-   - `backend/src/ml/viral-predictor/train.py`
+   - `frontend/src/lib/ml/viral-predictor/train.py`
    - Export model to ONNX or TensorFlow.js format
 
 3. **Create prediction service**
-   - `backend/src/services/viral-predictor.service.js`
+   - `frontend/src/lib/services/viral-predictor.ts`
    - Load model and run inference
    - Return score 0-100 with explanation
 
@@ -2894,7 +2775,7 @@ Analyze user's historical video performance to recommend the best days and times
    - Calculate average performance per time slot
 
 2. **Create recommendation engine**
-   - `backend/src/services/posting-time.service.js`
+   - `frontend/src/lib/services/posting-time.ts`
    - Consider audience timezone distribution
    - Weight recent videos more heavily
 
@@ -2949,8 +2830,8 @@ Analyze:
 ### Implementation Steps for Claude Code
 
 1. **Integrate Vision API**
-   - `backend/src/services/thumbnail-analyzer.service.js`
-   
+   - `frontend/src/lib/services/thumbnail-analyzer.ts`
+
 2. **Create scoring system**
    - Score 0-100 for thumbnail effectiveness
    - Provide specific recommendations
@@ -3038,7 +2919,7 @@ Where:
 ### Implementation Steps for Claude Code
 
 1. **Create rate calculation service**
-   - `backend/src/services/sponsorship-calculator.service.js`
+   - `frontend/src/lib/services/sponsorship-calculator.ts`
    - Input: channel metrics, niche
    - Output: recommended rate ranges (low, mid, high)
 
@@ -3091,7 +2972,7 @@ Real-time detection of rising topics in user's niche before they peak.
    - Relevance to user's content
 
 3. **Create alerts system**
-   - `backend/src/services/alerts.service.js`
+   - `frontend/src/lib/services/alerts.ts`
    - Email/push notifications for trending topics
 
 ---
@@ -3253,7 +3134,7 @@ Email digest with key metrics and insights.
 ### Implementation Steps for Claude Code
 
 1. **Create report generation service**
-   - `backend/src/services/report-generator.service.js`
+   - `frontend/src/lib/services/report-generator.ts`
    - Compile weekly stats, trends, insights
 
 2. **Create email templates**
@@ -3280,7 +3161,7 @@ Export analytics to professional PDF reports.
 
 1. **Create PDF service**
    - Use Puppeteer or @react-pdf/renderer
-   - `backend/src/services/pdf-export.service.js`
+   - `frontend/src/lib/services/pdf-export.ts`
 
 2. **Design PDF templates**
    - Cover page with branding
@@ -3344,14 +3225,14 @@ Auto-populate Google Sheets with analytics data.
 ## File Naming Conventions
 
 ```
-Services:     [name].service.ts
-Routes:       [name].routes.ts
-Middleware:   [name].middleware.ts
-Components:   PascalCase.tsx
-Pages:        PascalCase.tsx (in app/ directory for Next.js App Router)
-Hooks:        use[Name].ts
-Utils:        camelCase.ts
-Types:        [name].types.ts
+Services:     [name].ts          (in frontend/src/lib/services/)
+API Routes:   route.ts           (in frontend/src/app/api/*/route.ts)
+Middleware:   middleware.ts      (in frontend/src/middleware.ts)
+Components:   PascalCase.tsx     (in frontend/src/components/)
+Pages:        page.tsx           (in frontend/src/app/*/page.tsx for Next.js App Router)
+Hooks:        use[Name].ts       (in frontend/src/hooks/)
+Utils:        camelCase.ts       (in frontend/src/lib/utils/)
+Types:        [name].types.ts    (in frontend/src/lib/types/)
 ```
 
 ## API Response Format
