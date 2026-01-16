@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -37,6 +38,7 @@ interface PricingTier {
 }
 
 export default function ProFeaturesPage(): React.JSX.Element {
+  const { isSignedIn } = useUser();
   const tiers: PricingTier[] = [
     {
       name: "FREE",
@@ -429,39 +431,41 @@ export default function ProFeaturesPage(): React.JSX.Element {
             </table>
           </motion.div>
 
-          {/* FAQ or Additional Info */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="mt-12 text-center"
-          >
-            <div className="bg-gradient-to-r from-primary-50 to-amber-50 border-2 border-primary-200 rounded-2xl p-8">
-              <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                Not sure which plan is right for you?
-              </h3>
-              <p className="text-slate-600 mb-6">
-                Start with our FREE tier and upgrade anytime as your needs grow.
-                All plans can be changed or cancelled at any time.
-              </p>
-              <div className="flex items-center justify-center gap-4">
-                <Link
-                  href={ROUTES.SIGN_UP}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl font-semibold shadow-lg shadow-primary-500/25 transition-all"
-                >
-                  <UserPlus className="w-5 h-5" />
-                  Sign Up
-                </Link>
-                <Link
-                  href={ROUTES.HOME}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-slate-700 border-2 border-slate-200 rounded-xl font-semibold transition-all"
-                >
-                  <Mail className="w-5 h-5" />
-                  Contact Sales
-                </Link>
+          {/* FAQ or Additional Info - Only show if not authenticated */}
+          {!isSignedIn && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="mt-12 text-center"
+            >
+              <div className="bg-gradient-to-r from-primary-50 to-amber-50 border-2 border-primary-200 rounded-2xl p-8">
+                <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                  Not sure which plan is right for you?
+                </h3>
+                <p className="text-slate-600 mb-6">
+                  Start with our FREE tier and upgrade anytime as your needs
+                  grow. All plans can be changed or cancelled at any time.
+                </p>
+                <div className="flex items-center justify-center gap-4">
+                  <Link
+                    href={ROUTES.SIGN_UP}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl font-semibold shadow-lg shadow-primary-500/25 transition-all"
+                  >
+                    <UserPlus className="w-5 h-5" />
+                    Sign Up
+                  </Link>
+                  <Link
+                    href={ROUTES.HOME}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-slate-700 border-2 border-slate-200 rounded-xl font-semibold transition-all"
+                  >
+                    <Mail className="w-5 h-5" />
+                    Contact Sales
+                  </Link>
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
         </div>
       </div>
     </div>
