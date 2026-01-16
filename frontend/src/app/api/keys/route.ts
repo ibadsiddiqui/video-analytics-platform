@@ -50,7 +50,7 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json(response);
+    return NextResponse.json({ success: true, data: response });
   } catch (error) {
     console.error("List API keys error:", error);
     return NextResponse.json(
@@ -112,14 +112,17 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        id: newApiKey.id,
-        platform: newApiKey.platform,
-        label: newApiKey.label,
-        maskedKey,
-        isActive: newApiKey.isActive,
-        lastUsedAt: newApiKey.lastUsedAt,
-        createdAt: newApiKey.createdAt,
-        updatedAt: newApiKey.updatedAt,
+        success: true,
+        data: {
+          id: newApiKey.id,
+          platform: newApiKey.platform,
+          label: newApiKey.label,
+          maskedKey,
+          isActive: newApiKey.isActive,
+          lastUsedAt: newApiKey.lastUsedAt,
+          createdAt: newApiKey.createdAt,
+          updatedAt: newApiKey.updatedAt,
+        },
       },
       { status: 201 },
     );

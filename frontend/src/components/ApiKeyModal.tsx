@@ -43,7 +43,7 @@ const PLATFORM_CONFIG = {
     color: "text-purple-600",
     bgColor: "bg-purple-50",
     borderColor: "border-purple-200",
-    pattern: "RapidAPI",
+    pattern: "msh",
     description: "Use your RapidAPI key for Instagram API",
   },
 } as const;
@@ -84,10 +84,9 @@ export default function ApiKeyModal({
 
   // Validate key format
   const validateKey = (key: string, plat: ApiKeyPlatform): boolean => {
-    if (mode === "edit") return true; // Skip validation for edit mode
-    if (!key) return false;
+    if (!key) return true; // Allow empty in edit mode (optional)
     const config = PLATFORM_CONFIG[plat];
-    return key.startsWith(config.pattern);
+    return key.includes(config.pattern);
   };
 
   // Handle key change with validation
@@ -132,9 +131,9 @@ export default function ApiKeyModal({
 
     if (mode === "add" && !keyValue.trim()) {
       newErrors.key = "API key is required";
-    } else if (mode === "add" && !validateKey(keyValue, platform)) {
+    } else if (keyValue && !validateKey(keyValue, platform)) {
       const config = PLATFORM_CONFIG[platform];
-      newErrors.key = `${platform} keys should start with "${config.pattern}"`;
+      newErrors.key = `${platform} keys should contain "${config.pattern}"`;
     }
 
     if (newErrors.key) {
@@ -151,6 +150,7 @@ export default function ApiKeyModal({
               label: label || undefined,
             }
           : {
+              ...(keyValue && { apiKey: keyValue }),
               label: label || undefined,
             };
 
@@ -248,77 +248,81 @@ export default function ApiKeyModal({
                 )}
 
                 {/* API Key Field */}
-                {mode === "add" && (
-                  <div>
-                    <label
-                      htmlFor="api-key"
-                      className="block text-sm font-semibold text-slate-900 mb-2"
+                <div>
+                  <label
+                    htmlFor="api-key"
+                    className="block text-sm font-semibold text-slate-900 mb-2"
+                  >
+                    API Key
+                    {mode === "edit" && (
+                      <span className="text-slate-400 font-normal">
+                        {" "}
+                        (optional - leave blank to keep current key)
+                      </span>
+                    )}
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="api-key"
+                      type={showKey ? "text" : "password"}
+                      value={keyValue}
+                      onChange={handleKeyChange}
+                      placeholder={`Paste your ${platform} API key...`}
+                      disabled={isLoading}
+                      className={`
+                        w-full px-4 py-3 bg-white border-2 rounded-xl
+                        text-slate-900 placeholder-slate-400
+                        transition-all duration-200 font-mono text-sm
+                        disabled:opacity-50 disabled:cursor-not-allowed
+                        ${
+                          errors.key
+                            ? "border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
+                            : validationState.key
+                              ? "border-green-500 focus:border-green-500 focus:ring-4 focus:ring-green-500/10"
+                              : "border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+                        }
+                      `}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowKey(!showKey)}
+                      disabled={isLoading}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 disabled:opacity-50"
+                      aria-label={showKey ? "Hide key" : "Show key"}
                     >
-                      API Key
-                    </label>
-                    <div className="relative">
-                      <input
-                        id="api-key"
-                        type={showKey ? "text" : "password"}
-                        value={keyValue}
-                        onChange={handleKeyChange}
-                        placeholder={`Paste your ${platform} API key...`}
-                        disabled={isLoading}
-                        className={`
-                          w-full px-4 py-3 bg-white border-2 rounded-xl
-                          text-slate-900 placeholder-slate-400
-                          transition-all duration-200 font-mono text-sm
-                          disabled:opacity-50 disabled:cursor-not-allowed
-                          ${
-                            errors.key
-                              ? "border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
-                              : validationState.key
-                                ? "border-green-500 focus:border-green-500 focus:ring-4 focus:ring-green-500/10"
-                                : "border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
-                          }
-                        `}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowKey(!showKey)}
-                        disabled={isLoading}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 disabled:opacity-50"
-                        aria-label={showKey ? "Hide key" : "Show key"}
-                      >
-                        {showKey ? (
-                          <EyeOff className="w-5 h-5" />
-                        ) : (
-                          <Eye className="w-5 h-5" />
-                        )}
-                      </button>
-                    </div>
-
-                    {/* Validation Messages */}
-                    {errors.key && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-2 flex items-start gap-2 text-red-600"
-                      >
-                        <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs font-medium">{errors.key}</p>
-                      </motion.div>
-                    )}
-
-                    {validationState.key && !errors.key && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-2 flex items-start gap-2 text-green-600"
-                      >
-                        <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs font-medium">
-                          Key format looks valid
-                        </p>
-                      </motion.div>
-                    )}
+                      {showKey ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
                   </div>
-                )}
+
+                  {/* Validation Messages */}
+                  {errors.key && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-2 flex items-start gap-2 text-red-600"
+                    >
+                      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs font-medium">{errors.key}</p>
+                    </motion.div>
+                  )}
+
+                  {validationState.key && !errors.key && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-2 flex items-start gap-2 text-green-600"
+                    >
+                      <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs font-medium">
+                        Key format looks valid
+                      </p>
+                    </motion.div>
+                  )}
+                </div>
 
                 {/* Label Field */}
                 <div>

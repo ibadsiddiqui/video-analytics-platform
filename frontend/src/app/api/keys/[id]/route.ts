@@ -29,7 +29,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { label, isActive } = body;
+    const { label, isActive, apiKey } = body;
 
     const existingKey = await prisma.userApiKey.findUnique({
       where: { id },
@@ -46,15 +46,28 @@ export async function PUT(
       );
     }
 
+    // Prepare update data
+    const updateData: any = {
+      label: label !== undefined ? label : existingKey.label,
+      isActive: isActive !== undefined ? isActive : existingKey.isActive,
+      updatedAt: new Date(),
+    };
+
+    // If new API key provided, encrypt and update it
+    if (apiKey) {
+      const encryptedData = encryptionService.encrypt(apiKey);
+      updateData.encryptedKey = encryptedData.encryptedKey;
+      updateData.iv = encryptedData.iv;
+      updateData.authTag = encryptedData.authTag;
+      updateData.salt = encryptedData.salt;
+    }
+
     const updatedKey = await prisma.userApiKey.update({
       where: { id },
-      data: {
-        label: label !== undefined ? label : existingKey.label,
-        isActive: isActive !== undefined ? isActive : existingKey.isActive,
-        updatedAt: new Date(),
-      },
+      data: updateData,
     });
 
+    // Decrypt the updated key to get masked version
     const decryptedKey = encryptionService.decrypt({
       encryptedKey: updatedKey.encryptedKey,
       iv: updatedKey.iv,
@@ -64,14 +77,17 @@ export async function PUT(
     const maskedKey = encryptionService.maskKey(decryptedKey);
 
     return NextResponse.json({
-      id: updatedKey.id,
-      platform: updatedKey.platform,
-      label: updatedKey.label,
-      maskedKey,
-      isActive: updatedKey.isActive,
-      lastUsedAt: updatedKey.lastUsedAt,
-      createdAt: updatedKey.createdAt,
-      updatedAt: updatedKey.updatedAt,
+      success: true,
+      data: {
+        id: updatedKey.id,
+        platform: updatedKey.platform,
+        label: updatedKey.label,
+        maskedKey,
+        isActive: updatedKey.isActive,
+        lastUsedAt: updatedKey.lastUsedAt,
+        createdAt: updatedKey.createdAt,
+        updatedAt: updatedKey.updatedAt,
+      },
     });
   } catch (error) {
     console.error("Update API key error:", error);
@@ -122,7 +138,7 @@ export async function DELETE(
       where: { id },
     });
 
-    return new NextResponse(null, { status: 204 });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Delete API key error:", error);
     return NextResponse.json(

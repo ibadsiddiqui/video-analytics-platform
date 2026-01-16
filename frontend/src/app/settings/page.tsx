@@ -6,7 +6,7 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Lock, AlertCircle, Loader } from "lucide-react";
 import Link from "next/link";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import Header from "@/components/Header";
 import ApiKeyCard from "@/components/ApiKeyCard";
 import ApiKeyModal from "@/components/ApiKeyModal";
@@ -87,12 +87,6 @@ export default function SettingsPage(): React.JSX.Element {
   const handleOpenAddModal = (): void => {
     setModalMode("add");
     setSelectedKey(undefined);
-    setModalOpen(true);
-  };
-
-  const handleOpenEditModal = (apiKey: ApiKey): void => {
-    setModalMode("edit");
-    setSelectedKey(apiKey);
     setModalOpen(true);
   };
 
@@ -426,7 +420,6 @@ export default function SettingsPage(): React.JSX.Element {
                       <ApiKeyCard
                         key={apiKey.id}
                         apiKey={apiKey}
-                        onEdit={handleOpenEditModal}
                         onDelete={handleDeleteKey}
                         onToggle={handleToggleKey}
                         onTest={handleTestKey}

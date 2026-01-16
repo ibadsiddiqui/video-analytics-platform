@@ -87,19 +87,28 @@ export async function POST(
     try {
       if (apiKey.platform === "YOUTUBE") {
         const result = await testYouTubeKey(decryptedKey);
-        return NextResponse.json(result);
+        return NextResponse.json({
+          success: true,
+          data: result,
+        });
       } else if (apiKey.platform === "INSTAGRAM") {
         const result = await testInstagramKey(decryptedKey);
-        return NextResponse.json(result);
+        return NextResponse.json({
+          success: true,
+          data: result,
+        });
       } else {
         return NextResponse.json(
-          { valid: false, error: "Unsupported platform" },
+          {
+            success: false,
+            error: "Unsupported platform",
+          },
           { status: 400 },
         );
       }
     } catch (error) {
       return NextResponse.json({
-        valid: false,
+        success: false,
         error: error instanceof Error ? error.message : "Unknown error",
       });
     }
