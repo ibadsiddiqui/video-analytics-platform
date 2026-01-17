@@ -6,7 +6,9 @@ import { useUser } from '@clerk/nextjs';
 import { Plus, Trash2, TrendingUp, Users, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCompetitors } from '@/hooks/useCompetitors';
+import { useTierAccess } from '@/hooks/useTierAccess';
 import Header from '@/components/Header';
+import LockedFeatureBanner from '@/components/LockedFeatureBanner';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -24,6 +26,7 @@ const itemVariants = {
 export default function CompetitorsPage() {
   const { user, isLoaded } = useUser();
   const { competitors, loading, removeCompetitor } = useCompetitors();
+  const { canTrackCompetitors, loading: tierLoading } = useTierAccess();
   const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState({
     platform: 'YOUTUBE',
@@ -48,6 +51,22 @@ export default function CompetitorsPage() {
               You need to be logged in to access the competitor tracking dashboard
             </p>
           </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Show locked banner if user doesn't have access
+  if (isLoaded && user && !tierLoading && !canTrackCompetitors) {
+    return (
+      <div className="min-h-screen bg-mesh">
+        <Header />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <LockedFeatureBanner
+            feature="Competitor Tracking"
+            requiredTier="PRO"
+            description="Track competitor channels, monitor their growth, and compare performance metrics. Upgrade to PRO to unlock this feature."
+          />
         </main>
       </div>
     );
@@ -255,7 +274,6 @@ export default function CompetitorsPage() {
                     >
                       <option value="YOUTUBE">YouTube</option>
                       <option value="INSTAGRAM">Instagram</option>
-                      <option value="TIKTOK">TikTok</option>
                     </select>
                   </div>
 

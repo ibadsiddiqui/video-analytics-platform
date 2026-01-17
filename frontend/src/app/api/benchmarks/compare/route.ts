@@ -7,9 +7,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import BenchmarkService from '@/lib/services/benchmark';
 import { prisma } from '@/lib/prisma';
+import { checkTierAccess } from '@/lib/utils/tier-access';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check tier access
+    const tierCheck = await checkTierAccess('BENCHMARK_COMPARISONS');
+    if (!tierCheck.hasAccess) {
+      return tierCheck.error!;
+    }
+
     const body = await request.json();
     const { videoId } = body as { videoId?: string };
 

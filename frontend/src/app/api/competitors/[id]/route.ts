@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import CompetitorService from '@/lib/services/competitor';
+import { checkTierAccess } from '@/lib/utils/tier-access';
 
 // DELETE /api/competitors/[id]
 // Remove competitor from tracking
@@ -17,6 +18,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Check tier access
+    const tierCheck = await checkTierAccess('COMPETITOR_TRACKING');
+    if (!tierCheck.hasAccess) {
+      return tierCheck.error!;
+    }
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -69,6 +76,12 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Check tier access
+    const tierCheck = await checkTierAccess('COMPETITOR_TRACKING');
+    if (!tierCheck.hasAccess) {
+      return tierCheck.error!;
+    }
+
     const { userId } = await auth();
 
     if (!userId) {

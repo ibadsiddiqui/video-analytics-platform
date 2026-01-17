@@ -4,6 +4,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, Award, Target, Zap } from 'lucide-react';
 import type { VideoComparison } from '@/lib/services/benchmark';
+import { useTierAccess } from '@/hooks/useTierAccess';
+import LockedFeatureCard from '@/components/LockedFeatureCard';
 
 interface BenchmarkCardProps {
   data: VideoComparison | null;
@@ -11,6 +13,18 @@ interface BenchmarkCardProps {
 }
 
 export default function BenchmarkCard({ data, isLoading = false }: BenchmarkCardProps) {
+  const { canUseBenchmarks, loading: tierLoading } = useTierAccess();
+
+  // Show locked state for non-PRO users
+  if (!tierLoading && !canUseBenchmarks) {
+    return (
+      <LockedFeatureCard
+        feature="Benchmark Comparisons"
+        requiredTier="PRO"
+      />
+    );
+  }
+
   if (isLoading) {
     return (
       <motion.div

@@ -2,14 +2,16 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { BarChart3, Sparkles, Settings, Users } from "lucide-react";
+import { BarChart3, Sparkles, Settings, Users, Lock } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import AuthButton from "@/components/AuthButton";
 import { ROUTES } from "@/config/routes";
+import { useTierAccess } from "@/hooks/useTierAccess";
 
 function Header() {
   const { isSignedIn } = useUser();
+  const { canTrackCompetitors, loading: tierLoading } = useTierAccess();
 
   return (
     <header className="border-b border-slate-200/80 bg-white/50 backdrop-blur-lg sticky top-0 z-50">
@@ -68,14 +70,21 @@ function Header() {
             {/* Competitors Link (authenticated users only) */}
             {isSignedIn && (
               <Link
-                href={ROUTES.COMPETITORS}
-                className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all duration-300 cursor-pointer"
-                title="Track competitors"
+                href={canTrackCompetitors ? ROUTES.COMPETITORS : ROUTES.PRO_FEATURES}
+                className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-300 cursor-pointer ${
+                  canTrackCompetitors
+                    ? 'bg-blue-50 border border-blue-200 hover:bg-blue-100 hover:border-blue-300'
+                    : 'bg-slate-50 border border-slate-200 hover:bg-slate-100 opacity-60'
+                }`}
+                title={canTrackCompetitors ? 'Track competitors' : 'Upgrade to PRO to unlock'}
               >
                 <Users className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-700">
+                <span className={`text-sm font-medium ${canTrackCompetitors ? 'text-blue-700' : 'text-slate-700'}`}>
                   Competitors
                 </span>
+                {!tierLoading && !canTrackCompetitors && (
+                  <Lock className="w-3 h-3 text-slate-400" />
+                )}
               </Link>
             )}
 

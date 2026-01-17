@@ -120,7 +120,6 @@ model ApiRequest {
 enum Platform {
   YOUTUBE
   INSTAGRAM
-  TIKTOK
   VIMEO
   OTHER
 }

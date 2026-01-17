@@ -10,11 +10,18 @@ import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import CompetitorService from '@/lib/services/competitor';
 import { Platform } from '@prisma/client';
+import { checkTierAccess } from '@/lib/utils/tier-access';
 
 // GET /api/competitors
 // Fetch all competitors for authenticated user
 export async function GET(request: NextRequest) {
   try {
+    // Check tier access
+    const tierCheck = await checkTierAccess('COMPETITOR_TRACKING');
+    if (!tierCheck.hasAccess) {
+      return tierCheck.error!;
+    }
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -50,6 +57,12 @@ export async function GET(request: NextRequest) {
 // Add a new competitor
 export async function POST(request: NextRequest) {
   try {
+    // Check tier access
+    const tierCheck = await checkTierAccess('COMPETITOR_TRACKING');
+    if (!tierCheck.hasAccess) {
+      return tierCheck.error!;
+    }
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -92,7 +105,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate platform
-    const validPlatforms = ['YOUTUBE', 'INSTAGRAM', 'TIKTOK'];
+    const validPlatforms = ['YOUTUBE', 'INSTAGRAM'];
     if (!validPlatforms.includes(platform)) {
       return NextResponse.json(
         { error: 'Invalid platform', validPlatforms },

@@ -9,16 +9,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import BenchmarkService from '@/lib/services/benchmark';
 import { VideoNiche, Platform } from '@prisma/client';
+import { checkTierAccess } from '@/lib/utils/tier-access';
 
 // GET /api/benchmarks?platform=YOUTUBE&niche=GAMING
 // Fetch benchmark data for a specific platform and niche
 export async function GET(request: NextRequest) {
   try {
+    // Check tier access
+    const tierCheck = await checkTierAccess('BENCHMARK_COMPARISONS');
+    if (!tierCheck.hasAccess) {
+      return tierCheck.error!;
+    }
     const platform = (request.nextUrl.searchParams.get('platform') || 'YOUTUBE') as Platform;
     const niche = (request.nextUrl.searchParams.get('niche') || 'GAMING') as VideoNiche;
 
     // Validate inputs
-    const validPlatforms = ['YOUTUBE', 'INSTAGRAM', 'TIKTOK', 'VIMEO', 'OTHER'];
+    const validPlatforms = ['YOUTUBE', 'INSTAGRAM', 'VIMEO', 'OTHER'];
     const validNiches = [
       'GAMING',
       'TECH',
@@ -77,6 +83,12 @@ export async function GET(request: NextRequest) {
 // Requires admin or system access
 export async function POST(request: NextRequest) {
   try {
+    // Check tier access
+    const tierCheck = await checkTierAccess('BENCHMARK_COMPARISONS');
+    if (!tierCheck.hasAccess) {
+      return tierCheck.error!;
+    }
+
     const body = await request.json();
     const { platform, niche } = body as {
       platform?: Platform;

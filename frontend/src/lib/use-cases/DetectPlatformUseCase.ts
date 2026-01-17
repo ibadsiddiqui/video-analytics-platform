@@ -45,9 +45,6 @@ export class DetectPlatformUseCase {
     if (normalized.includes("instagram.com")) {
       return "instagram";
     }
-    if (normalized.includes("tiktok.com")) {
-      return "tiktok";
-    }
     if (normalized.includes("vimeo.com")) {
       return "vimeo";
     }
