@@ -19,6 +19,7 @@ export const ROUTES = {
   SETTINGS: {
     HOME: "/settings",
   },
+  COMPETITORS: "/competitors",
 
   // Guides
   GUIDE: {

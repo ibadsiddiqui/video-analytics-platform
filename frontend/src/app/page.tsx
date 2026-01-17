@@ -17,9 +17,11 @@ import LoadingState from "@/components/LoadingState";
 import EmptyState from "@/components/EmptyState";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import RateLimitDisplay from "@/components/RateLimitDisplay";
+import BenchmarkCard from "@/components/BenchmarkCard";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useAnonymousTracking } from "@/hooks/useAnonymousTracking";
 import { useApiKeys } from "@/hooks/useApiKeys";
+import { useBenchmark } from "@/hooks/useBenchmark";
 
 export default function Home(): React.JSX.Element {
   const [url, setUrl] = useState<string>("");
@@ -42,6 +44,12 @@ export default function Home(): React.JSX.Element {
     incrementRequest,
     isLimitReached,
   } = useAnonymousTracking();
+
+  // Fetch benchmark comparison data
+  const {
+    data: benchmarkData,
+    loading: benchmarkLoading,
+  } = useBenchmark(data?.video?.id || null);
 
   // Fetch user's API keys if authenticated
   const {
@@ -256,6 +264,9 @@ export default function Home(): React.JSX.Element {
 
                 {/* Metrics Grid */}
                 <MetricsGrid metrics={data.metrics} />
+
+                {/* Benchmark Card */}
+                <BenchmarkCard data={benchmarkData} isLoading={benchmarkLoading} />
 
                 {/* Charts Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

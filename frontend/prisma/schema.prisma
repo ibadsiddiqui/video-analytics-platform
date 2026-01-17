@@ -153,8 +153,8 @@ model User {
 
   // Relations - placeholders for future phases
   apiKeys         UserApiKey[]
+  competitors     CompetitorTrack[]    // Phase 2.1
   // analyses        VideoAnalysis[]      // Phase 2+
-  // competitors     CompetitorTrack[]    // Phase 2
   // campaigns       Campaign[]           // Phase 9
   // alerts          Alert[]              // Phase 7
   // reports         Report[]             // Phase 11
@@ -193,5 +193,104 @@ model UserApiKey {
   updatedAt       DateTime  @updatedAt
 
   @@index([userId])
+  @@index([platform])
+}
+
+// ============================================
+// Phase 2.1: Competitor Tracking & Benchmarks
+// ============================================
+
+enum VideoNiche {
+  GAMING
+  TECH
+  BEAUTY
+  VLOGS
+  EDUCATION
+  MUSIC
+  SPORTS
+  ENTERTAINMENT
+  COOKING
+  TRAVEL
+  BUSINESS
+  HEALTH
+  OTHER
+}
+
+// Tracks competitor channels for a user (Phase 2.1)
+model CompetitorTrack {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  platform        Platform
+  channelId       String
+  channelName     String
+  channelUrl      String
+  thumbnailUrl    String?
+  niche           VideoNiche
+
+  // Latest metrics (updated periodically)
+  subscriberCount BigInt    @default(0)
+  videoCount      Int       @default(0)
+  totalViews      BigInt    @default(0)
+  avgEngagement   Float?
+
+  // Status and tracking
+  isActive        Boolean   @default(true)
+  firstTrackedAt  DateTime  @default(now())
+  lastCheckedAt   DateTime?
+  lastFetchedAt   DateTime  @default(now())
+
+  // Relations
+  snapshots       CompetitorSnapshot[]
+
+  @@unique([userId, platform, channelId])
+  @@index([userId])
+  @@index([userId, isActive])
+}
+
+// Daily snapshots of competitor metrics (Phase 2.1)
+model CompetitorSnapshot {
+  id              String    @id @default(cuid())
+  competitorId    String
+  competitor      CompetitorTrack @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+
+  // Snapshot metrics
+  subscriberCount BigInt
+  videoCount      Int
+  totalViews      BigInt
+  recentVideos    Json?     // Last 5 video performance data
+  avgEngagement   Float?
+
+  // Recording
+  recordedAt      DateTime  @default(now())
+
+  @@index([competitorId, recordedAt])
+  @@index([recordedAt])
+}
+
+// Aggregate benchmark metrics by niche (Phase 2.1)
+model Benchmark {
+  id              String    @id @default(cuid())
+  platform        Platform
+  niche           VideoNiche
+
+  // Aggregate metrics (calculated from snapshots)
+  avgViewCount    BigInt    @default(0)
+  avgLikeCount    BigInt    @default(0)
+  avgCommentCount BigInt    @default(0)
+  avgEngagementRate Float   @default(0)
+
+  // Percentile data (JSON: {p10: 100, p25: 500, p50: 1000, p75: 5000, p90: 10000})
+  viewPercentiles Json?
+  engagementPercentiles Json?
+
+  // Sample size
+  sampleSize      Int       @default(0)
+
+  // Last updated
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([platform, niche])
   @@index([platform])
 }

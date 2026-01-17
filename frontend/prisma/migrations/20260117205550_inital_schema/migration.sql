@@ -7,6 +7,9 @@ CREATE TYPE "Sentiment" AS ENUM ('POSITIVE', 'NEUTRAL', 'NEGATIVE');
 -- CreateEnum
 CREATE TYPE "UserTier" AS ENUM ('FREE', 'CREATOR', 'PRO', 'AGENCY');
 
+-- CreateEnum
+CREATE TYPE "VideoNiche" AS ENUM ('GAMING', 'TECH', 'BEAUTY', 'VLOGS', 'EDUCATION', 'MUSIC', 'SPORTS', 'ENTERTAINMENT', 'COOKING', 'TRAVEL', 'BUSINESS', 'HEALTH', 'OTHER');
+
 -- CreateTable
 CREATE TABLE "Video" (
     "id" TEXT NOT NULL,
@@ -117,6 +120,59 @@ CREATE TABLE "UserApiKey" (
     CONSTRAINT "UserApiKey_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "CompetitorTrack" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "platform" "Platform" NOT NULL,
+    "channelId" TEXT NOT NULL,
+    "channelName" TEXT NOT NULL,
+    "channelUrl" TEXT NOT NULL,
+    "thumbnailUrl" TEXT,
+    "niche" "VideoNiche" NOT NULL,
+    "subscriberCount" BIGINT NOT NULL DEFAULT 0,
+    "videoCount" INTEGER NOT NULL DEFAULT 0,
+    "totalViews" BIGINT NOT NULL DEFAULT 0,
+    "avgEngagement" DOUBLE PRECISION,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "firstTrackedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "lastCheckedAt" TIMESTAMP(3),
+    "lastFetchedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "CompetitorTrack_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CompetitorSnapshot" (
+    "id" TEXT NOT NULL,
+    "competitorId" TEXT NOT NULL,
+    "subscriberCount" BIGINT NOT NULL,
+    "videoCount" INTEGER NOT NULL,
+    "totalViews" BIGINT NOT NULL,
+    "recentVideos" JSONB,
+    "avgEngagement" DOUBLE PRECISION,
+    "recordedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "CompetitorSnapshot_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Benchmark" (
+    "id" TEXT NOT NULL,
+    "platform" "Platform" NOT NULL,
+    "niche" "VideoNiche" NOT NULL,
+    "avgViewCount" BIGINT NOT NULL DEFAULT 0,
+    "avgLikeCount" BIGINT NOT NULL DEFAULT 0,
+    "avgCommentCount" BIGINT NOT NULL DEFAULT 0,
+    "avgEngagementRate" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "viewPercentiles" JSONB,
+    "engagementPercentiles" JSONB,
+    "sampleSize" INTEGER NOT NULL DEFAULT 0,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Benchmark_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Video_platformVideoId_key" ON "Video"("platformVideoId");
 
@@ -159,6 +215,27 @@ CREATE INDEX "UserApiKey_userId_idx" ON "UserApiKey"("userId");
 -- CreateIndex
 CREATE INDEX "UserApiKey_platform_idx" ON "UserApiKey"("platform");
 
+-- CreateIndex
+CREATE INDEX "CompetitorTrack_userId_idx" ON "CompetitorTrack"("userId");
+
+-- CreateIndex
+CREATE INDEX "CompetitorTrack_userId_isActive_idx" ON "CompetitorTrack"("userId", "isActive");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "CompetitorTrack_userId_platform_channelId_key" ON "CompetitorTrack"("userId", "platform", "channelId");
+
+-- CreateIndex
+CREATE INDEX "CompetitorSnapshot_competitorId_recordedAt_idx" ON "CompetitorSnapshot"("competitorId", "recordedAt");
+
+-- CreateIndex
+CREATE INDEX "CompetitorSnapshot_recordedAt_idx" ON "CompetitorSnapshot"("recordedAt");
+
+-- CreateIndex
+CREATE INDEX "Benchmark_platform_idx" ON "Benchmark"("platform");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Benchmark_platform_niche_key" ON "Benchmark"("platform", "niche");
+
 -- AddForeignKey
 ALTER TABLE "Analytics" ADD CONSTRAINT "Analytics_videoId_fkey" FOREIGN KEY ("videoId") REFERENCES "Video"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -167,3 +244,9 @@ ALTER TABLE "Comment" ADD CONSTRAINT "Comment_videoId_fkey" FOREIGN KEY ("videoI
 
 -- AddForeignKey
 ALTER TABLE "UserApiKey" ADD CONSTRAINT "UserApiKey_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CompetitorTrack" ADD CONSTRAINT "CompetitorTrack_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CompetitorSnapshot" ADD CONSTRAINT "CompetitorSnapshot_competitorId_fkey" FOREIGN KEY ("competitorId") REFERENCES "CompetitorTrack"("id") ON DELETE CASCADE ON UPDATE CASCADE;

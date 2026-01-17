@@ -30,6 +30,27 @@ const nextConfig = {
     // Allow unoptimized images for better compatibility with proxied images
     unoptimized: false,
   },
+
+  // Webpack configuration to handle optional dependencies from 'natural' package
+  webpack: (config, { isServer }) => {
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      {
+        module: /node_modules\/apparatus/,
+      },
+      {
+        module: /node_modules\/natural/,
+      },
+      {
+        module: /lapack/,
+      },
+      {
+        module: /webworker-threads/,
+      },
+    ];
+
+    return config;
+  },
 };
 
 module.exports = nextConfig;

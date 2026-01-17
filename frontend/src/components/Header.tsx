@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { BarChart3, Sparkles, Settings } from "lucide-react";
+import { BarChart3, Sparkles, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import AuthButton from "@/components/AuthButton";
@@ -64,6 +64,20 @@ function Header() {
                 {isSignedIn ? "Upgrade" : "Pro Features"}
               </span>
             </Link>
+
+            {/* Competitors Link (authenticated users only) */}
+            {isSignedIn && (
+              <Link
+                href={ROUTES.COMPETITORS}
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all duration-300 cursor-pointer"
+                title="Track competitors"
+              >
+                <Users className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-700">
+                  Competitors
+                </span>
+              </Link>
+            )}
 
             {/* Settings Link (authenticated users only) */}
             {isSignedIn && (
