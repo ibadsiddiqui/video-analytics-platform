@@ -37,7 +37,10 @@ export async function checkTierAccess(
     if (!user) {
       return {
         hasAccess: false,
-        error: NextResponse.json({ error: 'User not found' }, { status: 404 }),
+        error: NextResponse.json(
+          { error: 'User not found' },
+          { status: 404 }
+        ),
       };
     }
 

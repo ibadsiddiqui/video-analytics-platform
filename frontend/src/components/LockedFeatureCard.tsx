@@ -21,7 +21,7 @@ export default function LockedFeatureCard({
         {feature} - {requiredTier} Feature
       </p>
       <Link href={ROUTES.PRO_FEATURES}>
-        <button className="text-sm px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors">
+        <button className="text-sm px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
           Upgrade to Unlock
         </button>
       </Link>

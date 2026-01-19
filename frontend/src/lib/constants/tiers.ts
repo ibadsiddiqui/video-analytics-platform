@@ -35,34 +35,21 @@ export const TIER_CONFIG = {
   PRO: {
     name: 'Pro',
     dailyLimit: 500,
-    features: [
-      'All Creator features',
-      'Competitor tracking',
-      'Benchmark comparisons',
-      '500 analyses/day',
-    ],
+    features: ['All Creator features', 'Competitor tracking', 'Benchmark comparisons', '500 analyses/day'],
     color: 'amber',
     badge: 'Pro',
   },
   AGENCY: {
     name: 'Agency',
     dailyLimit: 2000,
-    features: [
-      'All Pro features',
-      'Unlimited competitors',
-      'Priority support',
-      '2,000 analyses/day',
-    ],
+    features: ['All Pro features', 'Unlimited competitors', 'Priority support', '2,000 analyses/day'],
     color: 'purple',
     badge: 'Agency',
   },
 } as const;
 
 // Helper function to check tier access
-export function hasFeatureAccess(
-  userTier: UserTier | undefined,
-  feature: keyof typeof TIER_FEATURES
-): boolean {
+export function hasFeatureAccess(userTier: UserTier | undefined, feature: keyof typeof TIER_FEATURES): boolean {
   if (!userTier) return false;
   return TIER_FEATURES[feature].includes(userTier);
 }
