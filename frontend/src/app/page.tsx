@@ -18,6 +18,8 @@ import EmptyState from "@/components/EmptyState";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import RateLimitDisplay from "@/components/RateLimitDisplay";
 import BenchmarkCard from "@/components/BenchmarkCard";
+import ViralPotentialCard from "@/components/ViralPotentialCard";
+import PostingTimeHeatmap from "@/components/PostingTimeHeatmap";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useAnonymousTracking } from "@/hooks/useAnonymousTracking";
 import { useApiKeys } from "@/hooks/useApiKeys";
@@ -267,6 +269,20 @@ export default function Home(): React.JSX.Element {
 
                 {/* Benchmark Card */}
                 <BenchmarkCard data={benchmarkData} isLoading={benchmarkLoading} />
+
+                {/* Phase 3: Predictive Analytics */}
+                {data.predictive && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <ViralPotentialCard
+                      data={data.predictive.viralPotential || null}
+                      isLoading={false}
+                    />
+                    <PostingTimeHeatmap
+                      userId={user?.id}
+                      niche={data.video?.title}
+                    />
+                  </div>
+                )}
 
                 {/* Charts Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

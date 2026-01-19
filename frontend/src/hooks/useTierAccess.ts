@@ -21,5 +21,8 @@ export function useTierAccess() {
     canManageApiKeys: checkAccess('API_KEY_MANAGEMENT'),
     canTrackCompetitors: checkAccess('COMPETITOR_TRACKING'),
     canUseBenchmarks: checkAccess('BENCHMARK_COMPARISONS'),
+    // Phase 3 features
+    canUseViralScore: checkAccess('VIRAL_SCORE'),
+    canUsePostingTimeOptimizer: checkAccess('POSTING_TIME_OPTIMIZER'),
   };
 }

@@ -62,6 +62,23 @@ interface AnalyticsData {
     genderSplit: { male: number; female: number };
   };
   topComments: any[];
+  // Phase 3: Predictive Analytics
+  predictive?: {
+    viralPotential?: {
+      score: number;
+      factors: {
+        velocityScore: number;
+        sentimentScore: number;
+        commentVelocityScore: number;
+        likeRatioScore: number;
+      };
+      explanation: string;
+      prediction: 'viral' | 'high_potential' | 'moderate' | 'low';
+    } | null;
+    availableFeatures?: string[];
+    locked?: boolean;
+    requiredTier?: string;
+  };
   meta: {
     fetchedAt: string;
     fromCache: boolean;
