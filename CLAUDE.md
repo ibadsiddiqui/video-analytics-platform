@@ -72,16 +72,30 @@ frontend/
 │   │       ├── auth/
 │   │       │   ├── webhook/route.ts     # Clerk user sync webhook
 │   │       │   └── me/route.ts          # Get current user profile
-│   │       └── keys/
-│   │           ├── route.ts             # List/create API keys
-│   │           └── [id]/
-│   │               ├── route.ts         # Get/update/delete API key
-│   │               └── test/route.ts    # Test API key
+│   │       ├── keys/
+│   │       │   ├── route.ts             # List/create API keys
+│   │       │   └── [id]/
+│   │       │       ├── route.ts         # Get/update/delete API key
+│   │       │       └── test/route.ts    # Test API key
+│   │       ├── predictive/
+│   │       │   └── posting-times/route.ts # Optimal posting time recommendations
+│   │       ├── competitors/
+│   │       │   ├── route.ts             # List/create competitors
+│   │       │   └── [id]/route.ts        # Get/delete competitor
+│   │       └── benchmarks/
+│   │           ├── route.ts             # Get benchmarks
+│   │           ├── calculate/route.ts   # Calculate benchmarks
+│   │           └── compare/route.ts     # Compare video to benchmark
 │   │
 │   ├── components/            # React components
 │   │   ├── SearchBar.tsx     # Video URL input
 │   │   ├── VideoPreview.tsx  # Video metadata display
 │   │   ├── MetricsGrid.tsx   # Key metrics cards
+│   │   ├── ViralPotentialCard.tsx   # Viral score display (Phase 3)
+│   │   ├── PostingTimeHeatmap.tsx   # Posting time recommendations (Phase 3)
+│   │   ├── BenchmarkCard.tsx        # Benchmark comparison display
+│   │   ├── LockedFeatureCard.tsx    # Locked feature UI for tier gating
+│   │   ├── LockedFeatureBanner.tsx  # Full-page locked state
 │   │   ├── charts/           # Recharts visualizations
 │   │   │   ├── EngagementChart.tsx
 │   │   │   ├── SentimentChart.tsx
@@ -91,7 +105,8 @@ frontend/
 │   ├── hooks/                # Custom React hooks
 │   │   ├── useAnalytics.ts  # Video analytics API calls
 │   │   ├── useApiKeys.ts    # API key management
-│   │   └── useUserProfile.ts # User profile data
+│   │   ├── useUserProfile.ts # User profile data
+│   │   └── useTierAccess.ts # Tier-based feature access checking
 │   │
 │   └── lib/                  # Server-side business logic
 │       ├── prisma.ts         # PrismaClient singleton
@@ -101,11 +116,18 @@ frontend/
 │       │   ├── instagram.ts  # Instagram API integration
 │       │   ├── sentiment.ts  # Sentiment analysis
 │       │   ├── cache.ts      # Redis caching utilities
-│       │   └── encryption.ts # API key encryption (AES-256-GCM)
+│       │   ├── encryption.ts # API key encryption (AES-256-GCM)
+│       │   ├── viral-predictor.ts    # Viral potential score calculation
+│       │   ├── posting-time-optimizer.ts # Optimal posting time recommendations
+│       │   ├── benchmark.ts  # Niche benchmark comparisons
+│       │   └── competitor.ts # Competitor tracking service
 │       ├── utils/            # Utility functions
 │       │   ├── platform-detector.ts # Detect video platform from URL
 │       │   ├── rate-limiter.ts      # Anonymous rate limiting
+│       │   ├── tier-access.ts       # Server-side tier access checking
 │       │   └── formatters.ts        # Number/duration formatting
+│       ├── constants/        # Configuration constants
+│       │   └── tiers.ts      # Tier features and limits configuration
 │       └── types/            # TypeScript types and interfaces
 │
 ├── prisma/
@@ -288,6 +310,33 @@ engagementRate = ((likes + comments) / views) * 100
 - Overall sentiment determined by majority classification
 - Applied to all comments, top 10 displayed in UI
 
+### Predictive Analytics (Phase 3)
+
+**Viral Potential Score:**
+- Statistical algorithm (0-100) predicting video virality
+- Weighted scoring formula:
+  - Engagement Velocity (40%): Views/hour vs. niche benchmark
+  - Sentiment Momentum (20%): Positive sentiment % vs. niche average
+  - Comment Velocity (20%): Comments/hour vs. benchmark
+  - Like Ratio (20%): Likes/views vs. niche average
+- Prediction categories: viral (80+), high_potential (60-79), moderate (40-59), low (<40)
+- Service: `src/lib/services/viral-predictor.ts`
+- Component: `src/components/ViralPotentialCard.tsx`
+
+**Optimal Posting Time:**
+- Analyzes user's historical video posting performance
+- Groups videos by day of week and 2-hour time slots
+- Ranks slots by average engagement rate
+- Confidence levels based on sample size (high: 5+, medium: 3-4, low: 1-2 videos)
+- Service: `src/lib/services/posting-time-optimizer.ts`
+- Component: `src/components/PostingTimeHeatmap.tsx`
+- API: `GET /api/predictive/posting-times?niche={niche}`
+
+**Tier Access:**
+- Both features restricted to PRO and AGENCY tiers
+- Server-side enforcement via `checkTierAccess()` in `src/lib/utils/tier-access.ts`
+- Client-side checking via `useTierAccess()` hook with `canUseViralScore` and `canUsePostingTimeOptimizer`
+
 ### Data Formatting
 - Numbers formatted with K/M/B suffixes (handled in `analytics.service.formatNumber()`)
 - Duration formatted as HH:MM:SS (handled in `analytics.service.formatDuration()`)
@@ -424,6 +473,14 @@ curl http://localhost:3000/api/history/{videoId}
 
 # Detect platform
 curl http://localhost:3000/api/detect-platform?url=https://www.youtube.com/watch?v=abc
+
+# Get posting time recommendations (PRO+ tier, requires auth)
+curl http://localhost:3000/api/predictive/posting-times?niche=GAMING \
+  -H "Authorization: Bearer <clerk-token>"
+
+# Get benchmarks (PRO+ tier, requires auth)
+curl http://localhost:3000/api/benchmarks?platform=YOUTUBE&niche=GAMING \
+  -H "Authorization: Bearer <clerk-token>"
 ```
 
 ## Important Constraints
