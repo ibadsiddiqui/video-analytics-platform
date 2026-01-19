@@ -6,6 +6,33 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { getDailyLimit } from "@/lib/utils/request-tracker";
+
+/**
+ * Get the start of the current day (midnight) in UTC
+ */
+function getStartOfDay(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
+
+/**
+ * Get the start of the next day (midnight) in UTC
+ */
+function getEndOfDay(): Date {
+  const startOfDay = getStartOfDay();
+  return new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
+}
+
+/**
+ * Check if a date is from today
+ */
+function isToday(date: Date | null): boolean {
+  if (!date) return false;
+  const startOfDay = getStartOfDay();
+  const endOfDay = getEndOfDay();
+  return date >= startOfDay && date < endOfDay;
+}
 
 export async function GET() {
   try {
@@ -36,28 +63,22 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Calculate remaining requests
-    const tierLimits: Record<string, number> = {
-      FREE: 5,
-      CREATOR: 100,
-      PRO: 500,
-      AGENCY: 2000,
-    };
+    // Calculate remaining requests using the centralized tier limits
+    const dailyLimit = getDailyLimit(user.tier);
 
-    const dailyLimit = tierLimits[user.tier] || 5;
-    const today = new Date().toDateString();
-    const lastRequest = user.lastRequestDate?.toDateString();
+    // Check if last request was today using UTC dates
+    const isRequestFromToday = isToday(user.lastRequestDate);
+    const currentCount = isRequestFromToday ? user.dailyRequests : 0;
 
-    const remainingRequests =
-      lastRequest === today
-        ? Math.max(0, dailyLimit - user.dailyRequests)
-        : dailyLimit;
+    const remainingRequests = Math.max(0, dailyLimit - currentCount);
 
     return NextResponse.json({
       user,
       rateLimit: {
         limit: dailyLimit,
         remaining: remainingRequests,
+        used: currentCount,
+        resetAt: getEndOfDay().toISOString(),
         tier: user.tier,
       },
     });

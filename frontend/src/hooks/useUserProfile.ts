@@ -45,10 +45,11 @@ export function useUserProfile(): UseUserProfileReturn {
       });
 
       // Map the nested response structure correctly
+      // Use rateLimit.used (calculated from today's requests) instead of raw dailyRequests
       const profileData: UserProfile = {
         email: response.data.user.email,
         tier: response.data.user.tier,
-        dailyRequests: response.data.user.dailyRequests,
+        dailyRequests: response.data.rateLimit.used ?? response.data.user.dailyRequests,
         dailyLimit: response.data.rateLimit.limit,
         firstName: response.data.user.firstName,
         lastName: response.data.user.lastName,
