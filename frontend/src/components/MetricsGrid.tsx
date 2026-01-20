@@ -50,9 +50,9 @@ function MetricCard({ config, value, formattedValue, index }) {
       transition={{ duration: 0.4, delay: index * 0.1 }}
       className="metric-card group hover:scale-[1.02] transition-transform duration-300"
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className={`p-3 rounded-xl ${config.bgColor}`}>
-          <Icon className={`w-6 h-6 ${config.iconColor}`} />
+      <div className="flex items-start justify-between mb-3 sm:mb-4">
+        <div className={`p-2 sm:p-3 rounded-xl ${config.bgColor}`}>
+          <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${config.iconColor}`} />
         </div>
         <div
           className={`h-2 w-2 rounded-full bg-gradient-to-r ${config.color} opacity-60 group-hover:opacity-100 transition-opacity`}
@@ -60,10 +60,12 @@ function MetricCard({ config, value, formattedValue, index }) {
       </div>
 
       <div className="space-y-1">
-        <div className="text-3xl font-bold text-slate-900">
+        <div className="text-2xl sm:text-3xl font-bold text-slate-900">
           {formattedValue}
         </div>
-        <div className="text-sm text-slate-500 font-medium">{config.label}</div>
+        <div className="text-xs sm:text-sm text-slate-500 font-medium">
+          {config.label}
+        </div>
       </div>
 
       {/* Subtle gradient decoration */}
@@ -78,7 +80,7 @@ function MetricsGrid({ metrics }) {
   if (!metrics) return null;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
       {metricConfig.map((config, index) => {
         const rawValue = metrics[config.key];
         const formattedValue = config.isPercent

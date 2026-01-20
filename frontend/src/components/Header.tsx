@@ -1,8 +1,16 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
-import { BarChart3, Sparkles, Settings, Users, Lock } from "lucide-react";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  BarChart3,
+  Sparkles,
+  Settings,
+  Users,
+  Lock,
+  Menu,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import AuthButton from "@/components/AuthButton";
@@ -12,6 +20,7 @@ import { useTierAccess } from "@/hooks/useTierAccess";
 function Header() {
   const { isSignedIn } = useUser();
   const { canTrackCompetitors, loading: tierLoading } = useTierAccess();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <header className="border-b border-slate-200/80 bg-white/50 backdrop-blur-lg sticky top-0 z-50">
@@ -70,16 +79,24 @@ function Header() {
             {/* Competitors Link (authenticated users only) */}
             {isSignedIn && (
               <Link
-                href={canTrackCompetitors ? ROUTES.COMPETITORS : ROUTES.PRO_FEATURES}
+                href={
+                  canTrackCompetitors ? ROUTES.COMPETITORS : ROUTES.PRO_FEATURES
+                }
                 className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-300 cursor-pointer ${
                   canTrackCompetitors
-                    ? 'bg-blue-50 border border-blue-200 hover:bg-blue-100 hover:border-blue-300'
-                    : 'bg-slate-50 border border-slate-200 hover:bg-slate-100 opacity-60'
+                    ? "bg-blue-50 border border-blue-200 hover:bg-blue-100 hover:border-blue-300"
+                    : "bg-slate-50 border border-slate-200 hover:bg-slate-100 opacity-60"
                 }`}
-                title={canTrackCompetitors ? 'Track competitors' : 'Upgrade to PRO to unlock'}
+                title={
+                  canTrackCompetitors
+                    ? "Track competitors"
+                    : "Upgrade to PRO to unlock"
+                }
               >
                 <Users className="w-4 h-4 text-blue-600" />
-                <span className={`text-sm font-medium ${canTrackCompetitors ? 'text-blue-700' : 'text-slate-700'}`}>
+                <span
+                  className={`text-sm font-medium ${canTrackCompetitors ? "text-blue-700" : "text-slate-700"}`}
+                >
                   Competitors
                 </span>
                 {!tierLoading && !canTrackCompetitors && (
@@ -102,11 +119,89 @@ function Header() {
               </Link>
             )}
 
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="sm:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5 text-slate-600" />
+              ) : (
+                <Menu className="w-5 h-5 text-slate-600" />
+              )}
+            </button>
+
             <div className="border-l border-slate-200/80 pl-4">
               <AuthButton />
             </div>
           </motion.div>
         </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="sm:hidden border-t border-slate-200/80 py-3"
+            >
+              <div className="flex flex-col gap-2">
+                <Link
+                  href={ROUTES.PRO_FEATURES}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg hover:from-amber-100 hover:to-orange-100 transition-all duration-300"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  <span className="text-sm font-medium text-amber-700">
+                    {isSignedIn ? "Upgrade" : "Pro Features"}
+                  </span>
+                </Link>
+
+                {isSignedIn && (
+                  <>
+                    <Link
+                      href={
+                        canTrackCompetitors
+                          ? ROUTES.COMPETITORS
+                          : ROUTES.PRO_FEATURES
+                      }
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all duration-300 ${
+                        canTrackCompetitors
+                          ? "bg-blue-50 border border-blue-200 hover:bg-blue-100"
+                          : "bg-slate-50 border border-slate-200 hover:bg-slate-100 opacity-60"
+                      }`}
+                    >
+                      <Users className="w-4 h-4 text-blue-600" />
+                      <span
+                        className={`text-sm font-medium ${canTrackCompetitors ? "text-blue-700" : "text-slate-700"}`}
+                      >
+                        Competitors
+                      </span>
+                      {!tierLoading && !canTrackCompetitors && (
+                        <Lock className="w-3 h-3 text-slate-400 ml-auto" />
+                      )}
+                    </Link>
+
+                    <Link
+                      href={ROUTES.SETTINGS.HOME}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 transition-all duration-300"
+                    >
+                      <Settings className="w-4 h-4 text-slate-600" />
+                      <span className="text-sm font-medium text-slate-700">
+                        Settings
+                      </span>
+                    </Link>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </header>
   );

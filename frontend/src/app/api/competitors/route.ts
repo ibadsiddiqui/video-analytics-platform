@@ -5,19 +5,19 @@
  * Phase 2.1: Competitor Tracking
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import { prisma } from '@/lib/prisma';
-import CompetitorService from '@/lib/services/competitor';
-import { Platform } from '@prisma/client';
-import { checkTierAccess } from '@/lib/utils/tier-access';
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
+import CompetitorService from "@/lib/services/competitor";
+import { Platform } from "@prisma/client";
+import { checkTierAccess } from "@/lib/utils/tier-access";
 
 // GET /api/competitors
 // Fetch all competitors for authenticated user
 export async function GET(request: NextRequest) {
   try {
     // Check tier access
-    const tierCheck = await checkTierAccess('COMPETITOR_TRACKING');
+    const tierCheck = await checkTierAccess("COMPETITOR_TRACKING");
     if (!tierCheck.hasAccess) {
       return tierCheck.error!;
     }
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Verify user exists in database
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Fetch competitors
@@ -45,10 +45,10 @@ export async function GET(request: NextRequest) {
       data: competitors,
     });
   } catch (error) {
-    console.error('Get competitors error:', error);
+    console.error("Get competitors error:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch competitors' },
-      { status: 500 }
+      { error: "Failed to fetch competitors" },
+      { status: 500 },
     );
   }
 }
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check tier access
-    const tierCheck = await checkTierAccess('COMPETITOR_TRACKING');
+    const tierCheck = await checkTierAccess("COMPETITOR_TRACKING");
     if (!tierCheck.hasAccess) {
       return tierCheck.error!;
     }
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Verify user exists
@@ -75,41 +75,36 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const body = await request.json();
-    const {
-      platform,
-      channelId,
-      channelName,
-      channelUrl,
-      thumbnailUrl,
-    } = body as {
-      platform?: Platform;
-      channelId?: string;
-      channelName?: string;
-      channelUrl?: string;
-      thumbnailUrl?: string;
-    };
+    const { platform, channelId, channelName, channelUrl, thumbnailUrl } =
+      body as {
+        platform?: Platform;
+        channelId?: string;
+        channelName?: string;
+        channelUrl?: string;
+        thumbnailUrl?: string;
+      };
 
     // Validate inputs
     if (!platform || !channelId || !channelName || !channelUrl) {
       return NextResponse.json(
         {
-          error: 'Missing required fields',
-          required: ['platform', 'channelId', 'channelName', 'channelUrl'],
+          error: "Missing required fields",
+          required: ["platform", "channelId", "channelName", "channelUrl"],
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Validate platform
-    const validPlatforms = ['YOUTUBE', 'INSTAGRAM'];
+    const validPlatforms = ["YOUTUBE", "INSTAGRAM"];
     if (!validPlatforms.includes(platform)) {
       return NextResponse.json(
-        { error: 'Invalid platform', validPlatforms },
-        { status: 400 }
+        { error: "Invalid platform", validPlatforms },
+        { status: 400 },
       );
     }
 
@@ -120,13 +115,13 @@ export async function POST(request: NextRequest) {
       channelId,
       channelName,
       channelUrl,
-      thumbnailUrl
+      thumbnailUrl,
     );
 
     if (!competitor) {
       return NextResponse.json(
-        { error: 'Failed to add competitor' },
-        { status: 500 }
+        { error: "Failed to add competitor" },
+        { status: 500 },
       );
     }
 
@@ -136,15 +131,15 @@ export async function POST(request: NextRequest) {
         data: competitor,
         message: `Now tracking ${channelName}`,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error: any) {
-    console.error('Add competitor error:', error);
+    console.error("Add competitor error:", error);
     return NextResponse.json(
       {
-        error: error.message || 'Failed to add competitor',
+        error: error.message || "Failed to add competitor",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }

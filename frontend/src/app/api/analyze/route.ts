@@ -38,7 +38,11 @@ async function applyCommentLimit(result: any, userId: string | null) {
   const commentLimit = getCommentLimit(userTier);
 
   // Apply limit (-1 means unlimited)
-  if (commentLimit !== -1 && result.topComments && result.topComments.length > commentLimit) {
+  if (
+    commentLimit !== -1 &&
+    result.topComments &&
+    result.topComments.length > commentLimit
+  ) {
     result.topComments = result.topComments.slice(0, commentLimit);
     result.commentsLimited = true;
     result.commentLimit = commentLimit;
@@ -47,7 +51,10 @@ async function applyCommentLimit(result: any, userId: string | null) {
   return result;
 }
 
-async function enrichWithPredictiveAnalytics(result: any, userId: string | null) {
+async function enrichWithPredictiveAnalytics(
+  result: any,
+  userId: string | null,
+) {
   try {
     // Check tier access for predictive features (PRO+ only)
     const tierCheck = await checkTierAccess("VIRAL_SCORE");
@@ -75,7 +82,10 @@ async function enrichWithPredictiveAnalytics(result: any, userId: string | null)
 
     if (!videoDb) {
       // Create video record if it doesn't exist
-      const niche = NicheDetector.detect(result.video.title || "", result.video.description || "");
+      const niche = NicheDetector.detect(
+        result.video.title || "",
+        result.video.description || "",
+      );
       await prisma.video.create({
         data: {
           platform: result.video.platform.toUpperCase() as any,
@@ -86,7 +96,9 @@ async function enrichWithPredictiveAnalytics(result: any, userId: string | null)
           thumbnailUrl: result.video.thumbnail,
           channelName: result.channel.name,
           channelId: result.channel.id,
-          publishedAt: result.video.publishedAt ? new Date(result.video.publishedAt) : null,
+          publishedAt: result.video.publishedAt
+            ? new Date(result.video.publishedAt)
+            : null,
           duration: result.video.duration,
           viewCount: BigInt(result.metrics.views),
           likeCount: BigInt(result.metrics.likes),
@@ -109,7 +121,9 @@ async function enrichWithPredictiveAnalytics(result: any, userId: string | null)
     }
 
     // Calculate viral potential
-    const viralPotential = await ViralPredictorService.calculateViralPotential(videoDb.id);
+    const viralPotential = await ViralPredictorService.calculateViralPotential(
+      videoDb.id,
+    );
 
     result.predictive = {
       viralPotential,
@@ -160,14 +174,16 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: "Daily request limit reached. Please upgrade your plan for more requests.",
+            error:
+              "Daily request limit reached. Please upgrade your plan for more requests.",
           },
           { status: 429, headers },
         );
       }
     } else if (userId && isUsingOwnApiKey) {
       // Still get rate limit status for display purposes, but don't track
-      const { getRateLimitStatus } = await import("@/lib/utils/request-tracker");
+      const { getRateLimitStatus } =
+        await import("@/lib/utils/request-tracker");
       rateLimitResult = await getRateLimitStatus(userId);
     }
 
@@ -184,7 +200,10 @@ export async function POST(request: NextRequest) {
     const limitedResult = await applyCommentLimit(result, userId || null);
 
     // Enrich with predictive analytics
-    const enrichedResult = await enrichWithPredictiveAnalytics(limitedResult, userId || null);
+    const enrichedResult = await enrichWithPredictiveAnalytics(
+      limitedResult,
+      userId || null,
+    );
 
     // Create response with rate limit headers
     const responseHeaders = rateLimitResult
@@ -245,14 +264,16 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: "Daily request limit reached. Please upgrade your plan for more requests.",
+            error:
+              "Daily request limit reached. Please upgrade your plan for more requests.",
           },
           { status: 429, headers },
         );
       }
     } else if (userId && isUsingOwnApiKey) {
       // Still get rate limit status for display purposes, but don't track
-      const { getRateLimitStatus } = await import("@/lib/utils/request-tracker");
+      const { getRateLimitStatus } =
+        await import("@/lib/utils/request-tracker");
       rateLimitResult = await getRateLimitStatus(userId);
     }
 
@@ -269,7 +290,10 @@ export async function GET(request: NextRequest) {
     const limitedResult = await applyCommentLimit(result, userId || null);
 
     // Enrich with predictive analytics
-    const enrichedResult = await enrichWithPredictiveAnalytics(limitedResult, userId || null);
+    const enrichedResult = await enrichWithPredictiveAnalytics(
+      limitedResult,
+      userId || null,
+    );
 
     // Create response with rate limit headers
     const responseHeaders = rateLimitResult

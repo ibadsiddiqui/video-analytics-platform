@@ -67,17 +67,17 @@ function SearchBar({
   const platform = detectPlatform(url);
 
   return (
-    <div className="text-center mb-8">
+    <div className="text-center mb-6 sm:mb-8">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
       >
-        <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-2 sm:mb-3 px-2">
           Analyze Any Video
           <span className="gradient-text"> Instantly</span>
         </h2>
-        <p className="text-slate-600 max-w-xl mx-auto mb-8">
+        <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto mb-4 sm:mb-6 md:mb-8 px-4">
           Paste a YouTube or Instagram video URL to get comprehensive analytics
           including views, engagement, sentiment analysis, and audience
           insights.
@@ -93,40 +93,43 @@ function SearchBar({
       >
         <div
           className={`
-            relative flex items-center gap-3 p-2 bg-white rounded-2xl border-2 transition-all duration-300
+            relative flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 p-2 bg-white rounded-2xl border-2 transition-all duration-300
             ${focused ? "border-primary-500 shadow-lg shadow-primary-500/20" : "border-slate-200 shadow-soft"}
           `}
         >
-          {/* Platform icon */}
-          <div className="pl-4">
-            {platform === "youtube" ? (
-              <Youtube className="w-6 h-6 text-red-500" />
-            ) : platform === "instagram" ? (
-              <Instagram className="w-6 h-6 text-pink-500" />
-            ) : (
-              <Link2 className="w-6 h-6 text-slate-400" />
-            )}
-          </div>
+          {/* Input row */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-1">
+            {/* Platform icon */}
+            <div className="pl-2 sm:pl-4">
+              {platform === "youtube" ? (
+                <Youtube className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
+              ) : platform === "instagram" ? (
+                <Instagram className="w-5 h-5 sm:w-6 sm:h-6 text-pink-500" />
+              ) : (
+                <Link2 className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400" />
+              )}
+            </div>
 
-          {/* Input */}
-          <input
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            placeholder="Paste YouTube or Instagram video URL..."
-            className="flex-1 py-3 px-2 text-slate-900 placeholder-slate-400 bg-transparent outline-none text-lg"
-            disabled={loading}
-          />
+            {/* Input */}
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              placeholder="Paste video URL..."
+              className="flex-1 py-2 sm:py-3 px-1 sm:px-2 text-slate-900 placeholder-slate-400 bg-transparent outline-none text-sm sm:text-base md:text-lg min-w-0"
+              disabled={loading}
+            />
+          </div>
 
           {/* Submit button */}
           <motion.button
             type="submit"
             disabled={loading || !url.trim() || (isLimitReached && !user)}
             className={`
-              flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white
-              transition-all duration-300
+              flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold text-white text-sm sm:text-base
+              transition-all duration-300 w-full sm:w-auto
               ${
                 loading || !url.trim() || (isLimitReached && !user)
                   ? "bg-slate-300 cursor-not-allowed"
@@ -146,17 +149,18 @@ function SearchBar({
           >
             {loading ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Analyzing...</span>
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                <span className="hidden sm:inline">Analyzing...</span>
+                <span className="sm:hidden">Analyze</span>
               </>
             ) : isLimitReached && !user ? (
               <>
-                <AlertCircle className="w-5 h-5" />
+                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span>Limit Reached</span>
               </>
             ) : (
               <>
-                <Search className="w-5 h-5" />
+                <Search className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span>Analyze</span>
               </>
             )}
@@ -164,13 +168,13 @@ function SearchBar({
         </div>
 
         {/* Supported platforms */}
-        <div className="flex items-center justify-center gap-6 mt-4 text-sm text-slate-500">
-          <span className="flex items-center gap-2">
-            <Youtube className="w-4 h-4 text-red-500" />
+        <div className="flex items-center justify-center gap-4 sm:gap-6 mt-3 sm:mt-4 text-xs sm:text-sm text-slate-500">
+          <span className="flex items-center gap-1.5 sm:gap-2">
+            <Youtube className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500" />
             YouTube
           </span>
-          <span className="flex items-center gap-2">
-            <Instagram className="w-4 h-4 text-pink-500" />
+          <span className="flex items-center gap-1.5 sm:gap-2">
+            <Instagram className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500" />
             Instagram
           </span>
         </div>

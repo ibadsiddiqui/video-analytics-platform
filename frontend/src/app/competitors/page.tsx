@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useUser } from '@clerk/nextjs';
-import { Plus, Trash2, TrendingUp, Users, Loader2 } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { useCompetitors } from '@/hooks/useCompetitors';
-import { useTierAccess } from '@/hooks/useTierAccess';
-import Header from '@/components/Header';
-import LockedFeatureBanner from '@/components/LockedFeatureBanner';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useUser } from "@clerk/nextjs";
+import { Plus, Trash2, TrendingUp, Users, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
+import { useCompetitors } from "@/hooks/useCompetitors";
+import { useTierAccess } from "@/hooks/useTierAccess";
+import Header from "@/components/Header";
+import LockedFeatureBanner from "@/components/LockedFeatureBanner";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -29,10 +29,10 @@ export default function CompetitorsPage() {
   const { canTrackCompetitors, loading: tierLoading } = useTierAccess();
   const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState({
-    platform: 'YOUTUBE',
-    channelName: '',
-    channelUrl: '',
-    channelId: '',
+    platform: "YOUTUBE",
+    channelName: "",
+    channelUrl: "",
+    channelId: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -48,7 +48,8 @@ export default function CompetitorsPage() {
               Sign in to track competitors
             </h2>
             <p className="text-slate-600">
-              You need to be logged in to access the competitor tracking dashboard
+              You need to be logged in to access the competitor tracking
+              dashboard
             </p>
           </div>
         </main>
@@ -81,13 +82,13 @@ export default function CompetitorsPage() {
       toast.success(`Added ${formData.channelName} to tracking`);
       setShowAddModal(false);
       setFormData({
-        platform: 'YOUTUBE',
-        channelName: '',
-        channelUrl: '',
-        channelId: '',
+        platform: "YOUTUBE",
+        channelName: "",
+        channelUrl: "",
+        channelId: "",
       });
     } catch (error) {
-      console.error('Error adding competitor:', error);
+      console.error("Error adding competitor:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -98,7 +99,7 @@ export default function CompetitorsPage() {
       try {
         await removeCompetitor(id, name);
       } catch (error) {
-        console.error('Error removing competitor:', error);
+        console.error("Error removing competitor:", error);
       }
     }
   };
@@ -116,7 +117,9 @@ export default function CompetitorsPage() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">Competitor Tracking</h1>
+              <h1 className="text-3xl font-bold text-slate-900">
+                Competitor Tracking
+              </h1>
               <p className="text-slate-600 mt-2">
                 Monitor and compare competitor channels in your niche
               </p>
@@ -147,7 +150,8 @@ export default function CompetitorsPage() {
               No competitors tracked yet
             </h3>
             <p className="text-slate-600 mb-6">
-              Start tracking competitors to see performance comparisons and growth trends
+              Start tracking competitors to see performance comparisons and
+              growth trends
             </p>
             <button
               onClick={() => setShowAddModal(true)}
@@ -164,7 +168,7 @@ export default function CompetitorsPage() {
             animate="visible"
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {competitors.map(competitor => (
+            {competitors.map((competitor) => (
               <motion.div
                 key={competitor.id}
                 variants={itemVariants}
@@ -176,10 +180,14 @@ export default function CompetitorsPage() {
                     <h3 className="text-lg font-semibold text-slate-900 truncate">
                       {competitor.channelName}
                     </h3>
-                    <p className="text-sm text-primary-600 mt-1">{competitor.niche}</p>
+                    <p className="text-sm text-primary-600 mt-1">
+                      {competitor.niche}
+                    </p>
                   </div>
                   <button
-                    onClick={() => handleDelete(competitor.id, competitor.channelName)}
+                    onClick={() =>
+                      handleDelete(competitor.id, competitor.channelName)
+                    }
                     className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -191,7 +199,10 @@ export default function CompetitorsPage() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600">Subscribers</span>
                     <span className="font-semibold text-slate-900">
-                      {Math.round(Number(competitor.metrics.subscriberCount) / 1000)}K
+                      {Math.round(
+                        Number(competitor.metrics.subscriberCount) / 1000,
+                      )}
+                      K
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -203,12 +214,17 @@ export default function CompetitorsPage() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600">Total Views</span>
                     <span className="font-semibold text-slate-900">
-                      {Math.round(Number(competitor.metrics.totalViews) / 1000000)}M
+                      {Math.round(
+                        Number(competitor.metrics.totalViews) / 1000000,
+                      )}
+                      M
                     </span>
                   </div>
                   {competitor.metrics.avgEngagement !== null && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">Avg Engagement</span>
+                      <span className="text-sm text-slate-600">
+                        Avg Engagement
+                      </span>
                       <span className="font-semibold text-slate-900">
                         {competitor.metrics.avgEngagement.toFixed(2)}%
                       </span>
@@ -221,7 +237,7 @@ export default function CompetitorsPage() {
                   <p className="text-xs text-slate-500">
                     {competitor.lastCheckedAt
                       ? `Last updated: ${new Date(competitor.lastCheckedAt).toLocaleDateString()}`
-                      : 'Just added'}
+                      : "Just added"}
                   </p>
                 </div>
 
@@ -233,7 +249,8 @@ export default function CompetitorsPage() {
                   className="mt-4 flex items-center justify-center gap-2 w-full py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                 >
                   <TrendingUp className="w-4 h-4" />
-                  View on {competitor.niche === 'YOUTUBE' ? 'YouTube' : 'Platform'}
+                  View on{" "}
+                  {competitor.niche === "YOUTUBE" ? "YouTube" : "Platform"}
                 </a>
               </motion.div>
             ))}
@@ -255,9 +272,11 @@ export default function CompetitorsPage() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6"
-                onClick={e => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
               >
-                <h2 className="text-2xl font-bold text-slate-900 mb-6">Add Competitor</h2>
+                <h2 className="text-2xl font-bold text-slate-900 mb-6">
+                  Add Competitor
+                </h2>
 
                 <form onSubmit={handleAddCompetitor} className="space-y-4">
                   {/* Platform Select */}
@@ -267,7 +286,7 @@ export default function CompetitorsPage() {
                     </label>
                     <select
                       value={formData.platform}
-                      onChange={e =>
+                      onChange={(e) =>
                         setFormData({ ...formData, platform: e.target.value })
                       }
                       className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -285,8 +304,11 @@ export default function CompetitorsPage() {
                     <input
                       type="text"
                       value={formData.channelName}
-                      onChange={e =>
-                        setFormData({ ...formData, channelName: e.target.value })
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          channelName: e.target.value,
+                        })
                       }
                       className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       placeholder="e.g., Tech Channel"
@@ -302,7 +324,7 @@ export default function CompetitorsPage() {
                     <input
                       type="url"
                       value={formData.channelUrl}
-                      onChange={e =>
+                      onChange={(e) =>
                         setFormData({ ...formData, channelUrl: e.target.value })
                       }
                       className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -319,7 +341,7 @@ export default function CompetitorsPage() {
                     <input
                       type="text"
                       value={formData.channelId}
-                      onChange={e =>
+                      onChange={(e) =>
                         setFormData({ ...formData, channelId: e.target.value })
                       }
                       className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -342,7 +364,9 @@ export default function CompetitorsPage() {
                       disabled={isSubmitting}
                       className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                     >
-                      {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                      {isSubmitting && (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      )}
                       Add Competitor
                     </button>
                   </div>

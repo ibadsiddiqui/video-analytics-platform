@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Lock, Crown, Sparkles } from 'lucide-react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ROUTES } from '@/config/routes';
+import React from "react";
+import { Lock, Crown, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { ROUTES } from "@/config/routes";
 
 interface LockedFeatureBannerProps {
   feature: string;
-  requiredTier: 'CREATOR' | 'PRO' | 'AGENCY';
+  requiredTier: "CREATOR" | "PRO" | "AGENCY";
   description?: string;
 }
 
@@ -34,9 +34,7 @@ export default function LockedFeatureBanner({
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold text-slate-900 mb-2">
-        {feature}
-      </h2>
+      <h2 className="text-2xl font-bold text-slate-900 mb-2">{feature}</h2>
 
       <p className="text-slate-600 mb-4">
         {description || `This feature requires ${requiredTier} tier or higher`}

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Lock } from 'lucide-react';
-import Link from 'next/link';
-import { ROUTES } from '@/config/routes';
+import React from "react";
+import { Lock } from "lucide-react";
+import Link from "next/link";
+import { ROUTES } from "@/config/routes";
 
 interface LockedFeatureCardProps {
   feature: string;
-  requiredTier: 'CREATOR' | 'PRO' | 'AGENCY';
+  requiredTier: "CREATOR" | "PRO" | "AGENCY";
 }
 
 export default function LockedFeatureCard({
@@ -21,7 +21,7 @@ export default function LockedFeatureCard({
         {feature} - {requiredTier} Feature
       </p>
       <Link href={ROUTES.PRO_FEATURES}>
-        <button className="text-sm px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+        <button className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 rounded-lg transition-all hover:shadow-lg hover:shadow-primary-500/30">
           Upgrade to Unlock
         </button>
       </Link>

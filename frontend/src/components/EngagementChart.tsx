@@ -67,25 +67,25 @@ function EngagementChart({ data }: EngagementChartProps) {
       className="bg-white rounded-2xl p-6 shadow-card border border-slate-100"
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-primary-50">
-            <TrendingUp className="w-5 h-5 text-primary-600" />
+          <div className="p-2 sm:p-2.5 rounded-xl bg-primary-50">
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-slate-900">
+            <h3 className="font-semibold text-slate-900 text-sm sm:text-base">
               Engagement Overview
             </h3>
-            <p className="text-sm text-slate-500">
+            <p className="text-xs sm:text-sm text-slate-500">
               Daily engagement distribution
             </p>
           </div>
         </div>
 
         {peakDay && (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-full">
-            <Calendar className="w-4 h-4 text-emerald-600" />
-            <span className="text-sm font-medium text-emerald-700">
+          <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-emerald-50 rounded-full self-start sm:self-auto">
+            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
+            <span className="text-xs sm:text-sm font-medium text-emerald-700">
               Peak: {peakDay.day}
             </span>
           </div>
@@ -93,7 +93,7 @@ function EngagementChart({ data }: EngagementChartProps) {
       </div>
 
       {/* Chart */}
-      <div className="h-64">
+      <div className="h-48 sm:h-56 md:h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} barCategoryGap="20%">
             <CartesianGrid
@@ -130,10 +130,10 @@ function EngagementChart({ data }: EngagementChartProps) {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-slate-100">
+      <div className="flex items-center justify-center gap-4 sm:gap-6 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-100">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-gradient-to-r from-primary-500 to-accent-purple" />
-          <span className="text-sm text-slate-600">
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-gradient-to-r from-primary-500 to-accent-purple" />
+          <span className="text-xs sm:text-sm text-slate-600">
             Engagement (likes + comments)
           </span>
         </div>

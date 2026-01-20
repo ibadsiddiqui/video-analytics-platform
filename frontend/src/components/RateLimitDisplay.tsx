@@ -26,13 +26,6 @@ function RateLimitDisplay({
 
   // Calculate warning threshold
   const isWarning = requestsRemaining > 0 && requestsRemaining <= 2;
-  const warningColor = isWarning ? "amber" : isLimitReached ? "red" : "slate";
-
-  const getProgressColor = (): string => {
-    if (isLimitReached) return "bg-gradient-to-r from-red-500 to-red-600";
-    if (isWarning) return "bg-gradient-to-r from-amber-500 to-amber-600";
-    return "bg-gradient-to-r from-primary-500 to-primary-600";
-  };
 
   const formatResetTime = (date: Date): string => {
     const now = new Date();
@@ -107,20 +100,6 @@ function RateLimitDisplay({
                 {formatResetTime(resetAt)}
               </p>
             )}
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        <div className="w-full sm:w-40 flex-shrink-0">
-          <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-            <motion.div
-              className={getProgressColor()}
-              initial={{ width: 0 }}
-              animate={{
-                width: `${Math.max(0, (requestsRemaining / requestsLimit) * 100)}%`,
-              }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            />
           </div>
         </div>
       </div>

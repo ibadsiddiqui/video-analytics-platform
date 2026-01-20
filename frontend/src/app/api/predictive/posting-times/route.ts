@@ -37,25 +37,21 @@ export async function GET(request: NextRequest) {
     const niche = request.nextUrl.searchParams.get("niche") || undefined;
 
     // Calculate recommendations
-    const recommendations = await PostingTimeOptimizerService.recommendPostingTimes(
-      user.id,
-      niche
-    );
+    const recommendations =
+      await PostingTimeOptimizerService.recommendPostingTimes(user.id, niche);
 
     if (!recommendations) {
-      return NextResponse.json(
-        {
-          success: true,
-          data: {
-            topSlots: [],
-            heatmapData: [],
-            insights: [
-              "No posting time data available yet. Analyze more videos to get personalized recommendations.",
-            ],
-            totalAnalyzed: 0,
-          },
-        }
-      );
+      return NextResponse.json({
+        success: true,
+        data: {
+          topSlots: [],
+          heatmapData: [],
+          insights: [
+            "No posting time data available yet. Analyze more videos to get personalized recommendations.",
+          ],
+          totalAnalyzed: 0,
+        },
+      });
     }
 
     return NextResponse.json({
@@ -66,7 +62,7 @@ export async function GET(request: NextRequest) {
     console.error("Posting time recommendation error:", error);
     return NextResponse.json(
       { error: "Failed to calculate posting time recommendations" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

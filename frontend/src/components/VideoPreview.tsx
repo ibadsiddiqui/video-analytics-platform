@@ -53,8 +53,8 @@ function VideoPreview({ video, channel }) {
     >
       <div className="flex flex-col md:flex-row">
         {/* Thumbnail */}
-        <div className="relative md:w-80 flex-shrink-0">
-          <div className="aspect-video md:aspect-auto md:h-full bg-slate-100 relative">
+        <div className="relative w-full md:w-72 lg:w-80 flex-shrink-0">
+          <div className="aspect-video bg-slate-100 relative">
             {video.thumbnail ? (
               <Image
                 src={getProxiedImageUrl(video.thumbnail, video.platform)}
@@ -89,17 +89,17 @@ function VideoPreview({ video, channel }) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-4 sm:p-6">
           <div className="flex flex-col h-full">
             {/* Title */}
-            <h2 className="text-xl font-bold text-slate-900 mb-3 line-clamp-2">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-2 sm:mb-3 line-clamp-2">
               {video.title || "Untitled Video"}
             </h2>
 
             {/* Channel info */}
             {channel && (
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold relative overflow-hidden">
+              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold relative overflow-hidden flex-shrink-0 text-sm sm:text-base">
                   {channel.thumbnail ? (
                     <Image
                       src={getProxiedImageUrl(
@@ -115,11 +115,11 @@ function VideoPreview({ video, channel }) {
                     channel.name?.[0]?.toUpperCase() || "C"
                   )}
                 </div>
-                <div>
-                  <p className="font-semibold text-slate-800">
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-800 text-sm sm:text-base truncate">
                     {channel.name || "Unknown Channel"}
                   </p>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-xs sm:text-sm text-slate-500">
                     {channel.subscribersFormatted || "0"} subscribers
                   </p>
                 </div>
@@ -127,29 +127,29 @@ function VideoPreview({ video, channel }) {
             )}
 
             {/* Meta info */}
-            <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 mt-auto">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-slate-500 mt-auto">
               <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" />
+                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>{formatDate(video.publishedAt)}</span>
               </div>
 
               {video.durationFormatted && (
                 <div className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" />
+                  <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>{video.durationFormatted}</span>
                 </div>
               )}
             </div>
 
             {/* Watch link */}
-            <div className="mt-4 pt-4 border-t border-slate-100">
+            <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-100">
               <a
                 href={video.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium text-sm transition-colors"
+                className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium text-xs sm:text-sm transition-colors"
               >
-                <ExternalLink className="w-4 h-4" />
+                <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 Watch on{" "}
                 {video.platform === "YOUTUBE"
                   ? "YouTube"

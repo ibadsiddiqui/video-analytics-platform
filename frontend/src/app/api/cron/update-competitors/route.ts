@@ -15,9 +15,9 @@
  * }
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import CompetitorService from '@/lib/services/competitor';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import CompetitorService from "@/lib/services/competitor";
 
 // Verify cron secret for security
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -25,11 +25,11 @@ const CRON_SECRET = process.env.CRON_SECRET;
 export async function POST(request: NextRequest) {
   try {
     // Verify cron secret
-    const authHeader = request.headers.get('authorization');
+    const authHeader = request.headers.get("authorization");
     if (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`) {
       return NextResponse.json(
-        { error: 'Unauthorized - Invalid cron secret' },
-        { status: 401 }
+        { error: "Unauthorized - Invalid cron secret" },
+        { status: 401 },
       );
     }
 
@@ -39,7 +39,9 @@ export async function POST(request: NextRequest) {
       select: { id: true, userId: true, channelName: true },
     });
 
-    console.log(`[CRON] Starting competitor update for ${competitors.length} competitors`);
+    console.log(
+      `[CRON] Starting competitor update for ${competitors.length} competitors`,
+    );
 
     let updated = 0;
     let failed = 0;
@@ -47,7 +49,9 @@ export async function POST(request: NextRequest) {
     // Update each competitor
     for (const competitor of competitors) {
       try {
-        const success = await CompetitorService.updateCompetitorMetrics(competitor.id);
+        const success = await CompetitorService.updateCompetitorMetrics(
+          competitor.id,
+        );
         if (success) {
           updated++;
           console.log(`[CRON] Updated: ${competitor.channelName}`);
@@ -57,7 +61,10 @@ export async function POST(request: NextRequest) {
         }
       } catch (error) {
         failed++;
-        console.error(`[CRON] Error updating ${competitor.channelName}:`, error);
+        console.error(
+          `[CRON] Error updating ${competitor.channelName}:`,
+          error,
+        );
       }
     }
 
@@ -73,17 +80,17 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Competitor metrics updated',
+      message: "Competitor metrics updated",
       summary,
     });
   } catch (error) {
-    console.error('[CRON] Fatal error in competitor update:', error);
+    console.error("[CRON] Fatal error in competitor update:", error);
     return NextResponse.json(
       {
-        error: 'Failed to update competitors',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to update competitors",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

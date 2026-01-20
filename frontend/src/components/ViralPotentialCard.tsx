@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Flame, TrendingUp, AlertCircle, Zap } from 'lucide-react';
-import { useTierAccess } from '@/hooks/useTierAccess';
-import LockedFeatureCard from '@/components/LockedFeatureCard';
+import React from "react";
+import { motion } from "framer-motion";
+import { Flame, TrendingUp, AlertCircle, Zap } from "lucide-react";
+import { useTierAccess } from "@/hooks/useTierAccess";
+import LockedFeatureCard from "@/components/LockedFeatureCard";
 
 interface ViralPotentialCardProps {
   data: {
@@ -16,21 +16,21 @@ interface ViralPotentialCardProps {
       likeRatioScore: number;
     };
     explanation: string;
-    prediction: 'viral' | 'high_potential' | 'moderate' | 'low';
+    prediction: "viral" | "high_potential" | "moderate" | "low";
   } | null;
   isLoading?: boolean;
 }
 
-export default function ViralPotentialCard({ data, isLoading = false }: ViralPotentialCardProps) {
+export default function ViralPotentialCard({
+  data,
+  isLoading = false,
+}: ViralPotentialCardProps) {
   const { canUseViralScore, loading: tierLoading } = useTierAccess();
 
   // Show locked state for non-PRO users
   if (!tierLoading && !canUseViralScore) {
     return (
-      <LockedFeatureCard
-        feature="Viral Potential Score"
-        requiredTier="PRO"
-      />
+      <LockedFeatureCard feature="Viral Potential Score" requiredTier="PRO" />
     );
   }
 
@@ -62,7 +62,9 @@ export default function ViralPotentialCard({ data, isLoading = false }: ViralPot
       >
         <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
         <p className="text-slate-600">Viral potential data not available</p>
-        <p className="text-sm text-slate-400 mt-1">Please analyze a video to calculate viral potential</p>
+        <p className="text-sm text-slate-400 mt-1">
+          Please analyze a video to calculate viral potential
+        </p>
       </motion.div>
     );
   }
@@ -72,54 +74,54 @@ export default function ViralPotentialCard({ data, isLoading = false }: ViralPot
   // Color coding based on prediction
   const getColorScheme = (pred: string) => {
     switch (pred) {
-      case 'viral':
+      case "viral":
         return {
-          bg: 'bg-red-50',
-          border: 'border-red-200',
-          headerText: 'text-red-700',
-          scoreText: 'text-red-600',
-          badge: 'bg-red-100 text-red-700',
+          bg: "bg-red-50",
+          border: "border-red-200",
+          headerText: "text-red-700",
+          scoreText: "text-red-600",
+          badge: "bg-red-100 text-red-700",
         };
-      case 'high_potential':
+      case "high_potential":
         return {
-          bg: 'bg-orange-50',
-          border: 'border-orange-200',
-          headerText: 'text-orange-700',
-          scoreText: 'text-orange-600',
-          badge: 'bg-orange-100 text-orange-700',
+          bg: "bg-orange-50",
+          border: "border-orange-200",
+          headerText: "text-orange-700",
+          scoreText: "text-orange-600",
+          badge: "bg-orange-100 text-orange-700",
         };
-      case 'moderate':
+      case "moderate":
         return {
-          bg: 'bg-yellow-50',
-          border: 'border-yellow-200',
-          headerText: 'text-yellow-700',
-          scoreText: 'text-yellow-600',
-          badge: 'bg-yellow-100 text-yellow-700',
+          bg: "bg-yellow-50",
+          border: "border-yellow-200",
+          headerText: "text-yellow-700",
+          scoreText: "text-yellow-600",
+          badge: "bg-yellow-100 text-yellow-700",
         };
-      case 'low':
+      case "low":
       default:
         return {
-          bg: 'bg-slate-50',
-          border: 'border-slate-200',
-          headerText: 'text-slate-700',
-          scoreText: 'text-slate-600',
-          badge: 'bg-slate-100 text-slate-700',
+          bg: "bg-slate-50",
+          border: "border-slate-200",
+          headerText: "text-slate-700",
+          scoreText: "text-slate-600",
+          badge: "bg-slate-100 text-slate-700",
         };
     }
   };
 
   const getPredictionLabel = (pred: string) => {
     switch (pred) {
-      case 'viral':
-        return { icon: '🔥', label: 'Viral Potential' };
-      case 'high_potential':
-        return { icon: '⭐', label: 'High Potential' };
-      case 'moderate':
-        return { icon: '📊', label: 'Moderate Performance' };
-      case 'low':
-        return { icon: '📈', label: 'Room for Growth' };
+      case "viral":
+        return { icon: "🔥", label: "Viral Potential" };
+      case "high_potential":
+        return { icon: "⭐", label: "High Potential" };
+      case "moderate":
+        return { icon: "📊", label: "Moderate Performance" };
+      case "low":
+        return { icon: "📈", label: "Room for Growth" };
       default:
-        return { icon: '📈', label: 'Unknown' };
+        return { icon: "📈", label: "Unknown" };
     }
   };
 
@@ -137,14 +139,18 @@ export default function ViralPotentialCard({ data, isLoading = false }: ViralPot
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Flame className="w-5 h-5 text-red-600" />
-            <h3 className="text-lg font-semibold text-slate-900">Viral Potential Score</h3>
+            <h3 className="text-lg font-semibold text-slate-900">
+              Viral Potential Score
+            </h3>
           </div>
           <p className={`text-sm font-medium ${colors.headerText}`}>
             {label.icon} {label.label}
           </p>
         </div>
         <div className="text-right">
-          <div className={`text-4xl font-bold ${colors.scoreText}`}>{score}</div>
+          <div className={`text-4xl font-bold ${colors.scoreText}`}>
+            {score}
+          </div>
           <div className="text-sm text-slate-500">out of 100</div>
         </div>
       </div>
@@ -184,24 +190,31 @@ export default function ViralPotentialCard({ data, isLoading = false }: ViralPot
 
       {/* Recommendation */}
       <div className="mt-4 pt-4 border-t border-slate-300">
-        {prediction === 'viral' && (
+        {prediction === "viral" && (
           <p className="text-sm text-slate-700">
-            <strong>🎯 Action:</strong> Your video has exceptional viral indicators! Consider amplifying through ads or social promotion while engagement momentum is high.
+            <strong>🎯 Action:</strong> Your video has exceptional viral
+            indicators! Consider amplifying through ads or social promotion
+            while engagement momentum is high.
           </p>
         )}
-        {prediction === 'high_potential' && (
+        {prediction === "high_potential" && (
           <p className="text-sm text-slate-700">
-            <strong>🎯 Action:</strong> Strong potential detected! Optimize thumbnail, title, and first-minute engagement to push into viral territory.
+            <strong>🎯 Action:</strong> Strong potential detected! Optimize
+            thumbnail, title, and first-minute engagement to push into viral
+            territory.
           </p>
         )}
-        {prediction === 'moderate' && (
+        {prediction === "moderate" && (
           <p className="text-sm text-slate-700">
-            <strong>🎯 Action:</strong> Average potential. Try creating similar content on trending topics or collaborate with creators to boost engagement.
+            <strong>🎯 Action:</strong> Average potential. Try creating similar
+            content on trending topics or collaborate with creators to boost
+            engagement.
           </p>
         )}
-        {prediction === 'low' && (
+        {prediction === "low" && (
           <p className="text-sm text-slate-700">
-            <strong>🎯 Action:</strong> Limited viral indicators. Focus on community engagement, follow-ups, or content strategy iteration.
+            <strong>🎯 Action:</strong> Limited viral indicators. Focus on
+            community engagement, follow-ups, or content strategy iteration.
           </p>
         )}
       </div>
@@ -223,13 +236,15 @@ function FactorBar({
     <div>
       <div className="flex justify-between text-xs mb-1">
         <span className="text-slate-700 font-medium">{label}</span>
-        <span className="font-semibold text-slate-600">{Math.round(score)}/100</span>
+        <span className="font-semibold text-slate-600">
+          {Math.round(score)}/100
+        </span>
       </div>
       <div className="h-2.5 bg-slate-200 rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${score}%` }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className={`h-full bg-gradient-to-r ${color} rounded-full`}
         />
       </div>

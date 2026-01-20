@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Clock, Calendar, TrendingUp, AlertCircle } from 'lucide-react';
-import { useTierAccess } from '@/hooks/useTierAccess';
-import LockedFeatureCard from '@/components/LockedFeatureCard';
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Clock, Calendar, TrendingUp, AlertCircle } from "lucide-react";
+import { useTierAccess } from "@/hooks/useTierAccess";
+import LockedFeatureCard from "@/components/LockedFeatureCard";
 
 interface PostingTimeSlot {
   dayOfWeek: string;
   hourRange: string;
   averageEngagementRate: number;
   videoCount: number;
-  confidence: 'high' | 'medium' | 'low';
+  confidence: "high" | "medium" | "low";
 }
 
 interface PostingTimeHeatmapProps {
@@ -19,7 +19,10 @@ interface PostingTimeHeatmapProps {
   niche?: string;
 }
 
-export default function PostingTimeHeatmap({ userId, niche }: PostingTimeHeatmapProps) {
+export default function PostingTimeHeatmap({
+  userId,
+  niche,
+}: PostingTimeHeatmapProps) {
   const { canUsePostingTimeOptimizer, loading: tierLoading } = useTierAccess();
   const [data, setData] = useState<{
     topSlots: PostingTimeSlot[];
@@ -40,18 +43,20 @@ export default function PostingTimeHeatmap({ userId, niche }: PostingTimeHeatmap
     const fetchRecommendations = async () => {
       try {
         setLoading(true);
-        const query = niche ? `?niche=${encodeURIComponent(niche)}` : '';
+        const query = niche ? `?niche=${encodeURIComponent(niche)}` : "";
         const response = await fetch(`/api/predictive/posting-times${query}`);
         const result = await response.json();
 
         if (result.success && result.data) {
           setData(result.data);
         } else if (!result.success) {
-          setError(result.error || 'Failed to fetch posting time recommendations');
+          setError(
+            result.error || "Failed to fetch posting time recommendations",
+          );
         }
       } catch (err) {
-        console.error('Failed to fetch posting time recommendations:', err);
-        setError('Failed to load recommendations');
+        console.error("Failed to fetch posting time recommendations:", err);
+        setError("Failed to load recommendations");
       } finally {
         setLoading(false);
       }
@@ -63,10 +68,7 @@ export default function PostingTimeHeatmap({ userId, niche }: PostingTimeHeatmap
   // Show locked banner for non-PRO users
   if (!tierLoading && !canUsePostingTimeOptimizer) {
     return (
-      <LockedFeatureCard
-        feature="Optimal Posting Times"
-        requiredTier="PRO"
-      />
+      <LockedFeatureCard feature="Optimal Posting Times" requiredTier="PRO" />
     );
   }
 
@@ -93,7 +95,9 @@ export default function PostingTimeHeatmap({ userId, niche }: PostingTimeHeatmap
         className="bg-red-50 rounded-2xl border border-red-200 p-6 text-center"
       >
         <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-3" />
-        <p className="text-red-600 font-medium">Error Loading Recommendations</p>
+        <p className="text-red-600 font-medium">
+          Error Loading Recommendations
+        </p>
         <p className="text-sm text-red-500 mt-1">{error}</p>
       </motion.div>
     );
@@ -110,8 +114,8 @@ export default function PostingTimeHeatmap({ userId, niche }: PostingTimeHeatmap
         <p className="text-slate-600 font-medium">Not enough data yet</p>
         <p className="text-sm text-slate-500 mt-1">
           {data?.totalAnalyzed === 0
-            ? 'Analyze your first video to get posting time recommendations.'
-            : 'Analyze more videos to get personalized posting time recommendations.'}
+            ? "Analyze your first video to get posting time recommendations."
+            : "Analyze more videos to get personalized posting time recommendations."}
         </p>
       </motion.div>
     );
@@ -154,14 +158,16 @@ export default function PostingTimeHeatmap({ userId, niche }: PostingTimeHeatmap
                   {slot.dayOfWeek} at {slot.hourRange}
                 </p>
                 <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
-                  <span>{slot.videoCount} video{slot.videoCount !== 1 ? 's' : ''}</span>
+                  <span>
+                    {slot.videoCount} video{slot.videoCount !== 1 ? "s" : ""}
+                  </span>
                   <span>•</span>
                   <span className="capitalize">
-                    {slot.confidence === 'high'
-                      ? '✓ High confidence'
-                      : slot.confidence === 'medium'
-                        ? '◐ Medium confidence'
-                        : '△ Low confidence'}
+                    {slot.confidence === "high"
+                      ? "✓ High confidence"
+                      : slot.confidence === "medium"
+                        ? "◐ Medium confidence"
+                        : "△ Low confidence"}
                   </span>
                 </div>
               </div>
@@ -202,7 +208,8 @@ export default function PostingTimeHeatmap({ userId, niche }: PostingTimeHeatmap
       {/* Info Box */}
       <div className="mt-4 pt-4 border-t border-slate-200">
         <p className="text-xs text-slate-500">
-          Based on analysis of {data.totalAnalyzed} of your videos. Schedule your next post at one of these times for maximum engagement.
+          Based on analysis of {data.totalAnalyzed} of your videos. Schedule
+          your next post at one of these times for maximum engagement.
         </p>
       </div>
     </motion.div>

@@ -48,10 +48,9 @@ export default function Home(): React.JSX.Element {
   } = useAnonymousTracking();
 
   // Fetch benchmark comparison data
-  const {
-    data: benchmarkData,
-    loading: benchmarkLoading,
-  } = useBenchmark(data?.video?.id || null);
+  const { data: benchmarkData, loading: benchmarkLoading } = useBenchmark(
+    data?.video?.id || null,
+  );
 
   // Fetch user's API keys if authenticated
   const {
@@ -172,17 +171,17 @@ export default function Home(): React.JSX.Element {
         }}
       />
 
-      {/* Background decorations */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 -left-20 w-60 h-60 bg-accent-purple/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-1/4 w-40 h-40 bg-accent-pink/10 rounded-full blur-2xl" />
+      {/* Background decorations - hidden on mobile for performance */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none hidden sm:block">
+        <div className="absolute -top-40 -right-40 w-60 sm:w-80 h-60 sm:h-80 bg-primary-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 -left-20 w-40 sm:w-60 h-40 sm:h-60 bg-accent-purple/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-1/4 w-32 sm:w-40 h-32 sm:h-40 bg-accent-pink/10 rounded-full blur-2xl" />
       </div>
 
       <div className="relative z-10">
         <Header />
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
           {/* Rate limit display for anonymous users */}
           {!user && (
             <motion.div
@@ -205,7 +204,7 @@ export default function Home(): React.JSX.Element {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-10"
+            className="mb-6 sm:mb-8 lg:mb-10"
           >
             <SearchBar
               url={url}
@@ -259,7 +258,7 @@ export default function Home(): React.JSX.Element {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="space-y-8"
+                className="space-y-4 sm:space-y-6 lg:space-y-8"
               >
                 {/* Video Preview */}
                 <VideoPreview video={data.video} channel={data.channel} />
@@ -268,11 +267,14 @@ export default function Home(): React.JSX.Element {
                 <MetricsGrid metrics={data.metrics} />
 
                 {/* Benchmark Card */}
-                <BenchmarkCard data={benchmarkData} isLoading={benchmarkLoading} />
+                <BenchmarkCard
+                  data={benchmarkData}
+                  isLoading={benchmarkLoading}
+                />
 
                 {/* Phase 3: Predictive Analytics */}
                 {data.predictive && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     <ViralPotentialCard
                       data={data.predictive.viralPotential || null}
                       isLoading={false}
@@ -285,13 +287,13 @@ export default function Home(): React.JSX.Element {
                 )}
 
                 {/* Charts Row */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   <EngagementChart data={data.engagement} />
                   <SentimentChart sentiment={data.sentiment} />
                 </div>
 
                 {/* Demographics and Keywords */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   <DemographicsChart demographics={data.demographics} />
                   <KeywordsCloud
                     keywords={data.keywords}
@@ -311,7 +313,7 @@ export default function Home(): React.JSX.Element {
         </main>
 
         {/* Footer */}
-        <footer className="py-8 text-center text-slate-500 text-sm">
+        <footer className="py-6 sm:py-8 text-center text-slate-500 text-xs sm:text-sm px-4">
           <p>
             Built by{" "}
             <span className="font-semibold text-primary-600">

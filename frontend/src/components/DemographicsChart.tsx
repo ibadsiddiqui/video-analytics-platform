@@ -46,13 +46,13 @@ function DemographicsChart({ demographics }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Age Distribution */}
         <div>
           <h4 className="text-sm font-medium text-slate-600 mb-4">
             Age Distribution
           </h4>
-          <div className="h-48">
+          <div className="h-40 sm:h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={ageDistribution}
@@ -136,14 +136,14 @@ function DemographicsChart({ demographics }) {
           </div>
 
           {/* Visual representation */}
-          <div className="mt-6 flex items-center justify-center gap-1">
+          <div className="mt-4 sm:mt-6 flex items-center justify-center gap-1">
             {[...Array(10)].map((_, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 + i * 0.05 }}
-                className={`w-4 h-4 rounded-full ${
+                className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full ${
                   i < Math.round(genderSplit.male / 10)
                     ? "bg-blue-400"
                     : "bg-pink-400"

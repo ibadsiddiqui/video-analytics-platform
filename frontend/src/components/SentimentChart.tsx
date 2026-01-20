@@ -140,16 +140,16 @@ function SentimentChart({ sentiment }: SentimentChartProps) {
       </div>
 
       {/* Chart */}
-      <div className="flex items-center">
-        <div className="w-1/2 h-56">
+      <div className="flex flex-col sm:flex-row items-center gap-4">
+        <div className="w-full sm:w-1/2 h-48 sm:h-56">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                innerRadius={55}
-                outerRadius={85}
+                innerRadius={45}
+                outerRadius={70}
                 paddingAngle={3}
                 dataKey="value"
                 strokeWidth={0}
@@ -164,19 +164,22 @@ function SentimentChart({ sentiment }: SentimentChartProps) {
         </div>
 
         {/* Legend */}
-        <div className="w-1/2 space-y-4">
+        <div className="w-full sm:w-1/2 space-y-3 sm:space-y-4">
           {chartData.map((item) => (
             <div key={item.name} className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <div
-                  className="w-3 h-3 rounded-full"
+                  className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: item.color }}
                 />
                 <span className="text-sm font-medium text-slate-700">
                   {item.name}
                 </span>
               </div>
-              <span className="text-lg font-bold" style={{ color: item.color }}>
+              <span
+                className="text-base sm:text-lg font-bold"
+                style={{ color: item.color }}
+              >
                 {item.value}%
               </span>
             </div>
