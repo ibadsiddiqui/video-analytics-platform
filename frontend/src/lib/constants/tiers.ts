@@ -17,6 +17,15 @@ export const TIER_FEATURES = {
   // Phase 3.2: Optimal Posting Time
   POSTING_TIME_OPTIMIZER: ["PRO", "AGENCY"] as UserTier[],
 
+  // Phase 4.1: Title A/B Testing Analysis
+  TITLE_ANALYSIS: ["PRO", "AGENCY"] as UserTier[],
+
+  // Phase 4.2: Thumbnail Analysis
+  THUMBNAIL_ANALYSIS: ["PRO", "AGENCY"] as UserTier[],
+
+  // Phase 5.1 & 5.2: Audience Analytics (Overlap & Superfans)
+  AUDIENCE_ANALYTICS: ["PRO", "AGENCY"] as UserTier[],
+
   // Future features
   EXPORT_PDF: ["PRO", "AGENCY"] as UserTier[],
 } as const;
@@ -59,6 +68,10 @@ export const TIER_CONFIG = {
       "Benchmark comparisons",
       "Viral potential score",
       "Optimal posting times",
+      "Title A/B testing",
+      "Thumbnail analysis",
+      "Audience overlap insights",
+      "Superfan identification",
       "Unlimited comments",
       "500 analyses/day",
     ],

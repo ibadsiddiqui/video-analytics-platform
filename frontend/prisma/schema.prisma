@@ -153,6 +153,7 @@ model User {
   // Relations - placeholders for future phases
   apiKeys         UserApiKey[]
   competitors     CompetitorTrack[]    // Phase 2.1
+  superfans       Superfan[]           // Phase 5.2
   // analyses        VideoAnalysis[]      // Phase 2+
   // campaigns       Campaign[]           // Phase 9
   // alerts          Alert[]              // Phase 7
@@ -292,4 +293,39 @@ model Benchmark {
 
   @@unique([platform, niche])
   @@index([platform])
+}
+
+// ============================================
+// Phase 5.2: Superfan Identification
+// ============================================
+
+// Tracks highly engaged community members
+model Superfan {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  platform        Platform
+  channelId       String    // Channel this superfan engages with
+  fanUsername     String    // The superfan's username
+  fanProfileUrl   String?   // Link to their profile
+
+  // Engagement metrics
+  totalComments   Int       @default(0)
+  totalLikes      Int       @default(0)  // Likes received on their comments
+  firstSeenAt     DateTime
+  lastSeenAt      DateTime
+
+  // Sentiment
+  avgSentiment    Float?    // -1 to 1
+
+  // Calculated engagement score (0-100)
+  engagementScore Int       @default(0)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([userId, platform, channelId, fanUsername])
+  @@index([userId, channelId])
+  @@index([channelId])
 }

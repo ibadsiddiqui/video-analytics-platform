@@ -24,5 +24,10 @@ export function useTierAccess() {
     // Phase 3 features
     canUseViralScore: checkAccess("VIRAL_SCORE"),
     canUsePostingTimeOptimizer: checkAccess("POSTING_TIME_OPTIMIZER"),
+    // Phase 4 features
+    canUseTitleAnalysis: checkAccess("TITLE_ANALYSIS"),
+    canUseThumbnailAnalysis: checkAccess("THUMBNAIL_ANALYSIS"),
+    // Phase 5 features
+    canUseAudienceAnalytics: checkAccess("AUDIENCE_ANALYTICS"),
   };
 }

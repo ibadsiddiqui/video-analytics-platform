@@ -10,6 +10,9 @@ import { auth } from "@clerk/nextjs/server";
 import { checkTierAccess } from "@/lib/utils/tier-access";
 import { ViralPredictorService } from "@/lib/services/viral-predictor";
 import NicheDetector from "@/lib/services/niche-detector";
+import { TitleAnalyzer } from "@/lib/services/title-analyzer";
+import { ThumbnailAnalyzer } from "@/lib/services/thumbnail-analyzer";
+import { AudienceAnalyzer } from "@/lib/services/audience-analyzer";
 import { prisma } from "@/lib/prisma";
 import {
   checkAndTrackRequest,
@@ -49,6 +52,102 @@ async function applyCommentLimit(result: any, userId: string | null) {
   }
 
   return result;
+}
+
+async function enrichWithContentStrategy(result: any) {
+  try {
+    // Check tier access for content strategy features (PRO+ only)
+    const titleTierCheck = await checkTierAccess("TITLE_ANALYSIS");
+    const thumbnailTierCheck = await checkTierAccess("THUMBNAIL_ANALYSIS");
+
+    const contentStrategy: any = {};
+
+    // Title Analysis
+    if (titleTierCheck.hasAccess && result.video?.title) {
+      try {
+        contentStrategy.titleAnalysis = await TitleAnalyzer.analyze(
+          result.video.title,
+        );
+      } catch (error) {
+        console.error("Title analysis error:", error);
+      }
+    } else if (!titleTierCheck.hasAccess) {
+      contentStrategy.titleAnalysis = {
+        locked: true,
+        requiredTier: "PRO",
+      };
+    }
+
+    // Thumbnail Analysis
+    if (thumbnailTierCheck.hasAccess && result.video?.thumbnail) {
+      try {
+        contentStrategy.thumbnailAnalysis = await ThumbnailAnalyzer.analyze(
+          result.video.thumbnail,
+          result.video.title,
+        );
+      } catch (error) {
+        console.error("Thumbnail analysis error:", error);
+      }
+    } else if (!thumbnailTierCheck.hasAccess) {
+      contentStrategy.thumbnailAnalysis = {
+        locked: true,
+        requiredTier: "PRO",
+      };
+    }
+
+    result.contentStrategy = contentStrategy;
+    return result;
+  } catch (error) {
+    console.error("Error enriching with content strategy:", error);
+    return result;
+  }
+}
+
+async function enrichWithAudienceAnalytics(result: any) {
+  try {
+    // Check tier access for audience analytics features (PRO+ only)
+    const tierCheck = await checkTierAccess("AUDIENCE_ANALYTICS");
+
+    if (!tierCheck.hasAccess) {
+      result.audienceAnalytics = {
+        overlap: { locked: true, requiredTier: "PRO" },
+        superfans: { locked: true, requiredTier: "PRO" },
+      };
+      return result;
+    }
+
+    const audienceAnalytics: any = {};
+
+    // Audience Overlap Analysis
+    if (result.channel?.id) {
+      try {
+        audienceAnalytics.overlap = await AudienceAnalyzer.analyzeOverlap(
+          result.channel.id,
+          result.video?.platform?.toUpperCase() || "YOUTUBE",
+        );
+      } catch (error) {
+        console.error("Audience overlap analysis error:", error);
+      }
+    }
+
+    // Superfan Identification
+    if (result.channel?.id) {
+      try {
+        audienceAnalytics.superfans = await AudienceAnalyzer.identifySuperfans(
+          result.channel.id,
+          result.video?.platform?.toUpperCase() || "YOUTUBE",
+        );
+      } catch (error) {
+        console.error("Superfan identification error:", error);
+      }
+    }
+
+    result.audienceAnalytics = audienceAnalytics;
+    return result;
+  } catch (error) {
+    console.error("Error enriching with audience analytics:", error);
+    return result;
+  }
 }
 
 async function enrichWithPredictiveAnalytics(
@@ -200,10 +299,16 @@ export async function POST(request: NextRequest) {
     const limitedResult = await applyCommentLimit(result, userId || null);
 
     // Enrich with predictive analytics
-    const enrichedResult = await enrichWithPredictiveAnalytics(
+    const withPredictive = await enrichWithPredictiveAnalytics(
       limitedResult,
       userId || null,
     );
+
+    // Enrich with content strategy (Phase 4)
+    const withContentStrategy = await enrichWithContentStrategy(withPredictive);
+
+    // Enrich with audience analytics (Phase 5)
+    const enrichedResult = await enrichWithAudienceAnalytics(withContentStrategy);
 
     // Create response with rate limit headers
     const responseHeaders = rateLimitResult
@@ -290,10 +395,16 @@ export async function GET(request: NextRequest) {
     const limitedResult = await applyCommentLimit(result, userId || null);
 
     // Enrich with predictive analytics
-    const enrichedResult = await enrichWithPredictiveAnalytics(
+    const withPredictive = await enrichWithPredictiveAnalytics(
       limitedResult,
       userId || null,
     );
+
+    // Enrich with content strategy (Phase 4)
+    const withContentStrategy = await enrichWithContentStrategy(withPredictive);
+
+    // Enrich with audience analytics (Phase 5)
+    const enrichedResult = await enrichWithAudienceAnalytics(withContentStrategy);
 
     // Create response with rate limit headers
     const responseHeaders = rateLimitResult

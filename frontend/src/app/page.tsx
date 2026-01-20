@@ -20,6 +20,10 @@ import RateLimitDisplay from "@/components/RateLimitDisplay";
 import BenchmarkCard from "@/components/BenchmarkCard";
 import ViralPotentialCard from "@/components/ViralPotentialCard";
 import PostingTimeHeatmap from "@/components/PostingTimeHeatmap";
+import TitleAnalysisCard from "@/components/TitleAnalysisCard";
+import ThumbnailScoreCard from "@/components/ThumbnailScoreCard";
+import AudienceOverlapCard from "@/components/AudienceOverlapCard";
+import SuperfansCard from "@/components/SuperfansCard";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useAnonymousTracking } from "@/hooks/useAnonymousTracking";
 import { useApiKeys } from "@/hooks/useApiKeys";
@@ -285,6 +289,30 @@ export default function Home(): React.JSX.Element {
                     />
                   </div>
                 )}
+
+                {/* Phase 4: Content Strategy Tools */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                  <TitleAnalysisCard
+                    data={null}
+                    isLoading={false}
+                  />
+                  <ThumbnailScoreCard
+                    data={null}
+                    isLoading={false}
+                  />
+                </div>
+
+                {/* Phase 5: Audience Analytics */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                  <AudienceOverlapCard
+                    data={null}
+                    isLoading={false}
+                  />
+                  <SuperfansCard
+                    data={null}
+                    isLoading={false}
+                  />
+                </div>
 
                 {/* Charts Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
