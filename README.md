@@ -85,6 +85,84 @@ video-analytics-platform/
 └── README.md
 ```
 
+## 🧪 Testing
+
+The project uses **Vitest** for unit testing with comprehensive test coverage for Phase 1 features.
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test
+
+# Run tests once (CI mode)
+npm run test:run
+
+# Open Vitest UI
+npm run test:ui
+```
+
+### Test Coverage
+
+✅ **113 passing tests** across Phase 1 & Phase 2 features:
+
+**Phase 1 Features (85 tests):**
+
+- **Tier Access System** (20 tests)
+  - Feature access by tier (FREE, CREATOR, PRO, AGENCY)
+  - Daily request limits
+  - Comment limits by tier
+
+- **Encryption Service** (43 tests)
+  - AES-256-GCM encryption/decryption
+  - API key security
+  - Tamper detection
+  - Edge cases and unicode support
+
+- **Request Tracking** (22 tests)
+  - Rate limiting enforcement
+  - Daily limit tracking per tier
+  - Midnight UTC reset
+  - Rate limit headers
+
+**Phase 2 Features (28 tests):**
+
+- **Competitor Tracking** (17 tests)
+  - Add/remove competitors
+  - Fetch competitor metrics from YouTube
+  - Historical snapshots
+  - Soft delete pattern
+  - Error handling
+
+- **Benchmark Service** (11 tests)
+  - Niche benchmark calculations
+  - Percentile rankings (p10, p25, p50, p75, p90)
+  - Video performance comparison
+  - Statistical analysis
+
+### Test Files
+
+```
+frontend/
+├── src/
+│   ├── lib/
+│   │   ├── __tests__/
+│   │   │   └── encryption.test.ts
+│   │   ├── constants/__tests__/
+│   │   │   └── tiers.test.ts
+│   │   ├── services/__tests__/
+│   │   │   ├── competitor.test.ts
+│   │   │   └── benchmark.test.ts
+│   │   └── utils/__tests__/
+│   │       └── request-tracker.test.ts
+├── test/
+│   └── setup.ts
+└── vitest.config.ts
+```
+
 ## 🚀 Quick Start
 
 ### Prerequisites

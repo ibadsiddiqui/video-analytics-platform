@@ -33,6 +33,11 @@ npm start
 # Linting
 npm run lint
 
+# Testing
+npm test              # Run tests in watch mode
+npm run test:run      # Run tests once (CI mode)
+npm run test:ui       # Open Vitest UI
+
 # Database operations
 npm run prisma:generate   # Generate Prisma client (runs automatically on postinstall)
 npm run prisma:push       # Push schema changes without migrations
@@ -483,6 +488,99 @@ curl http://localhost:3000/api/benchmarks?platform=YOUTUBE&niche=GAMING \
   -H "Authorization: Bearer <clerk-token>"
 ```
 
+## Testing
+
+### Test Infrastructure
+
+The project uses **Vitest** for unit testing with comprehensive coverage:
+
+- **Test Framework**: Vitest v4.0.17 (Jest-compatible API)
+- **React Testing**: @testing-library/react v16.3.2
+- **DOM Environment**: jsdom v27.4.0
+- **Test UI**: @vitest/ui for interactive test exploration
+
+### Running Tests
+
+```bash
+# Run tests in watch mode
+npm test
+
+# Run tests once (CI mode)
+npm run test:run
+
+# Open Vitest UI
+npm run test:ui
+
+# Run specific test file
+npm run test:run encryption
+
+# Run tests with coverage
+npm run test:run -- --coverage
+```
+
+### Test Coverage (Phase 1)
+
+**85 passing tests** covering core infrastructure:
+
+1. **Tier Access System** (20 tests)
+   - File: `src/lib/constants/__tests__/tiers.test.ts`
+   - Tests: TIER_FEATURES, TIER_CONFIG, hasFeatureAccess(), getMinimumTier(), getCommentLimit()
+   - Coverage: All 4 tiers (FREE, CREATOR, PRO, AGENCY), all Phase 1-5 features
+
+2. **Encryption Service** (43 tests)
+   - File: `src/lib/__tests__/encryption.test.ts`
+   - Tests: AES-256-GCM encryption/decryption, key validation, tamper detection, maskKey()
+   - Coverage: Security properties, edge cases, unicode support
+
+3. **Request Tracking** (22 tests)
+   - File: `src/lib/utils/__tests__/request-tracker.test.ts`
+   - Tests: Rate limiting, daily limits per tier, midnight UTC reset, rate limit headers
+   - Coverage: All tier limits, edge cases (negative counts, midnight boundary)
+
+### Test Structure
+
+```
+frontend/
+├── src/
+│   ├── lib/
+│   │   ├── __tests__/
+│   │   │   └── encryption.test.ts
+│   │   ├── constants/__tests__/
+│   │   │   └── tiers.test.ts
+│   │   └── utils/__tests__/
+│   │       └── request-tracker.test.ts
+├── test/
+│   └── setup.ts
+└── vitest.config.ts
+```
+
+### Writing Tests
+
+Example test pattern:
+
+```typescript
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+describe('Feature Name', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should handle expected behavior', () => {
+    // Arrange
+    const input = 'test-data';
+
+    // Act
+    const result = myFunction(input);
+
+    // Assert
+    expect(result).toBe('expected-output');
+  });
+});
+```
+
+For detailed testing documentation, see `TESTING.md`.
+
 ## Important Constraints
 
 - **YouTube API Quota:** 10,000 units/day by default (each video analysis uses ~10 units)
@@ -491,6 +589,7 @@ curl http://localhost:3000/api/benchmarks?platform=YOUTUBE&niche=GAMING \
 - **Real-time Data:** Not implemented; analytics are point-in-time snapshots
 - **Redis Requirement:** Cache fails gracefully but rate limiting won't work without Redis
 - **Prisma Client:** Must run `npx prisma generate` after schema changes
+- **Testing:** Run `npm test` before committing; all tests must pass
 
 ## Deployment Notes
 
