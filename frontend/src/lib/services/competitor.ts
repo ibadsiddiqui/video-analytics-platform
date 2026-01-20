@@ -4,9 +4,9 @@
  * Phase 2.1: Competitor Tracking
  */
 
-import { prisma } from '@/lib/prisma';
-import { Platform, VideoNiche } from '@prisma/client';
-import NicheDetector from './niche-detector';
+import { prisma } from "@/lib/prisma";
+import { Platform, VideoNiche } from "@prisma/client";
+import NicheDetector from "./niche-detector";
 
 export interface CompetitorMetrics {
   subscriberCount: bigint;
@@ -36,17 +36,17 @@ export class CompetitorService {
     channelId: string,
     channelName: string,
     channelUrl: string,
-    thumbnailUrl?: string
+    thumbnailUrl?: string,
   ): Promise<CompetitorData | null> {
     try {
       // Fetch channel metrics from YouTube API
       const metrics = await this.fetchChannelMetrics(platform, channelId);
       if (!metrics) {
-        throw new Error('Failed to fetch channel metrics');
+        throw new Error("Failed to fetch channel metrics");
       }
 
       // Detect niche from channel info
-      const niche = NicheDetector.detect(channelName, '', '');
+      const niche = NicheDetector.detect(channelName, "", "");
 
       // Check if competitor already exists
       const existing = await prisma.competitorTrack.findFirst({
@@ -69,7 +69,7 @@ export class CompetitorService {
           });
           return this.formatCompetitorData(updated, metrics);
         }
-        throw new Error('Competitor already being tracked');
+        throw new Error("Competitor already being tracked");
       }
 
       // Create new competitor track
@@ -103,7 +103,7 @@ export class CompetitorService {
 
       return this.formatCompetitorData(competitor, metrics);
     } catch (error) {
-      console.error('Error adding competitor:', error);
+      console.error("Error adding competitor:", error);
       throw error;
     }
   }
@@ -111,7 +111,10 @@ export class CompetitorService {
   /**
    * Remove competitor from tracking
    */
-  static async removeCompetitor(userId: string, competitorId: string): Promise<boolean> {
+  static async removeCompetitor(
+    userId: string,
+    competitorId: string,
+  ): Promise<boolean> {
     try {
       const competitor = await prisma.competitorTrack.findFirst({
         where: {
@@ -121,7 +124,7 @@ export class CompetitorService {
       });
 
       if (!competitor) {
-        throw new Error('Competitor not found');
+        throw new Error("Competitor not found");
       }
 
       // Soft delete by deactivating
@@ -132,7 +135,7 @@ export class CompetitorService {
 
       return true;
     } catch (error) {
-      console.error('Error removing competitor:', error);
+      console.error("Error removing competitor:", error);
       throw error;
     }
   }
@@ -147,10 +150,10 @@ export class CompetitorService {
           userId,
           isActive: true,
         },
-        orderBy: { lastCheckedAt: 'desc' },
+        orderBy: { lastCheckedAt: "desc" },
       });
 
-      return competitors.map(comp => ({
+      return competitors.map((comp) => ({
         id: comp.id,
         channelName: comp.channelName,
         channelUrl: comp.channelUrl,
@@ -166,7 +169,7 @@ export class CompetitorService {
         isActive: comp.isActive,
       }));
     } catch (error) {
-      console.error('Error fetching competitors:', error);
+      console.error("Error fetching competitors:", error);
       throw error;
     }
   }
@@ -177,7 +180,7 @@ export class CompetitorService {
   static async getCompetitorWithHistory(
     userId: string,
     competitorId: string,
-    days: number = 30
+    days: number = 30,
   ) {
     try {
       const competitor = await prisma.competitorTrack.findFirst({
@@ -188,7 +191,7 @@ export class CompetitorService {
       });
 
       if (!competitor) {
-        throw new Error('Competitor not found');
+        throw new Error("Competitor not found");
       }
 
       // Fetch historical snapshots
@@ -202,7 +205,7 @@ export class CompetitorService {
             gte: cutoffDate,
           },
         },
-        orderBy: { recordedAt: 'asc' },
+        orderBy: { recordedAt: "asc" },
       });
 
       return {
@@ -216,7 +219,7 @@ export class CompetitorService {
           totalViews: competitor.totalViews,
           avgEngagement: competitor.avgEngagement,
         },
-        history: snapshots.map(snap => ({
+        history: snapshots.map((snap) => ({
           date: snap.recordedAt,
           subscriberCount: snap.subscriberCount,
           videoCount: snap.videoCount,
@@ -227,7 +230,7 @@ export class CompetitorService {
         lastCheckedAt: competitor.lastCheckedAt,
       };
     } catch (error) {
-      console.error('Error fetching competitor history:', error);
+      console.error("Error fetching competitor history:", error);
       throw error;
     }
   }
@@ -246,7 +249,10 @@ export class CompetitorService {
       }
 
       // Fetch fresh metrics
-      const metrics = await this.fetchChannelMetrics(competitor.platform, competitor.channelId);
+      const metrics = await this.fetchChannelMetrics(
+        competitor.platform,
+        competitor.channelId,
+      );
       if (!metrics) {
         return false;
       }
@@ -277,7 +283,7 @@ export class CompetitorService {
 
       return true;
     } catch (error) {
-      console.error('Error updating competitor metrics:', error);
+      console.error("Error updating competitor metrics:", error);
       return false;
     }
   }
@@ -302,7 +308,7 @@ export class CompetitorService {
 
       return updated;
     } catch (error) {
-      console.error('Error batch updating competitors:', error);
+      console.error("Error batch updating competitors:", error);
       return 0;
     }
   }
@@ -312,27 +318,29 @@ export class CompetitorService {
    */
   private static async fetchChannelMetrics(
     platform: Platform,
-    channelId: string
+    channelId: string,
   ): Promise<CompetitorMetrics | null> {
     try {
-      if (platform !== 'YOUTUBE') {
+      if (platform !== "YOUTUBE") {
         // TODO: Add Instagram support via RapidAPI
-        console.warn('Non-YouTube platforms not yet supported for competitor tracking');
+        console.warn(
+          "Non-YouTube platforms not yet supported for competitor tracking",
+        );
         return null;
       }
 
       // Use YouTube API to fetch channel stats
       const apiKey = process.env.YOUTUBE_API_KEY;
       if (!apiKey) {
-        throw new Error('YouTube API key not configured');
+        throw new Error("YouTube API key not configured");
       }
 
       const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${apiKey}`
+        `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${apiKey}`,
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch YouTube channel data');
+        throw new Error("Failed to fetch YouTube channel data");
       }
 
       const data = (await response.json()) as {
@@ -354,12 +362,13 @@ export class CompetitorService {
         return null;
       }
 
-      const subscriberCount = BigInt(stats.subscriberCount || '0');
-      const videoCount = parseInt(stats.videoCount || '0', 10);
-      const totalViews = BigInt(stats.viewCount || '0');
+      const subscriberCount = BigInt(stats.subscriberCount || "0");
+      const videoCount = parseInt(stats.videoCount || "0", 10);
+      const totalViews = BigInt(stats.viewCount || "0");
 
       // Calculate average engagement (simple estimate based on available data)
-      const avgEngagement = videoCount > 0 ? Number(totalViews) / videoCount / 1000 : 0;
+      const avgEngagement =
+        videoCount > 0 ? Number(totalViews) / videoCount / 1000 : 0;
 
       return {
         subscriberCount,
@@ -368,7 +377,7 @@ export class CompetitorService {
         avgEngagement,
       };
     } catch (error) {
-      console.error('Error fetching channel metrics:', error);
+      console.error("Error fetching channel metrics:", error);
       return null;
     }
   }
@@ -378,7 +387,7 @@ export class CompetitorService {
    */
   private static formatCompetitorData(
     competitor: any,
-    metrics: CompetitorMetrics
+    metrics: CompetitorMetrics,
   ): CompetitorData {
     return {
       id: competitor.id,

@@ -4,12 +4,12 @@
  * Phase 2.1: Competitor Tracking
  */
 
-'use client';
+"use client";
 
-import { useState, useCallback, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
-import toast from 'react-hot-toast';
-import type { Platform } from '@prisma/client';
+import { useState, useCallback, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import toast from "react-hot-toast";
+import type { Platform } from "@prisma/client";
 
 export interface Competitor {
   id: string;
@@ -27,7 +27,7 @@ export interface Competitor {
   isActive: boolean;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export function useCompetitors() {
   const { user } = useUser();
@@ -44,11 +44,11 @@ export function useCompetitors() {
 
     try {
       const response = await fetch(`${API_URL}/competitors`, {
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch competitors');
+        throw new Error("Failed to fetch competitors");
       }
 
       const data = await response.json();
@@ -56,9 +56,10 @@ export function useCompetitors() {
         setCompetitors(data.data);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch competitors';
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch competitors";
       setError(message);
-      console.error('Fetch competitors error:', err);
+      console.error("Fetch competitors error:", err);
     } finally {
       setLoading(false);
     }
@@ -76,13 +77,13 @@ export function useCompetitors() {
       channelId: string,
       channelName: string,
       channelUrl: string,
-      thumbnailUrl?: string
+      thumbnailUrl?: string,
     ) => {
       try {
         const response = await fetch(`${API_URL}/competitors`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             platform,
             channelId,
@@ -95,57 +96,65 @@ export function useCompetitors() {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to add competitor');
+          throw new Error(data.error || "Failed to add competitor");
         }
 
         toast.success(`Now tracking ${channelName}`);
-        setCompetitors(prev => [...prev, data.data]);
+        setCompetitors((prev) => [...prev, data.data]);
         return data.data;
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to add competitor';
+        const message =
+          err instanceof Error ? err.message : "Failed to add competitor";
         toast.error(message);
         throw err;
       }
     },
-    []
+    [],
   );
 
   // Remove competitor
-  const removeCompetitor = useCallback(async (id: string, channelName: string) => {
-    try {
-      const response = await fetch(`${API_URL}/competitors/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
+  const removeCompetitor = useCallback(
+    async (id: string, channelName: string) => {
+      try {
+        const response = await fetch(`${API_URL}/competitors/${id}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to remove competitor');
+        if (!response.ok) {
+          throw new Error("Failed to remove competitor");
+        }
+
+        toast.success(`Stopped tracking ${channelName}`);
+        setCompetitors((prev) => prev.filter((c) => c.id !== id));
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to remove competitor";
+        toast.error(message);
+        throw err;
       }
-
-      toast.success(`Stopped tracking ${channelName}`);
-      setCompetitors(prev => prev.filter(c => c.id !== id));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to remove competitor';
-      toast.error(message);
-      throw err;
-    }
-  }, []);
+    },
+    [],
+  );
 
   // Get competitor history
   const getHistory = useCallback(async (id: string, days: number = 30) => {
     try {
-      const response = await fetch(`${API_URL}/competitors/${id}?days=${days}`, {
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${API_URL}/competitors/${id}?days=${days}`,
+        {
+          credentials: "include",
+        },
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch competitor history');
+        throw new Error("Failed to fetch competitor history");
       }
 
       const data = await response.json();
       return data.data || null;
     } catch (err) {
-      console.error('Get history error:', err);
+      console.error("Get history error:", err);
       throw err;
     }
   }, []);

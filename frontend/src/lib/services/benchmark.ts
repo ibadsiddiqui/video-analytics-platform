@@ -4,9 +4,9 @@
  * Phase 2.1: Competitive Intelligence
  */
 
-import { prisma } from '@/lib/prisma';
-import { Platform, VideoNiche } from '@prisma/client';
-import NicheDetector from './niche-detector';
+import { prisma } from "@/lib/prisma";
+import { Platform, VideoNiche } from "@prisma/client";
+import NicheDetector from "./niche-detector";
 
 export interface BenchmarkData {
   platform: Platform;
@@ -34,11 +34,11 @@ export interface VideoComparison {
   };
   benchmark: BenchmarkData;
   comparison: {
-    viewsPercentile: number;      // 0-100, where 50 = median
+    viewsPercentile: number; // 0-100, where 50 = median
     engagementPercentile: number;
-    viewsVsAverage: number;        // percentage above/below average
-    engagementVsAverage: number;   // percentage above/below average
-    rank: 'top_10' | 'top_25' | 'top_50' | 'average' | 'below_average';
+    viewsVsAverage: number; // percentage above/below average
+    engagementVsAverage: number; // percentage above/below average
+    rank: "top_10" | "top_25" | "top_50" | "average" | "below_average";
   };
 }
 
@@ -49,7 +49,7 @@ export class BenchmarkService {
    */
   static async calculateNicheBenchmark(
     platform: Platform,
-    niche: VideoNiche
+    niche: VideoNiche,
   ): Promise<BenchmarkData | null> {
     try {
       // Fetch all videos that are in this niche
@@ -62,15 +62,18 @@ export class BenchmarkService {
         },
         include: {
           analytics: {
-            orderBy: { recordedAt: 'desc' },
+            orderBy: { recordedAt: "desc" },
             take: 1, // Latest analytics
           },
         },
       });
 
       // Filter videos to estimated niche (using title as proxy)
-      const nicheVideos = videos.filter(v => {
-        const detected = NicheDetector.detect(v.title || '', v.description || '');
+      const nicheVideos = videos.filter((v) => {
+        const detected = NicheDetector.detect(
+          v.title || "",
+          v.description || "",
+        );
         return detected === niche;
       });
 
@@ -79,22 +82,24 @@ export class BenchmarkService {
       }
 
       // Calculate aggregate metrics
-      const viewCounts = nicheVideos.map(v => Number(v.viewCount));
-      const likeCounts = nicheVideos.map(v => Number(v.likeCount));
-      const commentCounts = nicheVideos.map(v => Number(v.commentCount));
+      const viewCounts = nicheVideos.map((v) => Number(v.viewCount));
+      const likeCounts = nicheVideos.map((v) => Number(v.likeCount));
+      const commentCounts = nicheVideos.map((v) => Number(v.commentCount));
       const engagementRates = nicheVideos
-        .map(v => v.engagementRate)
-        .filter(er => er !== null) as number[];
+        .map((v) => v.engagementRate)
+        .filter((er) => er !== null) as number[];
 
       // Calculate averages
       const avgViewCount = BigInt(
-        Math.round(viewCounts.reduce((a, b) => a + b, 0) / viewCounts.length)
+        Math.round(viewCounts.reduce((a, b) => a + b, 0) / viewCounts.length),
       );
       const avgLikeCount = BigInt(
-        Math.round(likeCounts.reduce((a, b) => a + b, 0) / likeCounts.length)
+        Math.round(likeCounts.reduce((a, b) => a + b, 0) / likeCounts.length),
       );
       const avgCommentCount = BigInt(
-        Math.round(commentCounts.reduce((a, b) => a + b, 0) / commentCounts.length)
+        Math.round(
+          commentCounts.reduce((a, b) => a + b, 0) / commentCounts.length,
+        ),
       );
       const avgEngagementRate =
         engagementRates.length > 0
@@ -149,7 +154,7 @@ export class BenchmarkService {
         sampleSize: nicheVideos.length,
       };
     } catch (error) {
-      console.error('Error calculating benchmark:', error);
+      console.error("Error calculating benchmark:", error);
       return null;
     }
   }
@@ -157,7 +162,9 @@ export class BenchmarkService {
   /**
    * Compare a video against niche benchmarks
    */
-  static async compareVideoToBenchmark(videoId: string): Promise<VideoComparison | null> {
+  static async compareVideoToBenchmark(
+    videoId: string,
+  ): Promise<VideoComparison | null> {
     try {
       // Fetch video
       const video = await prisma.video.findUnique({
@@ -169,7 +176,10 @@ export class BenchmarkService {
       }
 
       // Detect niche
-      const niche = NicheDetector.detect(video.title || '', video.description || '');
+      const niche = NicheDetector.detect(
+        video.title || "",
+        video.description || "",
+      );
 
       // Fetch or create benchmark
       let benchmark = await prisma.benchmark.findUnique({
@@ -183,7 +193,10 @@ export class BenchmarkService {
 
       // If benchmark doesn't exist, calculate it
       if (!benchmark) {
-        const calculated = await this.calculateNicheBenchmark(video.platform, niche);
+        const calculated = await this.calculateNicheBenchmark(
+          video.platform,
+          niche,
+        );
         if (!calculated) {
           return null;
         }
@@ -206,35 +219,38 @@ export class BenchmarkService {
       const avgViewCount = Number(benchmark.avgViewCount);
       const viewsPercentile = this.getPercentile(
         videoViewCount,
-        benchmark.viewPercentiles as Record<string, number>
+        benchmark.viewPercentiles as Record<string, number>,
       );
 
       const videoEngagementRate = video.engagementRate || 0;
       const avgEngagementRate = benchmark.avgEngagementRate;
       const engagementPercentile = this.getPercentile(
         videoEngagementRate,
-        benchmark.engagementPercentiles as Record<string, number>
+        benchmark.engagementPercentiles as Record<string, number>,
       );
 
       const viewsVsAverage =
-        avgViewCount > 0 ? ((videoViewCount - avgViewCount) / avgViewCount) * 100 : 0;
+        avgViewCount > 0
+          ? ((videoViewCount - avgViewCount) / avgViewCount) * 100
+          : 0;
       const engagementVsAverage =
         avgEngagementRate > 0
-          ? ((videoEngagementRate - avgEngagementRate) / avgEngagementRate) * 100
+          ? ((videoEngagementRate - avgEngagementRate) / avgEngagementRate) *
+            100
           : 0;
 
       // Determine rank
-      let rank: 'top_10' | 'top_25' | 'top_50' | 'average' | 'below_average';
+      let rank: "top_10" | "top_25" | "top_50" | "average" | "below_average";
       if (viewsPercentile >= 90) {
-        rank = 'top_10';
+        rank = "top_10";
       } else if (viewsPercentile >= 75) {
-        rank = 'top_25';
+        rank = "top_25";
       } else if (viewsPercentile >= 50) {
-        rank = 'top_50';
+        rank = "top_50";
       } else if (viewsPercentile >= 25) {
-        rank = 'average';
+        rank = "average";
       } else {
-        rank = 'below_average';
+        rank = "below_average";
       }
 
       return {
@@ -270,7 +286,7 @@ export class BenchmarkService {
         },
       };
     } catch (error) {
-      console.error('Error comparing video to benchmark:', error);
+      console.error("Error comparing video to benchmark:", error);
       return null;
     }
   }
@@ -280,7 +296,7 @@ export class BenchmarkService {
    */
   static async getBenchmark(
     platform: Platform,
-    niche: VideoNiche
+    niche: VideoNiche,
   ): Promise<BenchmarkData | null> {
     try {
       const benchmark = await prisma.benchmark.findUnique({
@@ -311,7 +327,7 @@ export class BenchmarkService {
         sampleSize: benchmark.sampleSize,
       };
     } catch (error) {
-      console.error('Error fetching benchmark:', error);
+      console.error("Error fetching benchmark:", error);
       return null;
     }
   }
@@ -319,7 +335,9 @@ export class BenchmarkService {
   /**
    * Calculate percentiles for a dataset
    */
-  private static calculatePercentiles(values: number[]): Record<string, number> {
+  private static calculatePercentiles(
+    values: number[],
+  ): Record<string, number> {
     if (values.length === 0) {
       return { p10: 0, p25: 0, p50: 0, p75: 0, p90: 0 };
     }
@@ -338,7 +356,10 @@ export class BenchmarkService {
   /**
    * Get value at specific percentile
    */
-  private static getValueAtPercentile(sortedValues: number[], percentile: number): number {
+  private static getValueAtPercentile(
+    sortedValues: number[],
+    percentile: number,
+  ): number {
     const index = Math.ceil((percentile / 100) * sortedValues.length) - 1;
     return sortedValues[Math.max(0, index)];
   }
@@ -348,7 +369,7 @@ export class BenchmarkService {
    */
   private static getPercentile(
     value: number,
-    percentiles: Record<string, number>
+    percentiles: Record<string, number>,
   ): number {
     // Simple percentile calculation based on stored percentile data
     if (value <= percentiles.p10) return 10;

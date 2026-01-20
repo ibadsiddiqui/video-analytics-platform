@@ -30,7 +30,7 @@ export class ViralPredictorService {
    */
   static async calculateViralPotential(
     videoId: string,
-    niche?: string
+    niche?: string,
   ): Promise<ViralPotentialResult | null> {
     try {
       // Check cache first
@@ -62,26 +62,35 @@ export class ViralPredictorService {
         : NicheDetector.detect(video.title || "", video.description || "");
 
       // Fetch benchmark for comparison
-      const benchmark = await BenchmarkService.getBenchmark(video.platform, videoNiche);
+      const benchmark = await BenchmarkService.getBenchmark(
+        video.platform,
+        videoNiche,
+      );
 
       // Calculate individual scores
       const velocityScore = this.calculateVelocityScore(
         video.analytics,
         benchmark,
-        video.publishedAt
+        video.publishedAt,
       );
-      const sentimentScore = this.calculateSentimentScore(video.analytics, benchmark);
+      const sentimentScore = this.calculateSentimentScore(
+        video.analytics,
+        benchmark,
+      );
       const commentVelocityScore = this.calculateCommentVelocityScore(
         video.analytics,
         benchmark,
-        video.publishedAt
+        video.publishedAt,
       );
       const likeRatioScore = this.calculateLikeRatioScore(video);
 
       // Weighted final score (0-100)
       // Velocity has highest weight as early engagement is key to virality
       const score = Math.round(
-        velocityScore * 0.4 + sentimentScore * 0.2 + commentVelocityScore * 0.2 + likeRatioScore * 0.2
+        velocityScore * 0.4 +
+          sentimentScore * 0.2 +
+          commentVelocityScore * 0.2 +
+          likeRatioScore * 0.2,
       );
 
       // Categorize prediction
@@ -131,7 +140,7 @@ export class ViralPredictorService {
   private static calculateVelocityScore(
     analytics: any[],
     benchmark: any,
-    publishedAt?: Date
+    publishedAt?: Date,
   ): number {
     if (!analytics || analytics.length < 2 || !publishedAt) {
       return 50; // Neutral score if insufficient data
@@ -141,9 +150,12 @@ export class ViralPredictorService {
     const oldest = analytics[analytics.length - 1];
     const newest = analytics[0];
 
-    const viewGrowth = Number(newest.viewCount || 0) - Number(oldest.viewCount || 0);
+    const viewGrowth =
+      Number(newest.viewCount || 0) - Number(oldest.viewCount || 0);
     const timeElapsedHours =
-      (new Date(newest.recordedAt).getTime() - new Date(oldest.recordedAt).getTime()) / (1000 * 60 * 60);
+      (new Date(newest.recordedAt).getTime() -
+        new Date(oldest.recordedAt).getTime()) /
+      (1000 * 60 * 60);
 
     if (timeElapsedHours === 0) {
       return 50;
@@ -172,7 +184,10 @@ export class ViralPredictorService {
    * Calculate sentiment score based on positive sentiment percentage
    * Compares video's sentiment vs niche benchmark
    */
-  private static calculateSentimentScore(analytics: any[], benchmark: any): number {
+  private static calculateSentimentScore(
+    analytics: any[],
+    benchmark: any,
+  ): number {
     if (!analytics || analytics.length === 0) {
       return 50; // Neutral score if no data
     }
@@ -182,7 +197,8 @@ export class ViralPredictorService {
     const positivePercent = latest.positivePercent || 0;
 
     // Compare to benchmark (assume benchmark has sentiment data)
-    const benchmarkPositivePercent = benchmark?.sentiment?.positivePercent || 50;
+    const benchmarkPositivePercent =
+      benchmark?.sentiment?.positivePercent || 50;
 
     // Video above 70% positive sentiment = viral indicator
     if (positivePercent > 70) return 90;
@@ -199,7 +215,7 @@ export class ViralPredictorService {
   private static calculateCommentVelocityScore(
     analytics: any[],
     benchmark: any,
-    publishedAt?: Date
+    publishedAt?: Date,
   ): number {
     if (!analytics || analytics.length < 2) {
       return 50;
@@ -211,18 +227,23 @@ export class ViralPredictorService {
     const commentGrowth =
       Number(newest.commentCount || 0) - Number(oldest.commentCount || 0);
     const timeElapsedHours =
-      (new Date(newest.recordedAt).getTime() - new Date(oldest.recordedAt).getTime()) / (1000 * 60 * 60);
+      (new Date(newest.recordedAt).getTime() -
+        new Date(oldest.recordedAt).getTime()) /
+      (1000 * 60 * 60);
 
     if (timeElapsedHours === 0) {
       return 50;
     }
 
     const commentsPerHour = commentGrowth / timeElapsedHours;
-    const benchmarkComments = benchmark ? Number(benchmark.avgCommentCount) : 100;
+    const benchmarkComments = benchmark
+      ? Number(benchmark.avgCommentCount)
+      : 100;
     const benchmarkCommentsPerDay = benchmarkComments / 7;
     const benchmarkCommentsPerHour = benchmarkCommentsPerDay / 24;
 
-    const commentRatio = commentsPerHour / Math.max(benchmarkCommentsPerHour, 0.01);
+    const commentRatio =
+      commentsPerHour / Math.max(benchmarkCommentsPerHour, 0.01);
 
     // Convert ratio to 0-100 score
     if (commentRatio > 3) return 95;
@@ -257,8 +278,13 @@ export class ViralPredictorService {
   /**
    * Generate human-readable explanation of the viral score
    */
-  private static generateExplanation(score: number, factors: ViralPotentialFactors): string {
-    const strongFactor = Object.entries(factors).sort(([, a], [, b]) => b - a)[0];
+  private static generateExplanation(
+    score: number,
+    factors: ViralPotentialFactors,
+  ): string {
+    const strongFactor = Object.entries(factors).sort(
+      ([, a], [, b]) => b - a,
+    )[0];
     const weakFactor = Object.entries(factors).sort(([, a], [, b]) => a - b)[0];
 
     const strongName = this.factorName(strongFactor[0]);

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useUserProfile } from './useUserProfile';
-import { TIER_FEATURES, hasFeatureAccess } from '@/lib/constants/tiers';
-import { UserTier } from '@prisma/client';
+import { useUserProfile } from "./useUserProfile";
+import { TIER_FEATURES, hasFeatureAccess } from "@/lib/constants/tiers";
+import { UserTier } from "@prisma/client";
 
 export function useTierAccess() {
   const { profile, loading } = useUserProfile();
@@ -18,11 +18,11 @@ export function useTierAccess() {
     loading,
     hasAccess: checkAccess,
     // Specific feature checks
-    canManageApiKeys: checkAccess('API_KEY_MANAGEMENT'),
-    canTrackCompetitors: checkAccess('COMPETITOR_TRACKING'),
-    canUseBenchmarks: checkAccess('BENCHMARK_COMPARISONS'),
+    canManageApiKeys: checkAccess("API_KEY_MANAGEMENT"),
+    canTrackCompetitors: checkAccess("COMPETITOR_TRACKING"),
+    canUseBenchmarks: checkAccess("BENCHMARK_COMPARISONS"),
     // Phase 3 features
-    canUseViralScore: checkAccess('VIRAL_SCORE'),
-    canUsePostingTimeOptimizer: checkAccess('POSTING_TIME_OPTIMIZER'),
+    canUseViralScore: checkAccess("VIRAL_SCORE"),
+    canUsePostingTimeOptimizer: checkAccess("POSTING_TIME_OPTIMIZER"),
   };
 }

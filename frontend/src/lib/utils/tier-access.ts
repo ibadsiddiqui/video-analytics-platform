@@ -1,8 +1,8 @@
-import { auth } from '@clerk/nextjs/server';
-import { prisma } from '@/lib/prisma';
-import { UserTier } from '@prisma/client';
-import { TIER_FEATURES } from '@/lib/constants/tiers';
-import { NextResponse } from 'next/server';
+import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
+import { UserTier } from "@prisma/client";
+import { TIER_FEATURES } from "@/lib/constants/tiers";
+import { NextResponse } from "next/server";
 
 export interface TierCheckResult {
   hasAccess: boolean;
@@ -14,7 +14,7 @@ export interface TierCheckResult {
  * Server-side tier access check for API routes
  */
 export async function checkTierAccess(
-  feature: keyof typeof TIER_FEATURES
+  feature: keyof typeof TIER_FEATURES,
 ): Promise<TierCheckResult> {
   try {
     const { userId } = await auth();
@@ -23,8 +23,8 @@ export async function checkTierAccess(
       return {
         hasAccess: false,
         error: NextResponse.json(
-          { error: 'Authentication required', feature },
-          { status: 401 }
+          { error: "Authentication required", feature },
+          { status: 401 },
         ),
       };
     }
@@ -37,10 +37,7 @@ export async function checkTierAccess(
     if (!user) {
       return {
         hasAccess: false,
-        error: NextResponse.json(
-          { error: 'User not found' },
-          { status: 404 }
-        ),
+        error: NextResponse.json({ error: "User not found" }, { status: 404 }),
       };
     }
 
@@ -53,13 +50,13 @@ export async function checkTierAccess(
         userTier: user.tier,
         error: NextResponse.json(
           {
-            error: 'Upgrade required',
+            error: "Upgrade required",
             message: `This feature requires ${minimumTier} tier or higher`,
             currentTier: user.tier,
             requiredTier: minimumTier,
-            upgradeUrl: '/pro-features',
+            upgradeUrl: "/pro-features",
           },
-          { status: 403 }
+          { status: 403 },
         ),
       };
     }
@@ -69,12 +66,12 @@ export async function checkTierAccess(
       userTier: user.tier,
     };
   } catch (error) {
-    console.error('Tier access check error:', error);
+    console.error("Tier access check error:", error);
     return {
       hasAccess: false,
       error: NextResponse.json(
-        { error: 'Failed to check tier access' },
-        { status: 500 }
+        { error: "Failed to check tier access" },
+        { status: 500 },
       ),
     };
   }

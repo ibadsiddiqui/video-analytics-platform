@@ -36,7 +36,15 @@ export interface PostingTimeRecommendation {
   totalAnalyzed: number;
 }
 
-const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const DAYS_OF_WEEK = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
 export class PostingTimeOptimizerService {
   /**
@@ -45,12 +53,13 @@ export class PostingTimeOptimizerService {
    */
   static async recommendPostingTimes(
     userId: string,
-    niche?: string
+    niche?: string,
   ): Promise<PostingTimeRecommendation | null> {
     try {
       // Check cache first (24-hour cache for this data)
       const cacheKey = `posting-times:${userId}:${niche || "all"}`;
-      const cached = await cacheService.get<PostingTimeRecommendation>(cacheKey);
+      const cached =
+        await cacheService.get<PostingTimeRecommendation>(cacheKey);
       if (cached) {
         return cached;
       }
@@ -120,9 +129,25 @@ export class PostingTimeOptimizerService {
       viewCount: bigint;
       likeCount: bigint;
       commentCount: bigint;
+    }>,
+  ): Map<
+    string,
+    Array<{
+      engagement: number;
+      views: bigint;
+      likes: bigint;
+      comments: bigint;
     }>
-  ): Map<string, Array<{ engagement: number; views: bigint; likes: bigint; comments: bigint }>> {
-    const slots = new Map<string, Array<{ engagement: number; views: bigint; likes: bigint; comments: bigint }>>();
+  > {
+    const slots = new Map<
+      string,
+      Array<{
+        engagement: number;
+        views: bigint;
+        likes: bigint;
+        comments: bigint;
+      }>
+    >();
 
     for (const video of videos) {
       if (!video.publishedAt) continue;
@@ -158,7 +183,15 @@ export class PostingTimeOptimizerService {
    * Calculate average engagement and rank time slots
    */
   private static rankTimeSlots(
-    performanceBySlot: Map<string, Array<{ engagement: number; views: bigint; likes: bigint; comments: bigint }>>
+    performanceBySlot: Map<
+      string,
+      Array<{
+        engagement: number;
+        views: bigint;
+        likes: bigint;
+        comments: bigint;
+      }>
+    >,
   ): PostingTimeSlot[] {
     const rankedSlots: PostingTimeSlot[] = [];
 
@@ -168,24 +201,33 @@ export class PostingTimeOptimizerService {
       const endHour = startHour + 2;
 
       const avgEngagement =
-        performances.length > 0 ? performances.reduce((sum, p) => sum + p.engagement, 0) / performances.length : 0;
+        performances.length > 0
+          ? performances.reduce((sum, p) => sum + p.engagement, 0) /
+            performances.length
+          : 0;
 
       const avgViews =
         performances.length > 0
           ? Math.round(
-              performances.reduce((sum, p) => sum + Number(p.views), 0) / performances.length
+              performances.reduce((sum, p) => sum + Number(p.views), 0) /
+                performances.length,
             )
           : 0;
 
       const avgLikes =
         performances.length > 0
           ? Math.round(
-              performances.reduce((sum, p) => sum + Number(p.likes), 0) / performances.length
+              performances.reduce((sum, p) => sum + Number(p.likes), 0) /
+                performances.length,
             )
           : 0;
 
       const confidence: "high" | "medium" | "low" =
-        performances.length >= 3 ? "high" : performances.length >= 2 ? "medium" : "low";
+        performances.length >= 3
+          ? "high"
+          : performances.length >= 2
+            ? "medium"
+            : "low";
 
       // Format hour range as "2 AM", "6 AM", "2 PM", etc.
       const hourRange = this.formatHourRange(startHour, endHour);
@@ -204,14 +246,16 @@ export class PostingTimeOptimizerService {
     }
 
     // Sort by engagement rate descending
-    return rankedSlots.sort((a, b) => b.averageEngagementRate - a.averageEngagementRate);
+    return rankedSlots.sort(
+      (a, b) => b.averageEngagementRate - a.averageEngagementRate,
+    );
   }
 
   /**
    * Generate heatmap data for visualization (7 days x 24 hours)
    */
   private static generateHeatmapData(
-    performanceBySlot: Map<string, Array<{ engagement: number }>>
+    performanceBySlot: Map<string, Array<{ engagement: number }>>,
   ): HeatmapDataPoint[] {
     const heatmapData: HeatmapDataPoint[] = [];
 
@@ -242,11 +286,15 @@ export class PostingTimeOptimizerService {
 
       const avgEngagement =
         performances.length > 0
-          ? performances.reduce((sum, p) => sum + p.engagement, 0) / performances.length
+          ? performances.reduce((sum, p) => sum + p.engagement, 0) /
+            performances.length
           : 0;
       const avgViews =
         performances.length > 0
-          ? performances.reduce((sum: number, p: any) => sum + Number(p.views || 0), 0) / performances.length
+          ? performances.reduce(
+              (sum: number, p: any) => sum + Number(p.views || 0),
+              0,
+            ) / performances.length
           : 0;
 
       // Distribute 2-hour slot across both hours
@@ -269,12 +317,15 @@ export class PostingTimeOptimizerService {
   /**
    * Generate insights based on top posting times
    */
-  private static generatePostingInsights(topSlots: PostingTimeSlot[], totalVideos: number): string[] {
+  private static generatePostingInsights(
+    topSlots: PostingTimeSlot[],
+    totalVideos: number,
+  ): string[] {
     const insights: string[] = [];
 
     if (totalVideos < 3) {
       insights.push(
-        "You need to analyze at least 3 videos to get reliable posting time recommendations. Keep tracking your videos!"
+        "You need to analyze at least 3 videos to get reliable posting time recommendations. Keep tracking your videos!",
       );
       return insights;
     }
@@ -283,20 +334,23 @@ export class PostingTimeOptimizerService {
     if (topSlots.length > 0) {
       const best = topSlots[0];
       insights.push(
-        `Your best time is ${best.dayOfWeek} at ${best.hourRange} with an average ${best.averageEngagementRate.toFixed(1)}% engagement rate (based on ${best.videoCount} videos).`
+        `Your best time is ${best.dayOfWeek} at ${best.hourRange} with an average ${best.averageEngagementRate.toFixed(1)}% engagement rate (based on ${best.videoCount} videos).`,
       );
     }
 
     // Insight 2: Consistency
     const engagementRanges = topSlots.map((s) => s.averageEngagementRate);
     if (engagementRanges.length > 1) {
-      const variance = Math.max(...engagementRanges) - Math.min(...engagementRanges);
+      const variance =
+        Math.max(...engagementRanges) - Math.min(...engagementRanges);
       if (variance < 2) {
         insights.push(
-          "Posting times have consistent performance—timing matters less than content quality for your niche."
+          "Posting times have consistent performance—timing matters less than content quality for your niche.",
         );
       } else {
-        insights.push("There's significant variation in performance by time. Scheduling matters for your audience.");
+        insights.push(
+          "There's significant variation in performance by time. Scheduling matters for your audience.",
+        );
       }
     }
 
@@ -306,22 +360,32 @@ export class PostingTimeOptimizerService {
         acc[slot.dayOfWeek] = (acc[slot.dayOfWeek] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>
+      {} as Record<string, number>,
     );
 
-    const bestDay = Object.entries(dayFrequency).sort(([, a], [, b]) => b - a)[0];
+    const bestDay = Object.entries(dayFrequency).sort(
+      ([, a], [, b]) => b - a,
+    )[0];
     if (bestDay) {
       insights.push(`${bestDay[0]}s are your strongest posting day overall.`);
     }
 
     // Insight 4: Weekend vs Weekday
-    const weekdaySlots = topSlots.filter((s) => !["Saturday", "Sunday"].includes(s.dayOfWeek));
-    const weekendSlots = topSlots.filter((s) => ["Saturday", "Sunday"].includes(s.dayOfWeek));
+    const weekdaySlots = topSlots.filter(
+      (s) => !["Saturday", "Sunday"].includes(s.dayOfWeek),
+    );
+    const weekendSlots = topSlots.filter((s) =>
+      ["Saturday", "Sunday"].includes(s.dayOfWeek),
+    );
 
     if (weekdaySlots.length > weekendSlots.length) {
-      insights.push("Your audience is more engaged during weekdays—consider prioritizing weekday posts.");
+      insights.push(
+        "Your audience is more engaged during weekdays—consider prioritizing weekday posts.",
+      );
     } else if (weekendSlots.length > weekdaySlots.length) {
-      insights.push("Your audience is more active on weekends—plan your content accordingly.");
+      insights.push(
+        "Your audience is more active on weekends—plan your content accordingly.",
+      );
     }
 
     return insights;

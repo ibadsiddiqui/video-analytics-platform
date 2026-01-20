@@ -4,12 +4,12 @@
  * Phase 2.1: Competitive Intelligence
  */
 
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import type { VideoComparison } from '@/lib/services/benchmark';
+import { useState, useEffect, useCallback } from "react";
+import type { VideoComparison } from "@/lib/services/benchmark";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export function useBenchmark(videoId: string | null) {
   const [data, setData] = useState<VideoComparison | null>(null);
@@ -27,9 +27,9 @@ export function useBenchmark(videoId: string | null) {
 
     try {
       const response = await fetch(`${API_URL}/benchmarks/compare`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ videoId }),
       });
@@ -48,9 +48,10 @@ export function useBenchmark(videoId: string | null) {
         setData(result.data);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch benchmark data';
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch benchmark data";
       setError(message);
-      console.error('Benchmark fetch error:', err);
+      console.error("Benchmark fetch error:", err);
     } finally {
       setLoading(false);
     }

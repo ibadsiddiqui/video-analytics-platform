@@ -20,7 +20,9 @@ export interface RateLimitResult {
  */
 function getStartOfDay(): Date {
   const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  );
 }
 
 /**
@@ -56,7 +58,7 @@ export function getDailyLimit(tier: UserTier): number {
  */
 export async function checkAndTrackRequest(
   clerkId: string,
-  track: boolean = true
+  track: boolean = true,
 ): Promise<RateLimitResult> {
   // Find the user
   const user = await prisma.user.findUnique({
@@ -91,7 +93,10 @@ export async function checkAndTrackRequest(
 
   // Check if the user has remaining requests
   const allowed = currentCount < dailyLimit;
-  const remaining = Math.max(0, dailyLimit - currentCount - (track && allowed ? 1 : 0));
+  const remaining = Math.max(
+    0,
+    dailyLimit - currentCount - (track && allowed ? 1 : 0),
+  );
 
   // If tracking is enabled and the request is allowed, increment the counter
   if (track && allowed) {
@@ -128,7 +133,9 @@ export async function checkAndTrackRequest(
  * @param clerkId - The Clerk user ID
  * @returns RateLimitResult with the current rate limit status
  */
-export async function getRateLimitStatus(clerkId: string): Promise<RateLimitResult> {
+export async function getRateLimitStatus(
+  clerkId: string,
+): Promise<RateLimitResult> {
   return checkAndTrackRequest(clerkId, false);
 }
 
@@ -137,7 +144,9 @@ export async function getRateLimitStatus(clerkId: string): Promise<RateLimitResu
  * @param result - The rate limit result
  * @returns Headers object with rate limit information
  */
-export function createRateLimitHeaders(result: RateLimitResult): Record<string, string> {
+export function createRateLimitHeaders(
+  result: RateLimitResult,
+): Record<string, string> {
   return {
     "X-RateLimit-Limit": result.limit.toString(),
     "X-RateLimit-Remaining": result.remaining.toString(),

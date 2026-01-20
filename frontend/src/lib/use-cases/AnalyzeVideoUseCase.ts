@@ -77,7 +77,7 @@ export interface AnalyticsResult {
         likeRatioScore: number;
       };
       explanation: string;
-      prediction: 'viral' | 'high_potential' | 'moderate' | 'low';
+      prediction: "viral" | "high_potential" | "moderate" | "low";
     } | null;
     availableFeatures?: string[];
     locked?: boolean;

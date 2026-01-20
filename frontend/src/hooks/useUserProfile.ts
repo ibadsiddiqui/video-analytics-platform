@@ -49,7 +49,8 @@ export function useUserProfile(): UseUserProfileReturn {
       const profileData: UserProfile = {
         email: response.data.user.email,
         tier: response.data.user.tier,
-        dailyRequests: response.data.rateLimit.used ?? response.data.user.dailyRequests,
+        dailyRequests:
+          response.data.rateLimit.used ?? response.data.user.dailyRequests,
         dailyLimit: response.data.rateLimit.limit,
         firstName: response.data.user.firstName,
         lastName: response.data.user.lastName,
