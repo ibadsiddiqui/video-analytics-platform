@@ -12,10 +12,7 @@ import {
 } from "lucide-react";
 import { useTierAccess } from "@/hooks/useTierAccess";
 import LockedFeatureCard from "@/components/LockedFeatureCard";
-import type {
-  TitleAnalysis,
-  TitleStyle,
-} from "@/lib/services/title-analyzer";
+import type { TitleAnalysis, TitleStyle } from "@/lib/services/title-analyzer";
 
 interface TitleAnalysisCardProps {
   data?: (TitleAnalysis & { locked?: boolean; requiredTier?: string }) | null;
@@ -23,17 +20,56 @@ interface TitleAnalysisCardProps {
 }
 
 // Style colors for visual distinction
-const styleColors: Record<TitleStyle, { bg: string; text: string; border: string }> = {
-  QUESTION: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" },
-  NUMBERED_LIST: { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200" },
-  HOW_TO: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200" },
-  EMOTIONAL: { bg: "bg-pink-50", text: "text-pink-700", border: "border-pink-200" },
-  CLICKBAIT: { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200" },
-  STATEMENT: { bg: "bg-slate-50", text: "text-slate-700", border: "border-slate-200" },
-  COMPARISON: { bg: "bg-cyan-50", text: "text-cyan-700", border: "border-cyan-200" },
-  TUTORIAL: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
+const styleColors: Record<
+  TitleStyle,
+  { bg: string; text: string; border: string }
+> = {
+  QUESTION: {
+    bg: "bg-blue-50",
+    text: "text-blue-700",
+    border: "border-blue-200",
+  },
+  NUMBERED_LIST: {
+    bg: "bg-purple-50",
+    text: "text-purple-700",
+    border: "border-purple-200",
+  },
+  HOW_TO: {
+    bg: "bg-green-50",
+    text: "text-green-700",
+    border: "border-green-200",
+  },
+  EMOTIONAL: {
+    bg: "bg-pink-50",
+    text: "text-pink-700",
+    border: "border-pink-200",
+  },
+  CLICKBAIT: {
+    bg: "bg-orange-50",
+    text: "text-orange-700",
+    border: "border-orange-200",
+  },
+  STATEMENT: {
+    bg: "bg-slate-50",
+    text: "text-slate-700",
+    border: "border-slate-200",
+  },
+  COMPARISON: {
+    bg: "bg-cyan-50",
+    text: "text-cyan-700",
+    border: "border-cyan-200",
+  },
+  TUTORIAL: {
+    bg: "bg-emerald-50",
+    text: "text-emerald-700",
+    border: "border-emerald-200",
+  },
   NEWS: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
-  REVIEW: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200" },
+  REVIEW: {
+    bg: "bg-amber-50",
+    text: "text-amber-700",
+    border: "border-amber-200",
+  },
 };
 
 const styleLabels: Record<TitleStyle, string> = {
@@ -94,7 +130,9 @@ function ScoreRing({ score }: { score: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`text-2xl sm:text-3xl font-bold ${getScoreColor(score)}`}>
+        <span
+          className={`text-2xl sm:text-3xl font-bold ${getScoreColor(score)}`}
+        >
           {score}
         </span>
         <span className="text-xs text-slate-500">{getScoreLabel(score)}</span>
@@ -111,9 +149,7 @@ export default function TitleAnalysisCard({
 
   // Show locked state for non-PRO users or when data indicates locked
   if (!tierLoading && (!canUseTitleAnalysis || data?.locked)) {
-    return (
-      <LockedFeatureCard feature="Title Analysis" requiredTier="PRO" />
-    );
+    return <LockedFeatureCard feature="Title Analysis" requiredTier="PRO" />;
   }
 
   // Extract analysis from data
@@ -264,7 +300,6 @@ export default function TitleAnalysisCard({
           </ul>
         </div>
       )}
-
     </motion.div>
   );
 }

@@ -95,7 +95,7 @@ export class ThumbnailAnalyzer {
    */
   static async analyze(
     thumbnailUrl: string,
-    videoTitle?: string
+    videoTitle?: string,
   ): Promise<ThumbnailAnalysis> {
     const factors = await this.analyzeFactors(thumbnailUrl);
     const score = this.calculateScore(factors);
@@ -115,7 +115,7 @@ export class ThumbnailAnalyzer {
    * Analyze thumbnail factors from URL patterns and metadata
    */
   private static async analyzeFactors(
-    url: string
+    url: string,
   ): Promise<ThumbnailAnalysis["factors"]> {
     // Extract resolution hints from URL
     const resolution = this.detectResolution(url);
@@ -137,7 +137,7 @@ export class ThumbnailAnalyzer {
    * Detect resolution from URL patterns (YouTube-specific)
    */
   private static detectResolution(
-    url: string
+    url: string,
   ): "hd" | "sd" | "low" | "unknown" {
     const lowerUrl = url.toLowerCase();
 
@@ -190,9 +190,7 @@ export class ThumbnailAnalyzer {
   /**
    * Calculate overall effectiveness score
    */
-  private static calculateScore(
-    factors: ThumbnailAnalysis["factors"]
-  ): number {
+  private static calculateScore(factors: ThumbnailAnalysis["factors"]): number {
     let score = 50; // Base score
 
     // Resolution scoring
@@ -261,55 +259,55 @@ export class ThumbnailAnalyzer {
    */
   private static generateRecommendations(
     factors: ThumbnailAnalysis["factors"],
-    videoTitle?: string
+    videoTitle?: string,
   ): string[] {
     const recommendations: string[] = [];
 
     // Resolution recommendations
     if (factors.resolution === "low") {
       recommendations.push(
-        "Upload a higher resolution thumbnail (1280x720) for better visibility across devices"
+        "Upload a higher resolution thumbnail (1280x720) for better visibility across devices",
       );
     } else if (factors.resolution === "sd") {
       recommendations.push(
-        "Consider upgrading to HD resolution (1280x720) for maximum quality"
+        "Consider upgrading to HD resolution (1280x720) for maximum quality",
       );
     }
 
     // Aspect ratio recommendations
     if (factors.aspectRatio === "non_standard") {
       recommendations.push(
-        "Use 16:9 aspect ratio to prevent letterboxing on YouTube"
+        "Use 16:9 aspect ratio to prevent letterboxing on YouTube",
       );
     }
 
     // Face detection recommendations
     if (factors.hasFace === "unknown" || factors.hasFace === "unlikely") {
       recommendations.push(
-        "Consider including a human face - thumbnails with faces get 38% more clicks on average"
+        "Consider including a human face - thumbnails with faces get 38% more clicks on average",
       );
     }
 
     // Text recommendations
     if (factors.hasText === "unknown") {
       recommendations.push(
-        "Add 2-4 words of bold, readable text to complement your title"
+        "Add 2-4 words of bold, readable text to complement your title",
       );
     }
 
     // General best practices
     recommendations.push(
-      "Use contrasting colors to stand out in search results and suggested videos"
+      "Use contrasting colors to stand out in search results and suggested videos",
     );
 
     if (videoTitle && videoTitle.length > 0) {
       recommendations.push(
-        "Ensure your thumbnail visually represents your title's promise"
+        "Ensure your thumbnail visually represents your title's promise",
       );
     }
 
     recommendations.push(
-      "A/B test different thumbnail styles to see what works best for your audience"
+      "A/B test different thumbnail styles to see what works best for your audience",
     );
 
     return recommendations.slice(0, 5);
@@ -319,7 +317,7 @@ export class ThumbnailAnalyzer {
    * Check which best practices are followed
    */
   private static checkBestPractices(
-    factors: ThumbnailAnalysis["factors"]
+    factors: ThumbnailAnalysis["factors"],
   ): ThumbnailAnalysis["bestPractices"] {
     const followed: string[] = [];
     const missing: string[] = [];
@@ -376,10 +374,10 @@ export class ThumbnailAnalyzer {
    * Compare multiple thumbnails
    */
   static async compareMultiple(
-    thumbnailUrls: string[]
+    thumbnailUrls: string[],
   ): Promise<ThumbnailComparisonResult> {
     const analyses = await Promise.all(
-      thumbnailUrls.map((url) => this.analyze(url))
+      thumbnailUrls.map((url) => this.analyze(url)),
     );
 
     // Rank by score
@@ -406,7 +404,7 @@ export class ThumbnailAnalyzer {
    * Generate insights from comparing multiple thumbnails
    */
   private static generateComparisonInsights(
-    analyses: ThumbnailAnalysis[]
+    analyses: ThumbnailAnalysis[],
   ): string[] {
     const insights: string[] = [];
 
@@ -420,22 +418,22 @@ export class ThumbnailAnalyzer {
     const minScore = Math.min(...scores);
 
     insights.push(
-      `Score range: ${minScore} - ${maxScore} (average: ${Math.round(avgScore)})`
+      `Score range: ${minScore} - ${maxScore} (average: ${Math.round(avgScore)})`,
     );
 
     if (maxScore - minScore > 20) {
       insights.push(
-        "Significant quality variation detected - the top thumbnail is notably stronger"
+        "Significant quality variation detected - the top thumbnail is notably stronger",
       );
     }
 
     // Check for common issues
     const lowResCount = analyses.filter(
-      (a) => a.factors.resolution === "low"
+      (a) => a.factors.resolution === "low",
     ).length;
     if (lowResCount > 0) {
       insights.push(
-        `${lowResCount} thumbnail(s) have low resolution - consider upgrading`
+        `${lowResCount} thumbnail(s) have low resolution - consider upgrading`,
       );
     }
 

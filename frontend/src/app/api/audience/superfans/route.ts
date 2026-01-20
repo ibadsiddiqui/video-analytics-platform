@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
           message: "Superfan analysis requires PRO tier or higher",
           requiredTier: "PRO",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     if (!channelId) {
       return NextResponse.json(
         { error: "channelId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     const result = await AudienceAnalyzer.identifySuperfans(
       channelId,
       platform,
-      Math.max(2, Math.min(minComments, 10)) // Cap between 2-10
+      Math.max(2, Math.min(minComments, 10)), // Cap between 2-10
     );
 
     return NextResponse.json({
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     console.error("Superfan analysis error:", error);
     return NextResponse.json(
       { error: "Failed to analyze superfans" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

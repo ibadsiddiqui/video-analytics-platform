@@ -19,7 +19,9 @@ import LockedFeatureCard from "@/components/LockedFeatureCard";
 import type { ThumbnailAnalysis } from "@/lib/services/thumbnail-analyzer";
 
 interface ThumbnailScoreCardProps {
-  data?: (ThumbnailAnalysis & { locked?: boolean; requiredTier?: string }) | null;
+  data?:
+    | (ThumbnailAnalysis & { locked?: boolean; requiredTier?: string })
+    | null;
   isLoading?: boolean;
 }
 
@@ -150,15 +152,27 @@ export default function ThumbnailScoreCard({
 
   // Map factor values to badge types
   const getFactorType = (
-    value: string
+    value: string,
   ): "success" | "warning" | "error" | "unknown" => {
-    if (value === "hd" || value === "likely" || value === "high" || value === "optimal" || value === "standard") {
+    if (
+      value === "hd" ||
+      value === "likely" ||
+      value === "high" ||
+      value === "optimal" ||
+      value === "standard"
+    ) {
       return "success";
     }
     if (value === "sd" || value === "medium") {
       return "warning";
     }
-    if (value === "low" || value === "unlikely" || value === "too_bright" || value === "too_dark" || value === "non_standard") {
+    if (
+      value === "low" ||
+      value === "unlikely" ||
+      value === "too_bright" ||
+      value === "too_dark" ||
+      value === "non_standard"
+    ) {
       return "error";
     }
     return "unknown";
@@ -166,12 +180,38 @@ export default function ThumbnailScoreCard({
 
   const formatFactorValue = (key: string, value: string): string => {
     const valueMap: Record<string, Record<string, string>> = {
-      hasFace: { likely: "Detected", unlikely: "Not detected", unknown: "Unknown" },
-      hasText: { likely: "Detected", unlikely: "Not detected", unknown: "Unknown" },
-      colorContrast: { high: "High", medium: "Medium", low: "Low", unknown: "Unknown" },
-      brightness: { optimal: "Optimal", too_bright: "Too bright", too_dark: "Too dark", unknown: "Unknown" },
-      aspectRatio: { standard: "16:9 (Standard)", non_standard: "Non-standard" },
-      resolution: { hd: "HD (1280x720+)", sd: "SD (640x360+)", low: "Low", unknown: "Unknown" },
+      hasFace: {
+        likely: "Detected",
+        unlikely: "Not detected",
+        unknown: "Unknown",
+      },
+      hasText: {
+        likely: "Detected",
+        unlikely: "Not detected",
+        unknown: "Unknown",
+      },
+      colorContrast: {
+        high: "High",
+        medium: "Medium",
+        low: "Low",
+        unknown: "Unknown",
+      },
+      brightness: {
+        optimal: "Optimal",
+        too_bright: "Too bright",
+        too_dark: "Too dark",
+        unknown: "Unknown",
+      },
+      aspectRatio: {
+        standard: "16:9 (Standard)",
+        non_standard: "Non-standard",
+      },
+      resolution: {
+        hd: "HD (1280x720+)",
+        sd: "SD (640x360+)",
+        low: "Low",
+        unknown: "Unknown",
+      },
     };
     return valueMap[key]?.[value] || value;
   };
@@ -235,7 +275,10 @@ export default function ThumbnailScoreCard({
           />
           <FactorBadge
             label="Aspect Ratio"
-            value={formatFactorValue("aspectRatio", analysis.factors.aspectRatio)}
+            value={formatFactorValue(
+              "aspectRatio",
+              analysis.factors.aspectRatio,
+            )}
             type={getFactorType(analysis.factors.aspectRatio)}
           />
           {analysis.factors.hasFace !== "unknown" && (
@@ -255,14 +298,20 @@ export default function ThumbnailScoreCard({
           {analysis.factors.colorContrast !== "unknown" && (
             <FactorBadge
               label="Contrast"
-              value={formatFactorValue("colorContrast", analysis.factors.colorContrast)}
+              value={formatFactorValue(
+                "colorContrast",
+                analysis.factors.colorContrast,
+              )}
               type={getFactorType(analysis.factors.colorContrast)}
             />
           )}
           {analysis.factors.brightness !== "unknown" && (
             <FactorBadge
               label="Brightness"
-              value={formatFactorValue("brightness", analysis.factors.brightness)}
+              value={formatFactorValue(
+                "brightness",
+                analysis.factors.brightness,
+              )}
               type={getFactorType(analysis.factors.brightness)}
             />
           )}

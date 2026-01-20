@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
           message: "Thumbnail analysis requires PRO tier or higher",
           requiredTier: "PRO",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -76,13 +76,13 @@ export async function POST(request: NextRequest) {
       if (!video || !video.thumbnailUrl) {
         return NextResponse.json(
           { error: "Video or thumbnail not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
       const analysis = await ThumbnailAnalyzer.analyze(
         video.thumbnailUrl,
-        video.title || undefined
+        video.title || undefined,
       );
 
       return NextResponse.json({
@@ -100,12 +100,12 @@ export async function POST(request: NextRequest) {
       if (body.compareUrls.length > 10) {
         return NextResponse.json(
           { error: "Maximum 10 thumbnails can be compared at once" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
       const comparison = await ThumbnailAnalyzer.compareMultiple(
-        body.compareUrls
+        body.compareUrls,
       );
 
       return NextResponse.json({
@@ -119,13 +119,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { error: "Please provide a thumbnailUrl, videoId, or compareUrls" },
-      { status: 400 }
+      { status: 400 },
     );
   } catch (error) {
     console.error("Thumbnail analysis error:", error);
     return NextResponse.json(
       { error: "Failed to analyze thumbnail" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -155,7 +155,7 @@ export async function GET() {
     console.error("Thumbnail best practices error:", error);
     return NextResponse.json(
       { error: "Failed to get thumbnail best practices" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

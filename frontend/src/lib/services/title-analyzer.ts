@@ -148,7 +148,7 @@ export class TitleAnalyzer {
       title,
       characteristics,
       style,
-      score
+      score,
     );
 
     return {
@@ -163,7 +163,9 @@ export class TitleAnalyzer {
   /**
    * Extract title characteristics
    */
-  private static extractCharacteristics(title: string): TitleAnalysis["characteristics"] {
+  private static extractCharacteristics(
+    title: string,
+  ): TitleAnalysis["characteristics"] {
     const lowerTitle = title.toLowerCase();
 
     return {
@@ -171,7 +173,7 @@ export class TitleAnalyzer {
       hasNumbers: /\d+/.test(title),
       hasEmoji: /[\u{1F300}-\u{1F9FF}]/u.test(title),
       hasPowerWords: POWER_WORDS.some((word) =>
-        lowerTitle.includes(word.toLowerCase())
+        lowerTitle.includes(word.toLowerCase()),
       ),
       hasAllCaps: /[A-Z]{3,}/.test(title),
       wordCount: title.split(/\s+/).filter(Boolean).length,
@@ -184,12 +186,16 @@ export class TitleAnalyzer {
    */
   private static detectStyle(
     title: string,
-    characteristics: TitleAnalysis["characteristics"]
+    characteristics: TitleAnalysis["characteristics"],
   ): TitleStyle {
     const lowerTitle = title.toLowerCase();
 
     // Check for numbered lists (Top 10, 5 Ways, etc.)
-    if (/^\d+\s|top\s*\d+|\d+\s*(ways|tips|things|reasons|steps|hacks|tricks)/i.test(title)) {
+    if (
+      /^\d+\s|top\s*\d+|\d+\s*(ways|tips|things|reasons|steps|hacks|tricks)/i.test(
+        title,
+      )
+    ) {
       return "NUMBERED_LIST";
     }
 
@@ -199,22 +205,34 @@ export class TitleAnalyzer {
     }
 
     // Check for tutorial titles
-    if (/tutorial|walkthrough|beginners?\s+guide|step[\s-]*by[\s-]*step/i.test(title)) {
+    if (
+      /tutorial|walkthrough|beginners?\s+guide|step[\s-]*by[\s-]*step/i.test(
+        title,
+      )
+    ) {
       return "TUTORIAL";
     }
 
     // Check for comparison titles
-    if (/\bvs\.?\b|versus|compared|comparison|better than|which\s+is/i.test(title)) {
+    if (
+      /\bvs\.?\b|versus|compared|comparison|better than|which\s+is/i.test(title)
+    ) {
       return "COMPARISON";
     }
 
     // Check for review titles
-    if (/\breview\b|unboxing|first\s+look|hands[\s-]*on|honest\s+opinion/i.test(title)) {
+    if (
+      /\breview\b|unboxing|first\s+look|hands[\s-]*on|honest\s+opinion/i.test(
+        title,
+      )
+    ) {
       return "REVIEW";
     }
 
     // Check for news/announcement titles
-    if (/\bnews\b|announced|breaking|official|update|release|launch/i.test(title)) {
+    if (
+      /\bnews\b|announced|breaking|official|update|release|launch/i.test(title)
+    ) {
       return "NEWS";
     }
 
@@ -242,14 +260,17 @@ export class TitleAnalyzer {
    */
   private static calculateScore(
     title: string,
-    characteristics: TitleAnalysis["characteristics"]
+    characteristics: TitleAnalysis["characteristics"],
   ): number {
     let score = 50; // Base score
 
     // Word count scoring (optimal: 6-12 words)
     if (characteristics.wordCount >= 6 && characteristics.wordCount <= 12) {
       score += 15;
-    } else if (characteristics.wordCount >= 4 && characteristics.wordCount <= 15) {
+    } else if (
+      characteristics.wordCount >= 4 &&
+      characteristics.wordCount <= 15
+    ) {
       score += 8;
     } else if (characteristics.wordCount < 4) {
       score -= 10;
@@ -260,7 +281,10 @@ export class TitleAnalyzer {
     // Character count scoring (optimal: 40-60 characters for YouTube)
     if (characteristics.charCount >= 40 && characteristics.charCount <= 60) {
       score += 15;
-    } else if (characteristics.charCount >= 30 && characteristics.charCount <= 70) {
+    } else if (
+      characteristics.charCount >= 30 &&
+      characteristics.charCount <= 70
+    ) {
       score += 8;
     } else if (characteristics.charCount > 100) {
       score -= 10; // Too long, gets truncated
@@ -307,49 +331,57 @@ export class TitleAnalyzer {
     title: string,
     characteristics: TitleAnalysis["characteristics"],
     style: TitleStyle,
-    score: number
+    score: number,
   ): string[] {
     const recommendations: string[] = [];
 
     // Word count recommendations
     if (characteristics.wordCount < 4) {
-      recommendations.push("Add more context - titles with 6-12 words tend to perform better");
+      recommendations.push(
+        "Add more context - titles with 6-12 words tend to perform better",
+      );
     } else if (characteristics.wordCount > 15) {
-      recommendations.push("Shorten your title - aim for 6-12 words for better readability");
+      recommendations.push(
+        "Shorten your title - aim for 6-12 words for better readability",
+      );
     }
 
     // Character count recommendations
     if (characteristics.charCount > 70) {
-      recommendations.push("Title may be truncated in search results - keep under 60 characters");
+      recommendations.push(
+        "Title may be truncated in search results - keep under 60 characters",
+      );
     } else if (characteristics.charCount < 30) {
-      recommendations.push("Consider adding more detail to your title for better context");
+      recommendations.push(
+        "Consider adding more detail to your title for better context",
+      );
     }
 
     // Power words
     if (!characteristics.hasPowerWords) {
       recommendations.push(
-        "Try adding power words like 'ultimate', 'proven', or 'essential' to increase engagement"
+        "Try adding power words like 'ultimate', 'proven', or 'essential' to increase engagement",
       );
     }
 
     // Numbers
     if (!characteristics.hasNumbers && style === "STATEMENT") {
       recommendations.push(
-        "Consider using numbers (e.g., 'Top 5', '3 Ways') - numbered titles often get more clicks"
+        "Consider using numbers (e.g., 'Top 5', '3 Ways') - numbered titles often get more clicks",
       );
     }
 
     // Question titles
     if (style === "STATEMENT" && !characteristics.hasQuestion) {
       recommendations.push(
-        "Try framing your title as a question to spark curiosity"
+        "Try framing your title as a question to spark curiosity",
       );
     }
 
     // All caps warning
     if (characteristics.hasAllCaps) {
       recommendations.push(
-        "Avoid ALL CAPS - it can appear spammy and reduce click-through rates"
+        "Avoid ALL CAPS - it can appear spammy and reduce click-through rates",
       );
     }
 
@@ -357,24 +389,26 @@ export class TitleAnalyzer {
     switch (style) {
       case "CLICKBAIT":
         recommendations.push(
-          "Consider toning down clickbait elements - they can hurt long-term channel trust"
+          "Consider toning down clickbait elements - they can hurt long-term channel trust",
         );
         break;
       case "STATEMENT":
         recommendations.push(
-          "Generic statement titles may blend in - try making it more specific or intriguing"
+          "Generic statement titles may blend in - try making it more specific or intriguing",
         );
         break;
       case "REVIEW":
         recommendations.push(
-          "For reviews, consider adding 'Honest' or specific aspects you'll cover"
+          "For reviews, consider adding 'Honest' or specific aspects you'll cover",
         );
         break;
     }
 
     // Good score encouragement
     if (score >= 80) {
-      recommendations.push("Great title structure! Consider A/B testing variations");
+      recommendations.push(
+        "Great title structure! Consider A/B testing variations",
+      );
     }
 
     return recommendations;
@@ -389,7 +423,7 @@ export class TitleAnalyzer {
       views: number;
       likes: number;
       comments: number;
-    }>
+    }>,
   ): TitleAnalysisReport {
     // Analyze each title
     const analyses = videos.map((v) => ({
@@ -426,7 +460,8 @@ export class TitleAnalyzer {
 
     for (const [style, data] of styleGroups.entries()) {
       const avgViews = data.reduce((sum, d) => sum + d.views, 0) / data.length;
-      const avgEngagement = data.reduce((sum, d) => sum + d.engagement, 0) / data.length;
+      const avgEngagement =
+        data.reduce((sum, d) => sum + d.engagement, 0) / data.length;
 
       totalAvgViews += avgViews;
       styleCount++;
@@ -458,7 +493,8 @@ export class TitleAnalyzer {
 
     // Get best/worst styles
     const bestStyle = stylePerformance[0]?.style || "STATEMENT";
-    const worstStyle = stylePerformance[stylePerformance.length - 1]?.style || "STATEMENT";
+    const worstStyle =
+      stylePerformance[stylePerformance.length - 1]?.style || "STATEMENT";
 
     return {
       analysis: analyses[0] || this.analyze(""),
@@ -474,7 +510,7 @@ export class TitleAnalyzer {
    */
   private static generateInsights(
     stylePerformance: TitleStylePerformance[],
-    analyses: Array<TitleAnalysis & { views: number; engagement: number }>
+    analyses: Array<TitleAnalysis & { views: number; engagement: number }>,
   ): string[] {
     const insights: string[] = [];
 
@@ -486,7 +522,7 @@ export class TitleAnalyzer {
     const best = stylePerformance[0];
     if (best && best.count >= 2) {
       insights.push(
-        `${this.formatStyle(best.style)} titles perform ${best.performanceIndex - 100 > 0 ? `${best.performanceIndex - 100}% above` : "at"} your average`
+        `${this.formatStyle(best.style)} titles perform ${best.performanceIndex - 100 > 0 ? `${best.performanceIndex - 100}% above` : "at"} your average`,
       );
     }
 
@@ -494,16 +530,18 @@ export class TitleAnalyzer {
     const worst = stylePerformance[stylePerformance.length - 1];
     if (worst && worst.count >= 2 && worst !== best) {
       insights.push(
-        `${this.formatStyle(worst.style)} titles underperform by ${100 - worst.performanceIndex}%`
+        `${this.formatStyle(worst.style)} titles underperform by ${100 - worst.performanceIndex}%`,
       );
     }
 
     // Numbered list insight
-    const numberedList = stylePerformance.find((s) => s.style === "NUMBERED_LIST");
+    const numberedList = stylePerformance.find(
+      (s) => s.style === "NUMBERED_LIST",
+    );
     if (numberedList && numberedList.count >= 2) {
       if (numberedList.performanceIndex >= 110) {
         insights.push(
-          "Your audience responds well to numbered list titles - consider creating more"
+          "Your audience responds well to numbered list titles - consider creating more",
         );
       }
     }
@@ -513,11 +551,11 @@ export class TitleAnalyzer {
     if (questionStyle && questionStyle.count >= 2) {
       if (questionStyle.performanceIndex >= 105) {
         insights.push(
-          "Question-style titles drive curiosity - they're working well for you"
+          "Question-style titles drive curiosity - they're working well for you",
         );
       } else if (questionStyle.performanceIndex < 90) {
         insights.push(
-          "Question titles aren't performing well - try more direct statements"
+          "Question titles aren't performing well - try more direct statements",
         );
       }
     }
@@ -528,23 +566,28 @@ export class TitleAnalyzer {
       analyses.length;
     if (avgWordCount < 5) {
       insights.push(
-        "Your titles tend to be short - adding more context could improve performance"
+        "Your titles tend to be short - adding more context could improve performance",
       );
     } else if (avgWordCount > 12) {
-      insights.push(
-        "Your titles are quite long - consider being more concise"
-      );
+      insights.push("Your titles are quite long - consider being more concise");
     }
 
     // Power words insight
-    const withPowerWords = analyses.filter((a) => a.characteristics.hasPowerWords);
-    const withoutPowerWords = analyses.filter((a) => !a.characteristics.hasPowerWords);
+    const withPowerWords = analyses.filter(
+      (a) => a.characteristics.hasPowerWords,
+    );
+    const withoutPowerWords = analyses.filter(
+      (a) => !a.characteristics.hasPowerWords,
+    );
     if (withPowerWords.length >= 2 && withoutPowerWords.length >= 2) {
-      const avgWithPower = withPowerWords.reduce((s, a) => s + a.views, 0) / withPowerWords.length;
-      const avgWithoutPower = withoutPowerWords.reduce((s, a) => s + a.views, 0) / withoutPowerWords.length;
+      const avgWithPower =
+        withPowerWords.reduce((s, a) => s + a.views, 0) / withPowerWords.length;
+      const avgWithoutPower =
+        withoutPowerWords.reduce((s, a) => s + a.views, 0) /
+        withoutPowerWords.length;
       if (avgWithPower > avgWithoutPower * 1.1) {
         insights.push(
-          `Titles with power words get ${Math.round((avgWithPower / avgWithoutPower - 1) * 100)}% more views for your channel`
+          `Titles with power words get ${Math.round((avgWithPower / avgWithoutPower - 1) * 100)}% more views for your channel`,
         );
       }
     }

@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
           message: "Audience analytics requires PRO tier or higher",
           requiredTier: "PRO",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     if (!channelId) {
       return NextResponse.json(
         { error: "channelId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     const result = await AudienceAnalyzer.analyzeOverlap(
       channelId,
       platform,
-      Math.min(limit, 50) // Cap at 50
+      Math.min(limit, 50), // Cap at 50
     );
 
     return NextResponse.json({
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     console.error("Audience overlap error:", error);
     return NextResponse.json(
       { error: "Failed to analyze audience overlap" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

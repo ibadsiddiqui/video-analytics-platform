@@ -292,26 +292,14 @@ export default function Home(): React.JSX.Element {
 
                 {/* Phase 4: Content Strategy Tools */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                  <TitleAnalysisCard
-                    data={null}
-                    isLoading={false}
-                  />
-                  <ThumbnailScoreCard
-                    data={null}
-                    isLoading={false}
-                  />
+                  <TitleAnalysisCard data={null} isLoading={false} />
+                  <ThumbnailScoreCard data={null} isLoading={false} />
                 </div>
 
                 {/* Phase 5: Audience Analytics */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                  <AudienceOverlapCard
-                    data={null}
-                    isLoading={false}
-                  />
-                  <SuperfansCard
-                    data={null}
-                    isLoading={false}
-                  />
+                  <AudienceOverlapCard data={null} isLoading={false} />
+                  <SuperfansCard data={null} isLoading={false} />
                 </div>
 
                 {/* Charts Row */}

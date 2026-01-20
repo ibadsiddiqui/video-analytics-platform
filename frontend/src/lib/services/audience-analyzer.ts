@@ -57,7 +57,7 @@ export class AudienceAnalyzer {
   static async analyzeOverlap(
     channelId: string,
     platform: string = "YOUTUBE",
-    limit: number = 10
+    limit: number = 10,
   ): Promise<AudienceOverlapResult> {
     // Get all videos from the base channel
     const baseVideos = await prisma.video.findMany({
@@ -170,13 +170,13 @@ export class AudienceAnalyzer {
 
     for (const [otherChannelId, data] of channelCommenters.entries()) {
       const sharedCommenters = new Set(
-        [...data.commenters].filter((c) => baseCommenters.has(c))
+        [...data.commenters].filter((c) => baseCommenters.has(c)),
       );
 
       if (sharedCommenters.size === 0) continue;
 
       const overlapScore = Math.round(
-        (sharedCommenters.size / baseCommenters.size) * 100
+        (sharedCommenters.size / baseCommenters.size) * 100,
       );
 
       overlappingChannels.push({
@@ -189,7 +189,7 @@ export class AudienceAnalyzer {
         sampleCommenters: [...sharedCommenters].slice(0, 5),
         collaborationPotential: this.calculateCollaborationPotential(
           overlapScore,
-          sharedCommenters.size
+          sharedCommenters.size,
         ),
       });
     }
@@ -203,14 +203,14 @@ export class AudienceAnalyzer {
         (c) =>
           c.overlapScore >= 5 &&
           c.overlapScore <= 50 &&
-          c.sharedCommenters >= 3
+          c.sharedCommenters >= 3,
       )
       .slice(0, 5);
 
     // Generate insights
     const insights = this.generateOverlapInsights(
       overlappingChannels,
-      baseCommenters.size
+      baseCommenters.size,
     );
 
     return {
@@ -230,7 +230,7 @@ export class AudienceAnalyzer {
    */
   private static calculateCollaborationPotential(
     overlapScore: number,
-    sharedCommenters: number
+    sharedCommenters: number,
   ): "high" | "medium" | "low" {
     // Ideal overlap: 10-30% (enough shared audience but not complete overlap)
     if (overlapScore >= 10 && overlapScore <= 30 && sharedCommenters >= 10) {
@@ -247,13 +247,13 @@ export class AudienceAnalyzer {
    */
   private static generateOverlapInsights(
     overlappingChannels: ChannelOverlap[],
-    totalBaseCommenters: number
+    totalBaseCommenters: number,
   ): string[] {
     const insights: string[] = [];
 
     if (overlappingChannels.length === 0) {
       insights.push(
-        "No audience overlap detected with other channels in our database"
+        "No audience overlap detected with other channels in our database",
       );
       insights.push("This could indicate a unique niche or limited data");
       return insights;
@@ -263,38 +263,40 @@ export class AudienceAnalyzer {
     const highOverlap = overlappingChannels.filter((c) => c.overlapScore > 30);
     if (highOverlap.length > 0) {
       insights.push(
-        `${highOverlap.length} channel(s) have >30% audience overlap - consider differentiation strategies`
+        `${highOverlap.length} channel(s) have >30% audience overlap - consider differentiation strategies`,
       );
     }
 
     // Collaboration opportunity insight
     const collaborationReady = overlappingChannels.filter(
-      (c) => c.collaborationPotential === "high"
+      (c) => c.collaborationPotential === "high",
     );
     if (collaborationReady.length > 0) {
       insights.push(
-        `${collaborationReady.length} channel(s) are ideal collaboration partners (10-30% shared audience)`
+        `${collaborationReady.length} channel(s) are ideal collaboration partners (10-30% shared audience)`,
       );
     }
 
     // Total reach insight
     const totalReachableAudience = overlappingChannels.reduce(
       (sum, c) => sum + c.totalCommenters - c.sharedCommenters,
-      0
+      0,
     );
     if (totalReachableAudience > 0) {
       insights.push(
-        `Collaboration potential: Reach ${totalReachableAudience.toLocaleString()} new viewers through partner channels`
+        `Collaboration potential: Reach ${totalReachableAudience.toLocaleString()} new viewers through partner channels`,
       );
     }
 
     // Niche similarity insight
     if (overlappingChannels.length >= 5) {
       const avgOverlap =
-        overlappingChannels.slice(0, 5).reduce((s, c) => s + c.overlapScore, 0) / 5;
+        overlappingChannels
+          .slice(0, 5)
+          .reduce((s, c) => s + c.overlapScore, 0) / 5;
       if (avgOverlap > 15) {
         insights.push(
-          "Strong niche community - your audience is actively engaged across similar channels"
+          "Strong niche community - your audience is actively engaged across similar channels",
         );
       }
     }
@@ -308,7 +310,7 @@ export class AudienceAnalyzer {
   static async identifySuperfans(
     channelId: string,
     platform: string = "YOUTUBE",
-    minComments: number = 3
+    minComments: number = 3,
   ): Promise<SuperfanAnalysisResult> {
     // Get all comments for this channel's videos
     const videos = await prisma.video.findMany({
@@ -404,7 +406,7 @@ export class AudienceAnalyzer {
         data.comments,
         data.likes,
         avgSentiment,
-        isActive
+        isActive,
       );
 
       superfans.push({
@@ -435,7 +437,7 @@ export class AudienceAnalyzer {
     const insights = this.generateSuperfanInsights(
       superfans,
       totalUniqueCommenters,
-      superfanPercentage
+      superfanPercentage,
     );
 
     return {
@@ -454,7 +456,7 @@ export class AudienceAnalyzer {
     comments: number,
     likes: number,
     avgSentiment: number,
-    isActive: boolean
+    isActive: boolean,
   ): number {
     let score = 0;
 
@@ -481,27 +483,29 @@ export class AudienceAnalyzer {
   private static generateSuperfanInsights(
     superfans: Superfan[],
     totalCommenters: number,
-    superfanPercentage: number
+    superfanPercentage: number,
   ): string[] {
     const insights: string[] = [];
 
     if (superfans.length === 0) {
-      insights.push("No superfans identified yet - keep creating engaging content!");
+      insights.push(
+        "No superfans identified yet - keep creating engaging content!",
+      );
       return insights;
     }
 
     // Superfan percentage insight
     if (superfanPercentage >= 10) {
       insights.push(
-        `${superfanPercentage}% of your commenters are superfans - you have a highly engaged community!`
+        `${superfanPercentage}% of your commenters are superfans - you have a highly engaged community!`,
       );
     } else if (superfanPercentage >= 5) {
       insights.push(
-        `${superfanPercentage}% superfan rate - good engagement, room to grow loyal followers`
+        `${superfanPercentage}% superfan rate - good engagement, room to grow loyal followers`,
       );
     } else {
       insights.push(
-        `${superfanPercentage}% superfan rate - focus on community building to increase loyalty`
+        `${superfanPercentage}% superfan rate - focus on community building to increase loyalty`,
       );
     }
 
@@ -512,13 +516,13 @@ export class AudienceAnalyzer {
         ? Math.round((activeSuperfans / superfans.length) * 100)
         : 0;
     insights.push(
-      `${activePercentage}% of superfans active in last 30 days (${activeSuperfans} of ${superfans.length})`
+      `${activePercentage}% of superfans active in last 30 days (${activeSuperfans} of ${superfans.length})`,
     );
 
     // Top superfan insight
     if (superfans[0]) {
       insights.push(
-        `Top superfan "${superfans[0].username}" has ${superfans[0].totalComments} comments`
+        `Top superfan "${superfans[0].username}" has ${superfans[0].totalComments} comments`,
       );
     }
 
@@ -527,11 +531,11 @@ export class AudienceAnalyzer {
       superfans.reduce((s, f) => s + f.avgSentiment, 0) / superfans.length;
     if (avgSuperfanSentiment > 0.3) {
       insights.push(
-        "Superfans have highly positive sentiment - they love your content!"
+        "Superfans have highly positive sentiment - they love your content!",
       );
     } else if (avgSuperfanSentiment < -0.1) {
       insights.push(
-        "Some superfans have mixed sentiment - consider engaging with their feedback"
+        "Some superfans have mixed sentiment - consider engaging with their feedback",
       );
     }
 

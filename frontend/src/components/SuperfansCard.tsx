@@ -15,7 +15,10 @@ import {
 } from "lucide-react";
 import { useTierAccess } from "@/hooks/useTierAccess";
 import LockedFeatureCard from "@/components/LockedFeatureCard";
-import type { SuperfanAnalysisResult, Superfan } from "@/lib/services/audience-analyzer";
+import type {
+  SuperfanAnalysisResult,
+  Superfan,
+} from "@/lib/services/audience-analyzer";
 
 interface SuperfansCardProps {
   data?: SuperfanAnalysisResult | null;
@@ -38,9 +41,12 @@ function getSentimentLabel(sentiment: number): string {
 
 function EngagementBadge({ score }: { score: number }) {
   const getColor = () => {
-    if (score >= 80) return "bg-gradient-to-r from-amber-400 to-orange-500 text-white";
-    if (score >= 60) return "bg-gradient-to-r from-emerald-400 to-teal-500 text-white";
-    if (score >= 40) return "bg-gradient-to-r from-blue-400 to-cyan-500 text-white";
+    if (score >= 80)
+      return "bg-gradient-to-r from-amber-400 to-orange-500 text-white";
+    if (score >= 60)
+      return "bg-gradient-to-r from-emerald-400 to-teal-500 text-white";
+    if (score >= 40)
+      return "bg-gradient-to-r from-blue-400 to-cyan-500 text-white";
     return "bg-slate-200 text-slate-600";
   };
 
@@ -52,7 +58,9 @@ function EngagementBadge({ score }: { score: number }) {
   };
 
   return (
-    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getColor()}`}>
+    <span
+      className={`text-xs px-2 py-0.5 rounded-full font-medium ${getColor()}`}
+    >
       {getLabel()}
     </span>
   );
@@ -63,7 +71,9 @@ function SuperfanRow({ fan, rank }: { fan: Superfan; rank: number }) {
     if (rank === 1) return <Crown className="w-4 h-4 text-amber-500" />;
     if (rank === 2) return <Star className="w-4 h-4 text-slate-400" />;
     if (rank === 3) return <Star className="w-4 h-4 text-amber-600" />;
-    return <span className="w-4 h-4 text-center text-xs text-slate-400">{rank}</span>;
+    return (
+      <span className="w-4 h-4 text-center text-xs text-slate-400">{rank}</span>
+    );
   };
 
   return (
@@ -95,7 +105,9 @@ function SuperfanRow({ fan, rank }: { fan: Superfan; rank: number }) {
             <ThumbsUp className="w-3 h-3" />
             {fan.totalLikes} likes
           </span>
-          <span className={`flex items-center gap-1 ${getSentimentColor(fan.avgSentiment)}`}>
+          <span
+            className={`flex items-center gap-1 ${getSentimentColor(fan.avgSentiment)}`}
+          >
             <Heart className="w-3 h-3" />
             {getSentimentLabel(fan.avgSentiment)}
           </span>
@@ -104,7 +116,9 @@ function SuperfanRow({ fan, rank }: { fan: Superfan; rank: number }) {
 
       {/* Engagement Score */}
       <div className="text-right">
-        <div className="text-lg font-bold text-slate-900">{fan.engagementScore}</div>
+        <div className="text-lg font-bold text-slate-900">
+          {fan.engagementScore}
+        </div>
         <div className="text-xs text-slate-500">score</div>
       </div>
     </motion.div>
@@ -207,8 +221,10 @@ export default function SuperfansCard({
           <div className="text-xl sm:text-2xl font-bold text-emerald-600">
             {data.superfans.length > 0
               ? Math.round(
-                  data.superfans.reduce((sum, f) => sum + f.engagementScore, 0) /
-                    data.superfans.length
+                  data.superfans.reduce(
+                    (sum, f) => sum + f.engagementScore,
+                    0,
+                  ) / data.superfans.length,
                 )
               : 0}
           </div>

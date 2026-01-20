@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
           message: "Title analysis requires PRO tier or higher",
           requiredTier: "PRO",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -76,10 +76,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (!video || !video.title) {
-        return NextResponse.json(
-          { error: "Video not found" },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: "Video not found" }, { status: 404 });
       }
 
       const analysis = TitleAnalyzer.analyze(video.title);
@@ -114,7 +111,7 @@ export async function POST(request: NextRequest) {
       if (videos.length === 0) {
         return NextResponse.json(
           { error: "No videos found for this channel" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -141,13 +138,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { error: "Please provide a title, videoId, or channelId" },
-      { status: 400 }
+      { status: 400 },
     );
   } catch (error) {
     console.error("Title analysis error:", error);
     return NextResponse.json(
       { error: "Failed to analyze title" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -203,7 +200,7 @@ export async function GET(request: NextRequest) {
     console.error("Title analysis GET error:", error);
     return NextResponse.json(
       { error: "Failed to get title suggestions" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

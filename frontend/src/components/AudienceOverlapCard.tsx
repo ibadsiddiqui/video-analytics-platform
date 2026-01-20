@@ -37,7 +37,11 @@ function CollaborationBadge({
     <span
       className={`text-xs px-2 py-0.5 rounded-full border ${colors[potential]}`}
     >
-      {potential === "high" ? "Ideal Partner" : potential === "medium" ? "Good Match" : "Low Match"}
+      {potential === "high"
+        ? "Ideal Partner"
+        : potential === "medium"
+          ? "Good Match"
+          : "Low Match"}
     </span>
   );
 }
@@ -102,9 +106,7 @@ export default function AudienceOverlapCard({
 
   // Show locked state for non-PRO users
   if (!tierLoading && !canUseAudienceAnalytics) {
-    return (
-      <LockedFeatureCard feature="Audience Overlap" requiredTier="PRO" />
-    );
+    return <LockedFeatureCard feature="Audience Overlap" requiredTier="PRO" />;
   }
 
   if (isLoading) {

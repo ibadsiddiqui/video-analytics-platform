@@ -308,7 +308,8 @@ export async function POST(request: NextRequest) {
     const withContentStrategy = await enrichWithContentStrategy(withPredictive);
 
     // Enrich with audience analytics (Phase 5)
-    const enrichedResult = await enrichWithAudienceAnalytics(withContentStrategy);
+    const enrichedResult =
+      await enrichWithAudienceAnalytics(withContentStrategy);
 
     // Create response with rate limit headers
     const responseHeaders = rateLimitResult
@@ -404,7 +405,8 @@ export async function GET(request: NextRequest) {
     const withContentStrategy = await enrichWithContentStrategy(withPredictive);
 
     // Enrich with audience analytics (Phase 5)
-    const enrichedResult = await enrichWithAudienceAnalytics(withContentStrategy);
+    const enrichedResult =
+      await enrichWithAudienceAnalytics(withContentStrategy);
 
     // Create response with rate limit headers
     const responseHeaders = rateLimitResult
