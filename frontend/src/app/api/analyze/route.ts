@@ -21,7 +21,7 @@ import {
 } from "@/lib/utils/request-tracker";
 import { getCommentLimit } from "@/lib/constants/tiers";
 import { UserTier } from "@prisma/client";
-
+import { getRateLimitStatus } from "@/lib/utils/request-tracker";
 /**
  * Apply comment limit based on user tier
  * FREE: 10 comments, CREATOR: 50 comments, PRO/AGENCY: unlimited
@@ -281,8 +281,6 @@ export async function POST(request: NextRequest) {
       }
     } else if (userId && isUsingOwnApiKey) {
       // Still get rate limit status for display purposes, but don't track
-      const { getRateLimitStatus } =
-        await import("@/lib/utils/request-tracker");
       rateLimitResult = await getRateLimitStatus(userId);
     }
 
@@ -378,8 +376,6 @@ export async function GET(request: NextRequest) {
       }
     } else if (userId && isUsingOwnApiKey) {
       // Still get rate limit status for display purposes, but don't track
-      const { getRateLimitStatus } =
-        await import("@/lib/utils/request-tracker");
       rateLimitResult = await getRateLimitStatus(userId);
     }
 
