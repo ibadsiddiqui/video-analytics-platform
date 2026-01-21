@@ -23,7 +23,7 @@ vi.mock("../niche-detector", () => ({
     detect: vi.fn((title: string) => {
       if (title.includes("tech")) return VideoNiche.TECH;
       if (title.includes("game")) return VideoNiche.GAMING;
-      return VideoNiche.GENERAL;
+      return VideoNiche.OTHER;
     }),
   },
 }));
@@ -80,7 +80,7 @@ describe("BenchmarkService", () => {
         },
       ];
 
-      vi.mocked(prisma.video.findMany).mockResolvedValue(mockVideos);
+      vi.mocked(prisma.video.findMany).mockResolvedValue(mockVideos as any);
       vi.mocked(prisma.benchmark.upsert).mockResolvedValue({
         id: "bench-1",
         platform: Platform.YOUTUBE,
@@ -104,9 +104,8 @@ describe("BenchmarkService", () => {
           p90: 11.5,
         },
         sampleSize: 2,
-        createdAt: new Date(),
         updatedAt: new Date(),
-      });
+      } as any);
 
       const result = await BenchmarkService.calculateNicheBenchmark(
         Platform.YOUTUBE,
@@ -150,7 +149,7 @@ describe("BenchmarkService", () => {
         },
       ];
 
-      vi.mocked(prisma.video.findMany).mockResolvedValue(mockVideos);
+      vi.mocked(prisma.video.findMany).mockResolvedValue(mockVideos as any);
       vi.mocked(prisma.benchmark.upsert).mockResolvedValue({
         id: "bench-1",
         platform: Platform.YOUTUBE,
@@ -168,9 +167,8 @@ describe("BenchmarkService", () => {
         },
         engagementPercentiles: { p10: 0, p25: 0, p50: 0, p75: 0, p90: 0 },
         sampleSize: 1,
-        createdAt: new Date(),
         updatedAt: new Date(),
-      });
+      } as any);
 
       const result = await BenchmarkService.calculateNicheBenchmark(
         Platform.YOUTUBE,
@@ -197,7 +195,7 @@ describe("BenchmarkService", () => {
         analytics: [],
       }));
 
-      vi.mocked(prisma.video.findMany).mockResolvedValue(mockVideos);
+      vi.mocked(prisma.video.findMany).mockResolvedValue(mockVideos as any);
       vi.mocked(prisma.benchmark.upsert).mockResolvedValue({
         id: "bench-1",
         platform: Platform.YOUTUBE,
@@ -215,9 +213,8 @@ describe("BenchmarkService", () => {
         },
         engagementPercentiles: { p10: 1, p25: 2.5, p50: 5, p75: 7.5, p90: 9 },
         sampleSize: 100,
-        createdAt: new Date(),
         updatedAt: new Date(),
-      });
+      } as any);
 
       const result = await BenchmarkService.calculateNicheBenchmark(
         Platform.YOUTUBE,
@@ -250,7 +247,6 @@ describe("BenchmarkService", () => {
         thumbnailUrl: "https://example.com/thumb.jpg",
         niche: VideoNiche.TECH,
         userId: null,
-        createdAt: new Date(),
         updatedAt: new Date(),
       };
 
@@ -271,12 +267,13 @@ describe("BenchmarkService", () => {
         },
         engagementPercentiles: { p10: 5, p25: 8, p50: 10, p75: 12, p90: 15 },
         sampleSize: 100,
-        createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      vi.mocked(prisma.video.findUnique).mockResolvedValue(mockVideo);
-      vi.mocked(prisma.benchmark.findUnique).mockResolvedValue(mockBenchmark);
+      vi.mocked(prisma.video.findUnique).mockResolvedValue(mockVideo as any);
+      vi.mocked(prisma.benchmark.findUnique).mockResolvedValue(
+        mockBenchmark as any,
+      );
 
       const result = await BenchmarkService.compareVideoToBenchmark("video-1");
 
@@ -315,11 +312,10 @@ describe("BenchmarkService", () => {
         thumbnailUrl: "https://example.com/thumb.jpg",
         niche: VideoNiche.TECH,
         userId: null,
-        createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      vi.mocked(prisma.video.findUnique).mockResolvedValue(mockVideo);
+      vi.mocked(prisma.video.findUnique).mockResolvedValue(mockVideo as any);
       vi.mocked(prisma.benchmark.findUnique)
         .mockResolvedValueOnce(null) // First call returns null
         .mockResolvedValueOnce({
@@ -340,9 +336,8 @@ describe("BenchmarkService", () => {
           },
           engagementPercentiles: { p10: 5, p25: 8, p50: 10, p75: 12, p90: 15 },
           sampleSize: 100,
-          createdAt: new Date(),
           updatedAt: new Date(),
-        });
+        } as any);
 
       // Mock calculateNicheBenchmark
       vi.spyOn(BenchmarkService, "calculateNicheBenchmark").mockResolvedValue({
@@ -391,7 +386,6 @@ describe("BenchmarkService", () => {
         },
         engagementPercentiles: { p10: 5, p25: 8, p50: 10, p75: 12, p90: 15 },
         sampleSize: 100,
-        createdAt: new Date(),
         updatedAt: new Date(),
       };
 
@@ -418,7 +412,7 @@ describe("BenchmarkService", () => {
           updatedAt: new Date(),
         };
 
-        vi.mocked(prisma.video.findUnique).mockResolvedValue(mockVideo);
+        vi.mocked(prisma.video.findUnique).mockResolvedValue(mockVideo as any);
         vi.mocked(prisma.benchmark.findUnique).mockResolvedValue(mockBenchmark);
 
         const result =
@@ -447,7 +441,6 @@ describe("BenchmarkService", () => {
         thumbnailUrl: "https://example.com/thumb.jpg",
         niche: VideoNiche.TECH,
         userId: null,
-        createdAt: new Date(),
         updatedAt: new Date(),
       };
 
@@ -468,12 +461,13 @@ describe("BenchmarkService", () => {
         },
         engagementPercentiles: { p10: 5, p25: 8, p50: 10, p75: 12, p90: 15 },
         sampleSize: 100,
-        createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      vi.mocked(prisma.video.findUnique).mockResolvedValue(mockVideo);
-      vi.mocked(prisma.benchmark.findUnique).mockResolvedValue(mockBenchmark);
+      vi.mocked(prisma.video.findUnique).mockResolvedValue(mockVideo as any);
+      vi.mocked(prisma.benchmark.findUnique).mockResolvedValue(
+        mockBenchmark as any,
+      );
 
       const result = await BenchmarkService.compareVideoToBenchmark("video-1");
 
@@ -501,7 +495,6 @@ describe("BenchmarkService", () => {
         },
         engagementPercentiles: { p10: 5, p25: 8, p50: 10, p75: 12, p90: 15 },
         sampleSize: 100,
-        createdAt: new Date(),
         updatedAt: new Date(),
       };
 

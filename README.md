@@ -107,7 +107,7 @@ npm run test:ui
 
 ### Test Coverage
 
-✅ **113 passing tests** across Phase 1 & Phase 2 features:
+✅ **143 passing tests** across Phase 1, Phase 2 & Phase 3 features:
 
 **Phase 1 Features (85 tests):**
 
@@ -143,6 +143,23 @@ npm run test:ui
   - Video performance comparison
   - Statistical analysis
 
+**Phase 3 Features (30 tests):**
+
+- **Viral Predictor Service** (12 tests)
+  - Calculate viral potential score
+  - Weighted scoring (velocity, sentiment, comments, likes)
+  - Cache management (1-hour TTL)
+  - Prediction categories (viral, high_potential, moderate, low)
+  - Error handling and insufficient data
+
+- **Posting Time Optimizer Service** (18 tests)
+  - Recommend optimal posting times
+  - Group by day of week and 2-hour slots
+  - Engagement rate ranking
+  - Heatmap data generation (7 days × 24 hours)
+  - Confidence levels (high, medium, low)
+  - Weekday vs weekend pattern detection
+
 ### Test Files
 
 ```
@@ -155,7 +172,9 @@ frontend/
 │   │   │   └── tiers.test.ts
 │   │   ├── services/__tests__/
 │   │   │   ├── competitor.test.ts
-│   │   │   └── benchmark.test.ts
+│   │   │   ├── benchmark.test.ts
+│   │   │   ├── viral-predictor.test.ts
+│   │   │   └── posting-time-optimizer.test.ts
 │   │   └── utils/__tests__/
 │   │       └── request-tracker.test.ts
 ├── test/

@@ -81,9 +81,8 @@ describe("CompetitorService", () => {
         firstTrackedAt: new Date("2024-01-15"),
         lastCheckedAt: new Date("2024-01-15"),
         lastFetchedAt: null,
-        createdAt: new Date("2024-01-15"),
         updatedAt: new Date("2024-01-15"),
-      });
+      } as any);
       vi.mocked(prisma.competitorSnapshot.create).mockResolvedValue({
         id: "snap-1",
         competitorId: "comp-1",
@@ -92,8 +91,8 @@ describe("CompetitorService", () => {
         totalViews: mockMetrics.totalViews,
         avgEngagement: mockMetrics.avgEngagement,
         recordedAt: new Date("2024-01-15"),
-        createdAt: new Date("2024-01-15"),
-      });
+        recentVideos: null,
+      } as any);
 
       const result = await CompetitorService.addCompetitor(
         "user-1",
@@ -129,9 +128,8 @@ describe("CompetitorService", () => {
         firstTrackedAt: new Date("2024-01-15"),
         lastCheckedAt: new Date("2024-01-15"),
         lastFetchedAt: null,
-        createdAt: new Date("2024-01-15"),
         updatedAt: new Date("2024-01-15"),
-      });
+      } as any);
 
       await expect(
         CompetitorService.addCompetitor(
@@ -162,9 +160,8 @@ describe("CompetitorService", () => {
         firstTrackedAt: new Date("2024-01-15"),
         lastCheckedAt: new Date("2024-01-15"),
         lastFetchedAt: null,
-        createdAt: new Date("2024-01-15"),
         updatedAt: new Date("2024-01-15"),
-      });
+      } as any);
 
       vi.mocked(prisma.competitorTrack.update).mockResolvedValue({
         id: "comp-1",
@@ -183,9 +180,8 @@ describe("CompetitorService", () => {
         firstTrackedAt: new Date("2024-01-15"),
         lastCheckedAt: new Date(),
         lastFetchedAt: null,
-        createdAt: new Date("2024-01-15"),
         updatedAt: new Date(),
-      });
+      } as any);
 
       const result = await CompetitorService.addCompetitor(
         "user-1",
@@ -259,9 +255,8 @@ describe("CompetitorService", () => {
         firstTrackedAt: new Date("2024-01-15"),
         lastCheckedAt: new Date("2024-01-15"),
         lastFetchedAt: null,
-        createdAt: new Date("2024-01-15"),
         updatedAt: new Date("2024-01-15"),
-      });
+      } as any);
 
       vi.mocked(prisma.competitorTrack.update).mockResolvedValue({
         id: "comp-1",
@@ -280,9 +275,8 @@ describe("CompetitorService", () => {
         firstTrackedAt: new Date("2024-01-15"),
         lastCheckedAt: new Date("2024-01-15"),
         lastFetchedAt: null,
-        createdAt: new Date("2024-01-15"),
         updatedAt: new Date(),
-      });
+      } as any);
 
       const result = await CompetitorService.removeCompetitor(
         "user-1",
@@ -333,7 +327,6 @@ describe("CompetitorService", () => {
           firstTrackedAt: new Date("2024-01-15"),
           lastCheckedAt: new Date("2024-01-15"),
           lastFetchedAt: null,
-          createdAt: new Date("2024-01-15"),
           updatedAt: new Date("2024-01-15"),
         },
         {
@@ -353,13 +346,12 @@ describe("CompetitorService", () => {
           firstTrackedAt: new Date("2024-01-14"),
           lastCheckedAt: new Date("2024-01-15"),
           lastFetchedAt: null,
-          createdAt: new Date("2024-01-14"),
           updatedAt: new Date("2024-01-15"),
         },
       ];
 
       vi.mocked(prisma.competitorTrack.findMany).mockResolvedValue(
-        mockCompetitors,
+        mockCompetitors as any,
       );
 
       const result = await CompetitorService.getCompetitors("user-1");
@@ -404,7 +396,6 @@ describe("CompetitorService", () => {
         firstTrackedAt: new Date("2024-01-01"),
         lastCheckedAt: new Date("2024-01-15"),
         lastFetchedAt: null,
-        createdAt: new Date("2024-01-01"),
         updatedAt: new Date("2024-01-15"),
       };
 
@@ -417,7 +408,7 @@ describe("CompetitorService", () => {
           totalViews: BigInt(4500000),
           avgEngagement: 95,
           recordedAt: new Date("2024-01-01"),
-          createdAt: new Date("2024-01-01"),
+          recentVideos: null,
         },
         {
           id: "snap-2",
@@ -427,7 +418,7 @@ describe("CompetitorService", () => {
           totalViews: BigInt(5000000),
           avgEngagement: 100,
           recordedAt: new Date("2024-01-15"),
-          createdAt: new Date("2024-01-15"),
+          recentVideos: null,
         },
       ];
 
@@ -435,7 +426,7 @@ describe("CompetitorService", () => {
         mockCompetitor,
       );
       vi.mocked(prisma.competitorSnapshot.findMany).mockResolvedValue(
-        mockSnapshots,
+        mockSnapshots as any,
       );
 
       const result = await CompetitorService.getCompetitorWithHistory(
@@ -479,7 +470,6 @@ describe("CompetitorService", () => {
         firstTrackedAt: new Date("2024-01-01"),
         lastCheckedAt: new Date("2024-01-15"),
         lastFetchedAt: null,
-        createdAt: new Date("2024-01-01"),
         updatedAt: new Date("2024-01-15"),
       };
 
@@ -511,8 +501,8 @@ describe("CompetitorService", () => {
         totalViews: BigInt(5500000),
         avgEngagement: 100,
         recordedAt: new Date(),
-        createdAt: new Date(),
-      });
+        recentVideos: null,
+      } as any);
 
       const result = await CompetitorService.updateCompetitorMetrics("comp-1");
 
@@ -547,9 +537,8 @@ describe("CompetitorService", () => {
         firstTrackedAt: new Date("2024-01-01"),
         lastCheckedAt: new Date("2024-01-15"),
         lastFetchedAt: null,
-        createdAt: new Date("2024-01-01"),
         updatedAt: new Date("2024-01-15"),
-      });
+      } as any);
 
       const result = await CompetitorService.updateCompetitorMetrics("comp-1");
 
@@ -577,7 +566,6 @@ describe("CompetitorService", () => {
           firstTrackedAt: new Date("2024-01-01"),
           lastCheckedAt: new Date("2024-01-15"),
           lastFetchedAt: null,
-          createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-15"),
         },
         {
@@ -597,13 +585,12 @@ describe("CompetitorService", () => {
           firstTrackedAt: new Date("2024-01-01"),
           lastCheckedAt: new Date("2024-01-15"),
           lastFetchedAt: null,
-          createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-15"),
         },
       ];
 
       vi.mocked(prisma.competitorTrack.findMany).mockResolvedValue(
-        mockCompetitors,
+        mockCompetitors as any,
       );
 
       // Mock updateCompetitorMetrics to return true
@@ -638,7 +625,6 @@ describe("CompetitorService", () => {
           firstTrackedAt: new Date("2024-01-01"),
           lastCheckedAt: new Date("2024-01-15"),
           lastFetchedAt: null,
-          createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-15"),
         },
         {
@@ -658,13 +644,12 @@ describe("CompetitorService", () => {
           firstTrackedAt: new Date("2024-01-01"),
           lastCheckedAt: new Date("2024-01-15"),
           lastFetchedAt: null,
-          createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-15"),
         },
       ];
 
       vi.mocked(prisma.competitorTrack.findMany).mockResolvedValue(
-        mockCompetitors,
+        mockCompetitors as any,
       );
 
       // First succeeds, second fails

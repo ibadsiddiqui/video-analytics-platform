@@ -74,7 +74,7 @@ describe("Request Tracker", () => {
           lastRequestDate: null,
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-01"),
-        });
+        } as any);
 
         vi.mocked(prisma.user.update).mockResolvedValue({
           id: "user-1",
@@ -85,7 +85,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date(),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date(),
-        });
+        } as any);
 
         const result = await checkAndTrackRequest("clerk-123");
 
@@ -113,7 +113,7 @@ describe("Request Tracker", () => {
           lastRequestDate: null,
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-01"),
-        });
+        } as any);
 
         vi.mocked(prisma.user.update).mockResolvedValue({
           id: "user-1",
@@ -124,7 +124,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date(),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date(),
-        });
+        } as any);
 
         const result = await checkAndTrackRequest("clerk-pro");
 
@@ -148,7 +148,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date("2024-01-14T23:59:00Z"), // Yesterday
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-14"),
-        });
+        } as any);
 
         vi.mocked(prisma.user.update).mockResolvedValue({
           id: "user-1",
@@ -159,7 +159,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date(),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date(),
-        });
+        } as any);
 
         const result = await checkAndTrackRequest("clerk-123");
 
@@ -188,7 +188,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date("2024-01-15T10:00:00Z"), // Today
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-15"),
-        });
+        } as any);
 
         vi.mocked(prisma.user.update).mockResolvedValue({
           id: "user-1",
@@ -199,7 +199,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date(),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date(),
-        });
+        } as any);
 
         const result = await checkAndTrackRequest("clerk-123");
 
@@ -220,7 +220,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date("2024-01-15T10:00:00Z"), // Today
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-15"),
-        });
+        } as any);
 
         const result = await checkAndTrackRequest("clerk-123");
 
@@ -243,7 +243,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date("2024-01-15T10:00:00Z"),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-15"),
-        });
+        } as any);
 
         const result = await checkAndTrackRequest("clerk-123");
 
@@ -264,7 +264,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date("2024-01-15T10:00:00Z"),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-15"),
-        });
+        } as any);
 
         const result = await checkAndTrackRequest("clerk-123", false);
 
@@ -288,7 +288,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date("2024-01-15T10:00:00Z"),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-15"),
-        });
+        } as any);
 
         vi.mocked(prisma.user.update).mockResolvedValue({
           id: "user-1",
@@ -299,7 +299,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date(),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date(),
-        });
+        } as any);
 
         const result = await checkAndTrackRequest("clerk-creator");
 
@@ -319,7 +319,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date("2024-01-15T10:00:00Z"),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-15"),
-        });
+        } as any);
 
         vi.mocked(prisma.user.update).mockResolvedValue({
           id: "user-1",
@@ -330,7 +330,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date(),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date(),
-        });
+        } as any);
 
         const result = await checkAndTrackRequest("clerk-pro");
 
@@ -349,7 +349,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date("2024-01-15T10:00:00Z"),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-15"),
-        });
+        } as any);
 
         vi.mocked(prisma.user.update).mockResolvedValue({
           id: "user-1",
@@ -360,7 +360,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date(),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date(),
-        });
+        } as any);
 
         const result = await checkAndTrackRequest("clerk-agency");
 
@@ -383,7 +383,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date("2024-01-15T10:00:00Z"),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-15"),
-        });
+        } as any);
 
         vi.mocked(prisma.user.update).mockResolvedValue({
           id: "user-1",
@@ -394,7 +394,7 @@ describe("Request Tracker", () => {
           lastRequestDate: new Date(),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date(),
-        });
+        } as any);
 
         const result = await checkAndTrackRequest("clerk-123");
 
@@ -416,7 +416,7 @@ describe("Request Tracker", () => {
         lastRequestDate: new Date("2024-01-15T10:00:00Z"),
         createdAt: new Date("2024-01-01"),
         updatedAt: new Date("2024-01-15"),
-      });
+      } as any);
 
       const result = await getRateLimitStatus("clerk-123");
 
@@ -490,7 +490,7 @@ describe("Request Tracker", () => {
         lastRequestDate: new Date("2024-01-15T10:00:00Z"),
         createdAt: new Date("2024-01-01"),
         updatedAt: new Date("2024-01-15"),
-      });
+      } as any);
 
       vi.mocked(prisma.user.update).mockResolvedValue({
         id: "user-1",
@@ -501,7 +501,7 @@ describe("Request Tracker", () => {
         lastRequestDate: new Date(),
         createdAt: new Date("2024-01-01"),
         updatedAt: new Date(),
-      });
+      } as any);
 
       const result = await checkAndTrackRequest("clerk-123");
 
@@ -524,7 +524,7 @@ describe("Request Tracker", () => {
         lastRequestDate: new Date("2024-01-14T23:59:59Z"), // One second before midnight
         createdAt: new Date("2024-01-01"),
         updatedAt: new Date("2024-01-14"),
-      });
+      } as any);
 
       vi.mocked(prisma.user.update).mockResolvedValue({
         id: "user-1",
@@ -535,7 +535,7 @@ describe("Request Tracker", () => {
         lastRequestDate: new Date(),
         createdAt: new Date("2024-01-01"),
         updatedAt: new Date(),
-      });
+      } as any);
 
       const result = await checkAndTrackRequest("clerk-123");
 
