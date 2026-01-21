@@ -22,6 +22,7 @@ yarn-error.log*
 # Compiled output
 dist/
 *.tsbuildinfo
+*.claude/*
 
 # Environment variables
 .env
