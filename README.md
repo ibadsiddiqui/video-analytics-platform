@@ -81,7 +81,6 @@ video-analytics-platform/
 │   └── vercel.json          # Vercel deployment config
 │
 ├── CLAUDE.md                # Development guide
-├── VERCEL_DEPLOYMENT_GUIDE.md
 └── README.md
 ```
 
